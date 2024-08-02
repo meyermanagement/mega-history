@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <classAccesses>
+        <apexClass>MetadataService</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>MetadataServiceTest</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <description>Administrative Permissions for Mega History to add historical related lists on objects, deploy triggers on objects when necessary, and access the Mega History Setup Guide</description>
+    <hasActivationRequired>false</hasActivationRequired>
+    <label>Mega History Admin</label>
+</PermissionSet>
