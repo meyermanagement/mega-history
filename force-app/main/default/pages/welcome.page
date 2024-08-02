@@ -77,7 +77,7 @@
 					</td>
 				</tr>
 			</table>
-			<apex:outputPanel rendered="{!MetadataConnectionWarning}">
+			<!-- <apex:outputPanel rendered="{!MetadataConnectionWarning}"> -->
 				<h1>Important Post Install Step:</h1>
 				<p>In order to
 					<b>configure</b> the features of this tool you need to permit the current user access to the
@@ -97,7 +97,7 @@
 						<input id="createremotesitebtn" type="button" onclick="createRemoteSite();" value="Create/Update Remote Site Setting" />
 					</li>
 				</ul>
-			</apex:outputPanel>
+			<!-- </apex:outputPanel> -->
 			<apex:outputPanel rendered="{!MetadataConnectionWarning}">
 				<p style="color:gray">DEBUG USE ONLY: {!metadataApiException}</p>
 			</apex:outputPanel>
