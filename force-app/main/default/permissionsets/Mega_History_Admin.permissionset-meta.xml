@@ -8,6 +8,18 @@
         <apexClass>MetadataServiceTest</apexClass>
         <enabled>true</enabled>
     </classAccesses>
+    <customMetadataTypeAccesses>
+        <enabled>true</enabled>
+        <name>Historical_View__mdt</name>
+    </customMetadataTypeAccesses>
+    <customMetadataTypeAccesses>
+        <enabled>true</enabled>
+        <name>Tracked_Field__mdt</name>
+    </customMetadataTypeAccesses>
+    <customMetadataTypeAccesses>
+        <enabled>true</enabled>
+        <name>Tracked_Objects__mdt</name>
+    </customMetadataTypeAccesses>
     <description>Administrative Permissions for Mega History to add historical related lists on objects, deploy triggers on objects when necessary, and access the Mega History Setup Guide</description>
     <hasActivationRequired>false</hasActivationRequired>
     <label>Mega History Admin</label>
