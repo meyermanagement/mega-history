@@ -18,7 +18,7 @@
     </customMetadataTypeAccesses>
     <customMetadataTypeAccesses>
         <enabled>true</enabled>
-        <name>Tracked_Objects__mdt</name>
+        <name>Tracked_Object__mdt</name>
     </customMetadataTypeAccesses>
     <description>Administrative Permissions for Mega History to add historical related lists on objects, deploy triggers on objects when necessary, and access the Mega History Setup Guide</description>
     <fieldPermissions>

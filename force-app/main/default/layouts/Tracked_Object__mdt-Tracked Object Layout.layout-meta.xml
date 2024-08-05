@@ -31,12 +31,8 @@
                 <field>Track_Undelete__c</field>
             </layoutItems>
             <layoutItems>
-                <behavior>Required</behavior>
-                <field>Base_Object__c</field>
-            </layoutItems>
-            <layoutItems>
                 <behavior>Edit</behavior>
-                <field>Parent_Object__c</field>
+                <field>Parent_Reference_Field__c</field>
             </layoutItems>
         </layoutColumns>
         <layoutColumns>

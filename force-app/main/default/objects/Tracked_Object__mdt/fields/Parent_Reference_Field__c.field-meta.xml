@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>Base_Object__c</fullName>
-    <caseSensitive>false</caseSensitive>
+    <fullName>Parent_Reference_Field__c</fullName>
     <externalId>false</externalId>
     <fieldManageability>SubscriberControlled</fieldManageability>
-    <label>Base Object</label>
+    <label>Parent Reference Field</label>
     <length>80</length>
-    <required>true</required>
+    <required>false</required>
     <type>Text</type>
-    <unique>true</unique>
+    <unique>false</unique>
 </CustomField>

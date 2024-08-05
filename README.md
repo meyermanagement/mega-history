@@ -10,6 +10,7 @@ A History Tracking app for fields not included in out of the box history trackin
 
 **Enhanced history tracking on objects.**:
 * Track history of Text Area (Long) and Text Area (Rich) fields
+* Track as many fields as needed, beyond Salesforce limits
 * (future enhancements) track Encrypted and custom address fields
 
 **Enhanced control/adjustment of history**:

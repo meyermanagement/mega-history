@@ -18,7 +18,7 @@
     </customMetadataTypeAccesses>
     <customMetadataTypeAccesses>
         <enabled>true</enabled>
-        <name>Tracked_Objects__mdt</name>
+        <name>Tracked_Object__mdt</name>
     </customMetadataTypeAccesses>
     <description>Same permissions as Admin with the added ability to update/delete records from the history</description>
     <fieldPermissions>
