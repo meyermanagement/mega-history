@@ -25,7 +25,7 @@ public without sharing class HistoryTrackingService {
                 String operationEvent = operationTypeMap.get(operationType.toString());
                 if((tobj.Track_Create__c && operationEvent == 'Create') || (tobj.Track_Delete__c && operationEvent == 'Delete') || (tobj.Track_Undelete__c && operationEvent == 'Undelete')){
                     List<SObject> recordList = newList != null ? newList : oldMap.values();
-                    for(Sobject so : newList){
+                    for(Sobject so : recordList){
                         String recordId = String.valueOf(so.get('Id'));
                         String recordName = so.get('Name') != null ? String.valueOf(so.get('Name')) : null;
                         Record_History__c rh = new Record_History__c();
