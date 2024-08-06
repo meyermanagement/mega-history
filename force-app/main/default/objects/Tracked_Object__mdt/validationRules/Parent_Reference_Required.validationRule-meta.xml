@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>Parent_Required</fullName>
+    <fullName>Parent_Reference_Required</fullName>
     <active>true</active>
     <description>When tracking create, delete, and undelete, a parent record is required or records will be orphaned.</description>
     <errorConditionFormula>AND(
-ISNULL(Parent_Object__c),
+ISBLANK(Parent_Reference_Field__c),
 OR(
  Track_Create__c,
  Track_Delete__c ,
  Track_Undelete__c 
 ))</errorConditionFormula>
-    <errorDisplayField>Parent_Object__c</errorDisplayField>
-    <errorMessage>A Parent object must be defined to track create, delete, and undelete.</errorMessage>
+    <errorDisplayField>Parent_Reference_Field__c</errorDisplayField>
+    <errorMessage>A Parent reference field must be defined to track create, delete, and undelete.</errorMessage>
 </ValidationRule>

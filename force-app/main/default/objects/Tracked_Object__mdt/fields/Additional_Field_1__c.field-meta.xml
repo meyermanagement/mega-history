@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>Parent_Object__c</fullName>
+    <fullName>Additional_Field_1__c</fullName>
+    <description>Used to identify the record when tracking insert, deletes, and undeletes</description>
     <externalId>false</externalId>
     <fieldManageability>SubscriberControlled</fieldManageability>
-    <label>Parent Object</label>
+    <label>Additional Field 1</label>
     <length>80</length>
     <required>false</required>
     <type>Text</type>

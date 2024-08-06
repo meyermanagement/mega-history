@@ -18,9 +18,39 @@
     </customMetadataTypeAccesses>
     <customMetadataTypeAccesses>
         <enabled>true</enabled>
-        <name>Tracked_Objects__mdt</name>
+        <name>Tracked_Object__mdt</name>
     </customMetadataTypeAccesses>
     <description>Same permissions as Admin with the added ability to update/delete records from the history</description>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Record_History__c.Additional_Field_1__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Record_History__c.Additional_Field_2__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Record_History__c.Created_By_DL__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Record_History__c.Created_By_Formula__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Record_History__c.Created_Date_DL__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Record_History__c.Created_Date_Formula__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
         <field>Record_History__c.Field__c</field>
@@ -44,6 +74,16 @@
     <fieldPermissions>
         <editable>true</editable>
         <field>Record_History__c.Old_Value__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Record_History__c.ParentId__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Record_History__c.Record_Name__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <hasActivationRequired>false</hasActivationRequired>
