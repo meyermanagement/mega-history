@@ -53,8 +53,15 @@ public without sharing class HistoryTrackingService {
                     System.debug(fieldResult.getType());
                     //logic dependent on field type
                     String recordId = String.valueOf(so.get('Id'));
-                    String newValue = String.valueOf(so.get(field));
-                    String oldValue = String.valueOf(oldMap.get(recordId).get(field));
+                    String newValue;
+                    String oldValue;
+                    if(fieldResult.getType().toString() == 'DATE'){
+                        newValue = String.valueOf(Date.valueOf(so.get(field)));
+                        oldValue = String.valueOf(Date.valueOf(oldMap.get(recordId).get(field)));
+                    } else {
+                        newValue = String.valueOf(so.get(field));
+                        oldValue = String.valueOf(oldMap.get(recordId).get(field));
+                    }
                     if(newValue <> oldValue){
                         Record_History__c rh = new Record_History__c();
                         rh.Event__c = 'Updated';
