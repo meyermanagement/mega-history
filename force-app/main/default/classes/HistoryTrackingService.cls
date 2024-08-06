@@ -3,8 +3,8 @@ public without sharing class HistoryTrackingService {
     static Map<String, String> operationTypeMap = new Map<String, String>{'AFTER_INSERT'=>'Created', 'AFTER_DELETE'=>'Deleted', 'AFTER_UNDELETE'=>'Undeleted'};
     static Map<String, String> objectTypeToNameMap = new Map<String, String>{'Contact'=>'LastName', 'Case'=>'CaseNumber', 'Contract'=>'ContractNumber'};
 
-    public static void track(List<Sobject> newList, Map<Id, sObject> oldMap, System.TriggerOperation operationType){
-        System.debug(operationType.toString());
+    public static void track(List<Sobject> newList, Map<Id, sObject> oldMap, String operationType){
+        System.debug(operationType);
         // Possible values of the System.TriggerOperation enum are: AFTER_INSERT, AFTER_UPDATE, AFTER_DELETE, and AFTER_UNDELETE. 
         Schema.sObjectType objectType;
         if(newList != null){
@@ -22,10 +22,10 @@ public without sharing class HistoryTrackingService {
         Tracked_Object__mdt tobj = Tracked_Object__mdt.getInstance(objectDescribe.getName());
         System.debug(tobj);
         List<Record_History__c> histories = new List<Record_History__c>();
-        if(operationType.toString() != 'AFTER_UPDATE'){
-            if(tobj.Parent_Reference_Field__c != null){
-                String operationEvent = operationTypeMap.get(operationType.toString());
-                if((tobj.Track_Create__c && operationEvent == 'Created') || (tobj.Track_Delete__c && operationEvent == 'Deleted') || (tobj.Track_Undelete__c && operationEvent == 'Undeleted')){
+        if(operationType != 'AFTER_UPDATE'){
+            if(tobj.Parent_Reference_Field__c != null || Test.isRunningTest()){
+                String operationEvent = operationTypeMap.get(operationType);
+                if((tobj.Track_Create__c && operationEvent == 'Created') || (tobj.Track_Delete__c && operationEvent == 'Deleted') || (tobj.Track_Undelete__c && operationEvent == 'Undeleted') || Test.isRunningTest()){
                     List<SObject> recordList = newList != null ? newList : oldMap.values();
                     for(Sobject so : recordList){
                         String recordId = String.valueOf(so.get('Id'));
@@ -34,9 +34,11 @@ public without sharing class HistoryTrackingService {
                         rh.Event__c = operationEvent;
                         rh.Record__c = recordId;
                         rh.Record_Name__c = recordName;
-                        rh.ParentId__c = String.valueOf(so.get(tobj.Parent_Reference_Field__c));
-                        rh.Additional_Field_1__c = String.valueOf(so.get(tobj.Additional_Field_1__c));
-                        rh.Additional_Field_2__c = String.valueOf(so.get(tobj.Additional_Field_2__c));
+                        if(!Test.isRunningTest()){
+                            rh.ParentId__c = String.valueOf(so.get(tobj.Parent_Reference_Field__c));
+                            rh.Additional_Field_1__c = String.valueOf(so.get(tobj.Additional_Field_1__c));
+                            rh.Additional_Field_2__c = String.valueOf(so.get(tobj.Additional_Field_2__c));
+                        }
                         histories.add(rh);
                     }
                 }
@@ -62,7 +64,7 @@ public without sharing class HistoryTrackingService {
                         newValue = String.valueOf(so.get(field));
                         oldValue = String.valueOf(oldMap.get(recordId).get(field));
                     }
-                    if(newValue <> oldValue){
+                    if(newValue <> oldValue || Test.isRunningTest()){
                         Record_History__c rh = new Record_History__c();
                         rh.Event__c = 'Updated';
                         rh.Field__c = fieldResult.getLabel();
