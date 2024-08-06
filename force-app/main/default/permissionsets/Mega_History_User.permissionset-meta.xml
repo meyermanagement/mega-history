@@ -7,6 +7,36 @@
     <description>Standard permissions to see Mega History related lists on configured records</description>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Record_History__c.Additional_Field_1__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Record_History__c.Additional_Field_2__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Record_History__c.Created_By_DL__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Record_History__c.Created_By_Formula__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Record_History__c.Created_Date_DL__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Record_History__c.Created_Date_Formula__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Record_History__c.Field__c</field>
         <readable>true</readable>
     </fieldPermissions>

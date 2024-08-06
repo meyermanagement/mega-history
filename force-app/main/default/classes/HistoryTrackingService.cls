@@ -1,6 +1,8 @@
 public without sharing class HistoryTrackingService {
     
-    static Map<String, String> operationTypeMap = new Map<String, String>{'AFTER_INSERT'=>'Create', 'AFTER_DELETE'=>'Delete', 'AFTER_UNDELETE'=>'Undelete'};
+    static Map<String, String> operationTypeMap = new Map<String, String>{'AFTER_INSERT'=>'Created', 'AFTER_DELETE'=>'Deleted', 'AFTER_UNDELETE'=>'Undeleted'};
+    static Map<String, String> objectTypeToNameMap = new Map<String, String>{'Contact'=>'LastName', 'Case'=>'CaseNumber', 'Contract'=>'ContractNumber'};
+
     public static void track(List<Sobject> newList, Map<Id, sObject> oldMap, System.TriggerOperation operationType){
         System.debug(operationType.toString());
         // Possible values of the System.TriggerOperation enum are: AFTER_INSERT, AFTER_UPDATE, AFTER_DELETE, and AFTER_UNDELETE. 
@@ -23,16 +25,18 @@ public without sharing class HistoryTrackingService {
         if(operationType.toString() != 'AFTER_UPDATE'){
             if(tobj.Parent_Reference_Field__c != null){
                 String operationEvent = operationTypeMap.get(operationType.toString());
-                if((tobj.Track_Create__c && operationEvent == 'Create') || (tobj.Track_Delete__c && operationEvent == 'Delete') || (tobj.Track_Undelete__c && operationEvent == 'Undelete')){
+                if((tobj.Track_Create__c && operationEvent == 'Created') || (tobj.Track_Delete__c && operationEvent == 'Deleted') || (tobj.Track_Undelete__c && operationEvent == 'Undeleted')){
                     List<SObject> recordList = newList != null ? newList : oldMap.values();
                     for(Sobject so : recordList){
                         String recordId = String.valueOf(so.get('Id'));
-                        String recordName = so.get('Name') != null ? String.valueOf(so.get('Name')) : null;
+                        String recordName = objectTypeToNameMap.containsKey(objectDescribe.getName()) ? String.valueOf(so.get(objectTypeToNameMap.get(objectDescribe.getName()))) : String.valueOf(so.get('Name'));
                         Record_History__c rh = new Record_History__c();
                         rh.Event__c = operationEvent;
                         rh.Record__c = recordId;
                         rh.Record_Name__c = recordName;
                         rh.ParentId__c = String.valueOf(so.get(tobj.Parent_Reference_Field__c));
+                        rh.Additional_Field_1__c = String.valueOf(so.get(tobj.Additional_Field_1__c));
+                        rh.Additional_Field_2__c = String.valueOf(so.get(tobj.Additional_Field_2__c));
                         histories.add(rh);
                     }
                 }
@@ -46,6 +50,7 @@ public without sharing class HistoryTrackingService {
             for(Sobject so : newList){
                 for(String field : fieldMap.keySet()){
                     Schema.DescribeFieldResult fieldResult = fieldMap.get(field);
+                    System.debug(fieldResult.getType());
                     //logic dependent on field type
                     String recordId = String.valueOf(so.get('Id'));
                     String newValue = String.valueOf(so.get(field));
@@ -54,9 +59,9 @@ public without sharing class HistoryTrackingService {
                         Record_History__c rh = new Record_History__c();
                         rh.Event__c = 'Updated';
                         rh.Field__c = fieldResult.getLabel();
-                        rh.New_Value__c = newValue.left(255);
-                        rh.Old_Value__c = oldValue.left(255);
-                        if(newValue.length() > 255 || oldValue.length() > 255){
+                        rh.New_Value__c = newValue != null ? newValue.left(255) : null;
+                        rh.Old_Value__c = oldValue != null ? oldValue.left(255) : null;
+                        if((newValue != null && newValue.length() > 255) || (oldValue != null && oldValue.length() > 255)){
                             rh.New_Value_Extended__c = newValue;
                             rh.Old_Value_Extended__c = oldValue;
                         }
