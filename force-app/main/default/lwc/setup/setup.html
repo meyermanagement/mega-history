@@ -1,38 +1,79 @@
 <template>
     <lightning-card>
-        <h1 slot="title" class="cardTitle">
-            <lightning-icon icon-name="standard:connected_apps" size="large" class="icn"></lightning-icon>
-            Mega History Setup
-        </h1>
-        <div slot="footer">
-            <div align="center">
-                <lightning-button label="Save"></lightning-button>
-            </div>
-        </div>
         <lightning-layout multiple-rows="true">
-            <lightning-layout-item size="12" class="slds-p-horizontal_x-large slds-p-vertical_small">
-                <div class="slds-box slds-p-around_large" style="border-radius: 4px; border: solid; border-width: .667px; border-color: rgba(0, 0, 0, 0.2); box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 7px 0px; padding: 8px;">
-                    <div class="slds-p-vertical_medium cardTitle">
-                        <div class="slds-p-right_xx-small">
-                            <lightning-icon icon-name="action:web_link" alternative-text="Check Connection" size="small" class="icn"></lightning-icon>
-                        </div>
-                        <h1>
-                            <lightning-layout>
+            <lightning-layout-item size="12" class="slds-p-vertical_x-small">
+                <div class="cardTitle" align="center">
+                    <h1>
+                        <lightning-layout>
+                            <lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12">
+                                MEGA History Setup
+                            </lightning-layout-item>
+                        </lightning-layout>
+                        <p>
+                            <lightning-layout multiple-rows="true">
                                 <lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12">
-                                    Check Connection
+                                    Review the items below to install and configure the MEGA History app.
                                 </lightning-layout-item>
                             </lightning-layout>
-                            <p>
-                                <lightning-layout multiple-rows="true">
-                                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12" class="slds-p-vertical_x-small">
+                        </p>
+                    </h1>
+                </div>
+            </lightning-layout-item>
+            <lightning-layout-item size="12" class="slds-p-around_small">
+                <div class={connectionClass} onclick={handleConnectionClick}>
+                    <div class="slds-p-around_medium cardTitle slds-grid slds-grid_vertical-align-center">
+                        <div class="slds-col">
+                            <div class="my_cool_flex_container">
+                                <div class="slds-p-right_small">
+                                    <lightning-icon icon-name="action:web_link" alternative-text="Check Connection" size="large"></lightning-icon>
+                                </div>
+                                <h1>
+                                    Check Connection
+                                    <p>
                                         Check connection and deploy remote site setting if needed
-                                    </lightning-layout-item>
-                                </lightning-layout>
-                            </p>
-                        </h1>
+                                    </p>
+                                </h1>
+                            </div>
+                        </div>
+                        <div class="slds-p-right_xx-small slds-col" align="right">
+                            <template lwc:if={connectionFailure}>
+                                <lightning-icon icon-name="action:close" alternative-text="Connection Failure" size="large" class="redIcn"></lightning-icon>
+                            </template>
+                            <template lwc:else>
+                                <lightning-icon icon-name="action:approval" alternative-text="Connection Successful" size="large" class="greenIcn"></lightning-icon>
+                            </template>
+                        </div>
                     </div>
                 </div>
             </lightning-layout-item>
         </lightning-layout>
     </lightning-card>
+    <template lwc:if={showConnectionModal}>
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_medium">
+            <div class="slds-modal__container">
+             <!-- modal header start -->
+               <header class="slds-modal__header">
+                  <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={handleClose}>
+                     <lightning-icon icon-name="utility:close"
+                        alternative-text="close"
+                        variant="inverse"
+                        size="small" ></lightning-icon>
+                     <span class="slds-assistive-text">Close</span>
+                  </button>
+                  <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Connection Failure</h2>
+               </header>
+           
+               <!-- modal body start -->
+               <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                     <p>Click the button below to deploy the remote site setting needed to generate Triggers.</p>
+               </div>
+     
+               <!-- modal footer start-->
+               <footer class="slds-modal__footer">
+                  <button class="slds-button slds-button_neutral" onclick={handleClose}>Cancel</button>
+               </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
 </template>
