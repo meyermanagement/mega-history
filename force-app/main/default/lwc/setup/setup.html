@@ -49,7 +49,7 @@
         </lightning-layout>
     </lightning-card>
     <template lwc:if={showConnectionModal}>
-        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_medium">
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_small">
             <div class="slds-modal__container">
              <!-- modal header start -->
                <header class="slds-modal__header">
@@ -63,14 +63,82 @@
                   <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Connection Failure</h2>
                </header>
            
-               <!-- modal body start -->
-               <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
-                     <p>Click the button below to deploy the remote site setting needed to generate Triggers.</p>
-               </div>
-     
+               <template lwc:if={showRemoteSiteConfiguration}>
+                    <div class="slds-modal__content slds-p-around_xx-small" id="modal-content-id-2">
+                        <div class="slds-p-around_medium">
+                            <p>To add a Remote Site Setting, open <a href="/lightning/setup/SecurityRemoteProxy/home" target="_blank">Remote Site Settings</a> and follow the instructions below.</p>
+                            </br>
+                            <ul class="slds-list_dotted">
+                                <li class="slds-p-bottom_small">
+                                    Click "New Remote Site".
+                                </li>
+                                <li class="slds-p-bottom_small">
+                                    Enter the following fields:
+                                    <ul class="slds-list_dotted slds-is-nested">
+                                        <li>
+                                            Remote Site Name: MEGA History
+                                        </li>
+                                        <li>
+                                            Remote Site URL: {orgURL}
+                                        </li>
+                                        <li>
+                                            Leave Disable Protocol Security unchecked.
+                                        </li>
+                                        <li>
+                                            Description: "Remote site for MEGA History package to dynamically generate triggers."
+                                        </li>
+                                        <li>
+                                            Leave Active checked.
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                            <p>Once saved, click Close to Check Connection again.</p>
+                        </div>
+                    </div>
+               </template>
+               <template lwc:else>
+                    <div class="slds-modal__content slds-p-around_xx-small" id="modal-content-id-1">
+                        <p style="color: red;" align="center">You do not have permission to dynamically generate triggers from this package in this environment.</p>
+                        <div class="slds-p-around_medium">
+                            <p>In order to track field and record history, MEGA History dynamically generates and deploys triggers to the objects you wish to track.</p>
+                            <p>These triggers can be deployed in multiple ways:</p>
+                            </br>
+                            <ul class="slds-list_dotted">
+                                <li class="slds-p-bottom_small">
+                                    Authorize MEGA History to generate and deploy these triggers directly in production.
+                                    <ul class="slds-list_dotted slds-is-nested">
+                                        <li>
+                                            If this is your production environment and you would like to deploy triggers directly, click the "Add Remote Site Setting" button below.
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    Authorize MEGA History to generate and deploy these triggers in a sandbox/scratch org for testing to be manually deployed to production via change set or your organization's chosen deployment configuration.
+                                    <ul class="slds-list_dotted slds-is-nested">
+                                        <li>
+                                            If this is your production environment and you would like to deploy triggers to a sandbox/scratch org first, install this package in that environment.  Follow these setup instructions in that environment.  Once you have tested your desired configuration, deploy the Apex Triggers, Apex Classes(tests only), and custom metadata records from that environment to production.
+                                        </li>
+                                        <li>
+                                            If this is a development(sandbox/scratch) environment and you would like to deploy triggers here first, click the "Add Remote Site Setting" button below.
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+               </template>
                <!-- modal footer start-->
                <footer class="slds-modal__footer">
-                  <button class="slds-button slds-button_neutral" onclick={handleClose}>Cancel</button>
+                    <template lwc:if={showRemoteSiteConfiguration}>
+                        <div align="center">
+                            <lightning-button label="Close" title="Close" onclick={handleClose}></lightning-button>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <lightning-button label="Cancel" title="Cancel" onclick={handleClose} class="slds-float_left"></lightning-button>
+                        <lightning-button variant="brand" label="Add Remote Site Setting" title="Add Remote Site Setting" onclick={addRSS}></lightning-button>
+                    </template>
                </footer>
             </div>
         </section>
