@@ -19,7 +19,7 @@
                     </h1>
                 </div>
             </lightning-layout-item>
-            <lightning-layout-item size="12" class="slds-p-around_small">
+            <lightning-layout-item size="12" class="slds-p-horizontal_large slds-p-vertical_small">
                 <div class={connectionClass} onclick={handleConnectionClick}>
                     <div class="slds-p-around_medium cardTitle slds-grid slds-grid_vertical-align-center">
                         <div class="slds-col">
@@ -36,11 +36,48 @@
                             </div>
                         </div>
                         <div class="slds-p-right_xx-small slds-col" align="right">
-                            <template lwc:if={connectionFailure}>
+                            <template lwc:if={connectionLoading}>
+                                <div class="spinnerHolder">
+                                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                                </div>
+                            </template>
+                            <template lwc:elseif={connectionFailure}>
                                 <lightning-icon icon-name="action:close" alternative-text="Connection Failure" size="large" class="redIcn"></lightning-icon>
                             </template>
                             <template lwc:else>
                                 <lightning-icon icon-name="action:approval" alternative-text="Connection Successful" size="large" class="greenIcn"></lightning-icon>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </lightning-layout-item>
+            <lightning-layout-item size="12" class="slds-p-horizontal_large slds-p-vertical_small">
+                <div class={permissionClass} onclick={handlePermissionClick}>
+                    <div class="slds-p-around_medium cardTitle slds-grid slds-grid_vertical-align-center">
+                        <div class="slds-col">
+                            <div class="my_cool_flex_container">
+                                <div class="slds-p-right_small">
+                                    <lightning-icon icon-name="action:manage_perm_sets" alternative-text="Check Permissions" size="large"></lightning-icon>
+                                </div>
+                                <h1>
+                                    Check Permissions
+                                    <p>
+                                        Check user permission configuration
+                                    </p>
+                                </h1>
+                            </div>
+                        </div>
+                        <div class="slds-p-right_xx-small slds-col" align="right">
+                            <template lwc:if={permissionLoading}>
+                                <div class="spinnerHolder">
+                                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                                </div>
+                            </template>
+                            <template lwc:elseif={permissionFailure}>
+                                <lightning-icon icon-name="action:close" alternative-text="Permission Failure" size="large" class="redIcn"></lightning-icon>
+                            </template>
+                            <template lwc:else>
+                                <lightning-icon icon-name="action:approval" alternative-text="Permission Successful" size="large" class="greenIcn"></lightning-icon>
                             </template>
                         </div>
                     </div>
@@ -139,6 +176,82 @@
                         <lightning-button label="Cancel" title="Cancel" onclick={handleClose} class="slds-float_left"></lightning-button>
                         <lightning-button variant="brand" label="Add Remote Site Setting" title="Add Remote Site Setting" onclick={addRSS}></lightning-button>
                     </template>
+               </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+    <template lwc:if={showPermissionModal}>
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_small">
+            <div class="slds-modal__container">
+             <!-- modal header start -->
+               <header class="slds-modal__header">
+                  <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={handleClosePermission}>
+                     <lightning-icon icon-name="utility:close"
+                        alternative-text="close"
+                        variant="inverse"
+                        size="small" ></lightning-icon>
+                     <span class="slds-assistive-text">Close</span>
+                  </button>
+                  <h2 id="modal-heading-02" class="slds-text-heading_medium slds-hyphenate">Permission Assignment Incomplete</h2>
+               </header>
+                <div class="slds-modal__content slds-p-around_xx-small" id="modal-content-id-3">
+                    <p style="color: red;" align="center">You have not assigned basic permissions to view MEGA History to any users.</p>
+                    <div class="slds-p-around_medium">
+                        <p>Below is a summary of the permission sets available:</p>
+                        </br>
+                        <ul class="slds-list_dotted">
+                            <li class="slds-p-bottom_small">
+                                MEGA History User
+                                <ul class="slds-list_dotted slds-is-nested">
+                                    <li>
+                                        Ability to see MEGA History on configured Lightnig Record Pages.
+                                    </li>
+                                    <li>
+                                        Most common permissions to see both standard field history and custom field/record history.
+                                    </li>
+                                </ul>
+                            </li>
+                            <li class="slds-p-bottom_small">
+                                MEGA History Admin
+                                <ul class="slds-list_dotted slds-is-nested">
+                                    <li>
+                                        Ability to see MEGA History on configured Lightnig Record Pages.
+                                    </li>
+                                    <li>
+                                        Ability to configure MEGA History via the MEGA History App.
+                                    </li>
+                                    <li>
+                                        Used by administrative personnel to configure what fields and objects should be tracked by MEGA History.
+                                    </li>
+                                </ul>
+                            </li>
+                            <li class="slds-p-bottom_small">
+                                MEGA History Super Admin
+                                <ul class="slds-list_dotted slds-is-nested">
+                                    <li>
+                                        Ability to see MEGA History on configured Lightnig Record Pages.
+                                    </li>
+                                    <li>
+                                        Ability to configure MEGA History via the MEGA History App.
+                                    </li>
+                                    <li>
+                                        Ability to create, update, and delete MEGA History Records.  
+                                    </li>
+                                    <li>
+                                        Used by System Administrators to manipulate custom history records, perform data loads, and archive data.
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                    <p style="color: navy;" align="center" class="slds-p-bottom_small"><a href="/lightning/setup/PermSets/home" target="_blank">Configure Permission Sets Here</a></p>
+                </div>
+               <!-- modal footer start-->
+               <footer class="slds-modal__footer">
+                    <div align="center">
+                        <lightning-button label="Close" title="Close" onclick={handleClosePermission}></lightning-button>
+                    </div>
                </footer>
             </div>
         </section>

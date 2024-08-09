@@ -20,6 +20,17 @@ global with sharing class SetupController {
     }
 
     @AuraEnabled(cacheable=true)
+    global static Boolean checkPermissionAssignment() {
+        try {
+            List<PermissionSetAssignment> assignments = [SELECT Id FROM PermissionSetAssignment WHERE PermissionSet.Name = 'Mega_History_User' AND AssigneeId != :UserInfo.getUserId()];
+            return assignments.isEmpty();
+        } catch (Exception e) {
+            System.debug(e.getMessage());
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    @AuraEnabled(cacheable=true)
     global static String getSessionIdFromVFPage(){
         try {
             String content = Page.SessionIdPage.getContent().toString();

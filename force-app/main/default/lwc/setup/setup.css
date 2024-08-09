@@ -46,3 +46,10 @@
 .my_cool_flex_container {
     display: flex;
 }
+
+.spinnerHolder{
+    position: relative;
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+}
