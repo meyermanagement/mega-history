@@ -83,6 +83,70 @@
                     </div>
                 </div>
             </lightning-layout-item>
+            <lightning-layout-item size="12" class="slds-p-horizontal_large slds-p-vertical_small">
+                <div class={trackingClass} onclick={handleTrackingClick}>
+                    <div class="slds-p-around_medium cardTitle slds-grid slds-grid_vertical-align-center">
+                        <div class="slds-col">
+                            <div class="my_cool_flex_container">
+                                <div class="slds-p-right_small">
+                                    <lightning-icon icon-name="action:record" alternative-text="Check Record Tracking" size="large"></lightning-icon>
+                                </div>
+                                <h1>
+                                    Check Record Tracking
+                                    <p>
+                                        Check what fields and related records to track
+                                    </p>
+                                </h1>
+                            </div>
+                        </div>
+                        <div class="slds-p-right_xx-small slds-col" align="right">
+                            <template lwc:if={trackingLoading}>
+                                <div class="spinnerHolder">
+                                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                                </div>
+                            </template>
+                            <template lwc:elseif={trackingFailure}>
+                                <lightning-icon icon-name="action:close" alternative-text="Tracking Failure" size="large" class="redIcn"></lightning-icon>
+                            </template>
+                            <template lwc:else>
+                                <lightning-icon icon-name="action:approval" alternative-text="Tracking Successful" size="large" class="greenIcn"></lightning-icon>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </lightning-layout-item>
+            <lightning-layout-item size="12" class="slds-p-horizontal_large slds-p-vertical_small">
+                <div class={viewsClass} onclick={handleViewsClick}>
+                    <div class="slds-p-around_medium cardTitle slds-grid slds-grid_vertical-align-center">
+                        <div class="slds-col">
+                            <div class="my_cool_flex_container">
+                                <div class="slds-p-right_small">
+                                    <lightning-icon icon-name="action:filter" alternative-text="Check Views Configuration" size="large"></lightning-icon>
+                                </div>
+                                <h1>
+                                    Check View Configuration
+                                    <p>
+                                        Check what view of record history to show and where
+                                    </p>
+                                </h1>
+                            </div>
+                        </div>
+                        <div class="slds-p-right_xx-small slds-col" align="right">
+                            <template lwc:if={viewsLoading}>
+                                <div class="spinnerHolder">
+                                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                                </div>
+                            </template>
+                            <template lwc:elseif={viewsFailure}>
+                                <lightning-icon icon-name="action:close" alternative-text="Views Failure" size="large" class="redIcn"></lightning-icon>
+                            </template>
+                            <template lwc:else>
+                                <lightning-icon icon-name="action:approval" alternative-text="Views Successful" size="large" class="greenIcn"></lightning-icon>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </lightning-layout-item>
         </lightning-layout>
     </lightning-card>
     <template lwc:if={showConnectionModal}>
@@ -251,6 +315,64 @@
                <footer class="slds-modal__footer">
                     <div align="center">
                         <lightning-button label="Close" title="Close" onclick={handleClosePermission}></lightning-button>
+                    </div>
+               </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+    <template lwc:if={showTrackingModal}>
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_small">
+            <div class="slds-modal__container">
+             <!-- modal header start -->
+               <header class="slds-modal__header">
+                  <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={handleCloseTracking}>
+                     <lightning-icon icon-name="utility:close"
+                        alternative-text="close"
+                        variant="inverse"
+                        size="small" ></lightning-icon>
+                     <span class="slds-assistive-text">Close</span>
+                  </button>
+                  <h2 id="modal-heading-03" class="slds-text-heading_medium slds-hyphenate">Record Tracking Configuration Incomplete</h2>
+               </header>
+                <div class="slds-modal__content slds-p-around_xx-small" id="modal-content-id-4">
+                    <div class="slds-p-around_xx-large custom-link" onclick={navigateTracking}>
+                        <p style="color: navy;" align="center" class="slds-p-bottom_small">Click Here to Configure Tracking for your objects and fields.</p>
+                    </div>
+                </div>
+               <!-- modal footer start-->
+               <footer class="slds-modal__footer">
+                    <div align="center">
+                        <lightning-button label="Close" title="Close" onclick={handleCloseTracking}></lightning-button>
+                    </div>
+               </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+    <template lwc:if={showViewsModal}>
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_small">
+            <div class="slds-modal__container">
+             <!-- modal header start -->
+               <header class="slds-modal__header">
+                  <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={handleCloseViews}>
+                     <lightning-icon icon-name="utility:close"
+                        alternative-text="close"
+                        variant="inverse"
+                        size="small" ></lightning-icon>
+                     <span class="slds-assistive-text">Close</span>
+                  </button>
+                  <h2 id="modal-heading-04" class="slds-text-heading_medium slds-hyphenate">View Configuration Incomplete</h2>
+               </header>
+                <div class="slds-modal__content slds-p-around_xx-small" id="modal-content-id-5">
+                    <div class="slds-p-around_xx-large custom-link" onclick={navigateViews}>
+                        <p style="color: navy;" align="center" class="slds-p-bottom_small">Click Here to Configure Views for MEGA History on tracked objects.</p>
+                    </div>
+                </div>
+               <!-- modal footer start-->
+               <footer class="slds-modal__footer">
+                    <div align="center">
+                        <lightning-button label="Close" title="Close" onclick={handleCloseViews}></lightning-button>
                     </div>
                </footer>
             </div>

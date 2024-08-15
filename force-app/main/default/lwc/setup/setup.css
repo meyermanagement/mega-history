@@ -53,3 +53,7 @@
     width: 80px;
     height: 80px;
 }
+
+.custom-link{
+    cursor: pointer;
+}

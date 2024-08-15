@@ -31,6 +31,28 @@ global with sharing class SetupController {
     }
 
     @AuraEnabled(cacheable=true)
+    global static Boolean checkRecordTracking() {
+        try {
+            List<Tracked_Object__mdt> records = [SELECT Id FROM Tracked_Object__mdt];
+            return !records.isEmpty();
+        } catch (Exception e) {
+            System.debug(e.getMessage());
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    @AuraEnabled(cacheable=true)
+    global static Boolean checkViews() {
+        try {
+            List<Historical_View__mdt> records = [SELECT Id FROM Historical_View__mdt];
+            return records.isEmpty();
+        } catch (Exception e) {
+            System.debug(e.getMessage());
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    @AuraEnabled(cacheable=true)
     global static String getSessionIdFromVFPage(){
         try {
             String content = Page.SessionIdPage.getContent().toString();

@@ -121,4 +121,12 @@
         <tab>Setup</tab>
         <visibility>Visible</visibility>
     </tabSettings>
+    <tabSettings>
+        <tab>Tracking</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+    <tabSettings>
+        <tab>Views</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
 </PermissionSet>
