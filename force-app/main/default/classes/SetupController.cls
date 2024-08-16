@@ -33,8 +33,8 @@ global with sharing class SetupController {
     @AuraEnabled(cacheable=true)
     global static Boolean checkRecordTracking() {
         try {
-            List<Tracked_Object__mdt> records = [SELECT Id FROM Tracked_Object__mdt];
-            return !records.isEmpty();
+            List<Tracked_Object__mdt> records = [SELECT Id FROM Tracked_Object__mdt LIMIT 1];
+            return records.isEmpty();
         } catch (Exception e) {
             System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
@@ -44,7 +44,7 @@ global with sharing class SetupController {
     @AuraEnabled(cacheable=true)
     global static Boolean checkViews() {
         try {
-            List<Historical_View__mdt> records = [SELECT Id FROM Historical_View__mdt];
+            List<Historical_View__mdt> records = [SELECT Id FROM Historical_View__mdt LIMIT 1];
             return records.isEmpty();
         } catch (Exception e) {
             System.debug(e.getMessage());

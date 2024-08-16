@@ -20,10 +20,10 @@ export default class Setup extends NavigationMixin(LightningElement) {
     wiredTracking;
     wiredViews;
     orgURL;
-    connectionLoading = true;
-    permissionLoading = true;
-    trackingLoading = true;
-    viewsLoading = true;
+    connectionLoading;
+    permissionLoading;
+    trackingLoading;
+    viewsLoading;
 
     get connectionFailure() {
         return this.wiredConnection.data;
@@ -58,14 +58,24 @@ export default class Setup extends NavigationMixin(LightningElement) {
     }
 
     connectedCallback(){
-        this.connectionLoading = true;
-        this.permissionLoading = true;
-        this.trackingLoading = true;
-        this.viewsLoading = true;
+        console.log('connectedCallback');
+        console.log('wiredTracking', this.wiredTracking.data);
+        if(this.wiredTracking.data == undefined) {
+            this.connectionLoading = true;
+            this.permissionLoading = true;
+            this.trackingLoading = true;
+            this.viewsLoading = true;
+        } else {
+            refreshApex(this.wiredConnection);
+            refreshApex(this.wiredPermission);
+            refreshApex(this.wiredTracking);
+            refreshApex(this.wiredViews);
+        }
     }
 
     @wire(checkAPIConnection)
     getConnection(result) {
+        console.log('getConnection');
         this.wiredConnection = result;
         this.connectionLoading = false;
         if (result.error) {
@@ -82,6 +92,7 @@ export default class Setup extends NavigationMixin(LightningElement) {
 
     @wire(checkPermissions)
     getPermissions(result) {
+        console.log('getPermissions');
         this.wiredPermission = result;
         this.permissionLoading = false;
         if (result.error) {
@@ -98,6 +109,7 @@ export default class Setup extends NavigationMixin(LightningElement) {
 
     @wire(checkTracking)
     getTracking(result) {
+        console.log('getTracking');
         this.wiredTracking = result;
         this.trackingLoading = false;
         if (result.error) {
@@ -114,6 +126,7 @@ export default class Setup extends NavigationMixin(LightningElement) {
 
     @wire(checkViews)
     getViews(result) {
+        console.log('getViews');
         this.wiredViews = result;
         this.viewsLoading = false;
         if (result.error) {
@@ -187,6 +200,7 @@ export default class Setup extends NavigationMixin(LightningElement) {
     }
 
     navigateTracking() {
+        this.showTrackingModal = false;
         this[NavigationMixin.Navigate]({
             type: "standard__navItemPage",
             attributes: {
@@ -196,6 +210,7 @@ export default class Setup extends NavigationMixin(LightningElement) {
     }
 
     navigateViews() {
+        this.showViewsModal = false;
         this[NavigationMixin.Navigate]({
             type: "standard__navItemPage",
             attributes: {
