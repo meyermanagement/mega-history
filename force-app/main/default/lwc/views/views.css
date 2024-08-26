@@ -1,9 +1,9 @@
 .redIcn {
-    --slds-c-icon-color-background: red;
+    fill: red;
 }
 
 .greenIcn {
-    --slds-c-icon-color-background: green;
+    fill: green;
 }
 
 
@@ -19,6 +19,10 @@
 
 .cardTitle h1 {
     font-size: 30px;
+}
+
+.cardLogo h1 {
+    font-size: 48px;
 }
 
 .action-needed{

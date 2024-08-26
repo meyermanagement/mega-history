@@ -21,6 +21,10 @@
     font-size: 30px;
 }
 
+.cardLogo h1 {
+    font-size: 48px;
+}
+
 .action-needed{
     cursor: pointer;
     vertical-align: middle;

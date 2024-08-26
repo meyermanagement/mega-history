@@ -1,21 +1,20 @@
 <template>
     <lightning-card>
         <lightning-layout multiple-rows="true">
-            <lightning-layout-item size="12" class="slds-p-vertical_x-small">
-                <div class="cardTitle" align="center">
+            <lightning-layout-item size="6">
+                <div class="cardTitle slds-p-left_x-large">
                     <h1>
-                        <lightning-layout>
-                            <lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12">
-                                MEGA History Setup
-                            </lightning-layout-item>
-                        </lightning-layout>
+                        Setup
                         <p>
-                            <lightning-layout multiple-rows="true">
-                                <lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12">
-                                    Review the items below to install and configure the MEGA History app.
-                                </lightning-layout-item>
-                            </lightning-layout>
+                            Review the items below to install and configure the MEGA History app.
                         </p>
+                    </h1>
+                </div>
+            </lightning-layout-item>
+            <lightning-layout-item size="6">
+                <div class="cardLogo slds-p-right_xx-large" align="right">
+                    <h1>
+                        MEGA History
                     </h1>
                 </div>
             </lightning-layout-item>
@@ -115,7 +114,7 @@
                     </div>
                 </div>
             </lightning-layout-item>
-            <lightning-layout-item size="12" class="slds-p-horizontal_large slds-p-vertical_small">
+            <!-- <lightning-layout-item size="12" class="slds-p-horizontal_large slds-p-vertical_small">
                 <div class={viewsClass} onclick={handleViewsClick}>
                     <div class="slds-p-around_medium cardTitle slds-grid slds-grid_vertical-align-center">
                         <div class="slds-col">
@@ -146,7 +145,7 @@
                         </div>
                     </div>
                 </div>
-            </lightning-layout-item>
+            </lightning-layout-item> -->
         </lightning-layout>
     </lightning-card>
     <template lwc:if={showConnectionModal}>

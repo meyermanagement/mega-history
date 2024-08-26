@@ -1,21 +1,20 @@
 <template>
     <lightning-card>
         <lightning-layout multiple-rows="true">
-            <lightning-layout-item size="12" class="slds-p-vertical_x-small">
-                <div class="cardTitle" align="center">
+            <lightning-layout-item size="6">
+                <div class="cardTitle slds-p-left_x-large">
                     <h1>
-                        <lightning-layout>
-                            <lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12">
-                                MEGA History Tracking
-                            </lightning-layout-item>
-                        </lightning-layout>
+                        Tracking
                         <p>
-                            <lightning-layout multiple-rows="true">
-                                <lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12">
-                                    Configure which objects and fields you want to track.
-                                </lightning-layout-item>
-                            </lightning-layout>
+                            Configure which objects and fields you want to track.
                         </p>
+                    </h1>
+                </div>
+            </lightning-layout-item>
+            <lightning-layout-item size="6">
+                <div class="cardLogo slds-p-right_xx-large" align="right">
+                    <h1>
+                        MEGA History
                     </h1>
                 </div>
             </lightning-layout-item>
@@ -31,7 +30,7 @@
                         key-field="objectName"
                         data={trackingData}
                         columns={columns}
-                        onrowaction={editTracking}
+                        onrowaction={handleRowAction}
                         hide-checkbox-column="true"
                         >
                     </lightning-datatable>
@@ -47,7 +46,6 @@
         </lightning-layout>
     </lightning-card>
     <template lwc:if={editModal}>
-        
         <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_medium">
             <div class="slds-modal__container">
              <!-- modal header start -->
@@ -83,14 +81,30 @@
                                 <lightning-layout multiple-rows>
                                     <lightning-layout-item size="6" class="slds-p-right_small">
                                         <template lwc:if={showObjectLookup}>
-                                            <lightning-input type="text" label="Object API Name" value={selectedObject.objectName} field-level-help="Example: Account for standard objects or Custom_Object__c for Custom objects" onchange={handleObjectChange} class="slds-p-right_small"></lightning-input>
+                                            <lightning-select
+                                                name="objects"
+                                                label="Available Objects"
+                                                value={objectSelected}
+                                                options={objects}
+                                                onchange={handleObjectSelected}
+                                                class="slds-p-right_small"
+                                                required ></lightning-select>
                                         </template>
                                         <template lwc:else>
                                             <lightning-input type="text" label="Object API Name" value={selectedObject.objectName} readonly></lightning-input>
                                         </template>
                                     </lightning-layout-item>
                                     <lightning-layout-item size="6">
-                                        <lightning-input type="text" label="Parent Reference Field API Name" value={selectedObject.parentRef} field-level-help="Example: AccountId on Contact or Account__c on a Custom object lookup to Account that you defined." onchange={handleParentChange}></lightning-input>
+                                        <template lwc:if={hasSelectedObject}>
+                                            <lightning-select
+                                                name="objects"
+                                                label="Parent Reference Field"
+                                                value={selectedObject.parentRef}
+                                                options={parentRefs}
+                                                onchange={handleParentChange}
+                                                field-level-help="Reference to the parent record to view when a record was Created, Deleted, and/or Undeleted"
+                                                ></lightning-select>
+                                        </template>
                                     </lightning-layout-item>
                                 </lightning-layout>
                             </div>
@@ -114,31 +128,95 @@
                                                         <lightning-icon icon-name="utility:info" alternative-text="help" title="help" size="x-small" class="slds-p-right_xx-small"></lightning-icon>
                                                         Select additional identifier fields for deleted records.  Record Name is automatically tracked.
                                                     </div>
-                                                  </div>
-                                                <lightning-input type="text" label="Additional Field 1" name="input1" value={selectedObject.additionalField1} onchange={handleAdditionalField1} class="slds-p-top_x-small"></lightning-input>
+                                                </div>
+                                                <lightning-select
+                                                    name="objects"
+                                                    label="Additional Field 1"
+                                                    value={selectedObject.additionalField1}
+                                                    options={options}
+                                                    onchange={handleAdditionalField1}
+                                                    class="slds-p-top_x-small" 
+                                                ></lightning-select>
                                             </template>
                                             <template lwc:if={trackDelete}>
-                                                <lightning-input type="text" label="Additional Field 2" name="input1" value={selectedObject.additionalField2} onchange={handleAdditionalField2} class="slds-p-top_x-small"></lightning-input>
+                                                <lightning-select
+                                                    name="objects"
+                                                    label="Additional Field 2"
+                                                    value={selectedObject.additionalField2}
+                                                    options={options}
+                                                    onchange={handleAdditionalField2}
+                                                    class="slds-p-top_x-small"
+                                                ></lightning-select>
                                             </template>
                                         </lightning-layout-item>
                                     </lightning-layout>
                                 </div>
                             </div>
                         </template>
-                        <div class="slds-section slds-is-open slds-p-bottom_small">
-                            <h3 class="slds-section__title slds-theme_shade">
-                                <span class="slds-truncate" title="Fields">Select Fields To Track</span>
-                            </h3>
-                            <div class="slds-section__content slds-p-horizontal_small">
-                                <p>{selectedObject.fields}</p>
+                        <template lwc:if={hasSelectedObject}>
+                            <div class="slds-section slds-is-open slds-p-bottom_small">
+                                <h3 class="slds-section__title slds-theme_shade">
+                                    <span class="slds-truncate" title="Fields">Select Fields To Track</span>
+                                </h3>
+                                <div class="slds-section__content slds-p-horizontal_small">
+                                    <lightning-dual-listbox name="fields"
+                                        label="Note: Fields are sorted by API Name, not Label"
+                                        source-label="Available"
+                                        selected-label="Selected"
+                                        field-level-help="Locked selections are configured by standard history tracking.  To remove, disable fields from your object's history tracking selections."
+                                        options={options}
+                                        required-options={requiredOptions}
+                                        value={values}
+                                        onchange={handleFieldChange}>
+                                    </lightning-dual-listbox>
+                                </div>
                             </div>
-                        </div>
+                        </template>
                     </template>
                 </div>
                <!-- modal footer start-->
                <footer class="slds-modal__footer">
                     <lightning-button label="Cancel" title="Cancel" onclick={handleClose} class="slds-float_left"></lightning-button>
                     <lightning-button label="Save" title="Save" onclick={handleSave} icon-name="utility:save" variant="brand"></lightning-button>
+               </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+    <template lwc:if={deleteConfirmModal}>
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_medium">
+            <div class="slds-modal__container">
+             <!-- modal header start -->
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={handleClose}>
+                        <lightning-icon icon-name="utility:close"
+                        alternative-text="close"
+                        variant="inverse"
+                        size="small" ></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 id="modal-heading-02" class="slds-text-heading_medium slds-hyphenate">
+                        Please Confirm
+                    </h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-2">
+                    <template lwc:if={loading}>
+                        <div class="spinnerHolder">
+                            <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="slds-p-around_x-large" align="center">
+                            <h3>
+                               Are you sure you want to remove the configuration for {selectedObject.objectName}?
+                            </h3>
+                        </div>
+                    </template>
+                </div>
+               <!-- modal footer start-->
+               <footer class="slds-modal__footer">
+                    <lightning-button label="Cancel" title="Cancel" onclick={handleClose} class="slds-float_left"></lightning-button>
+                    <lightning-button label="Confirm" title="Confirm" onclick={handleDelete} variant="brand"></lightning-button>
                </footer>
             </div>
         </section>

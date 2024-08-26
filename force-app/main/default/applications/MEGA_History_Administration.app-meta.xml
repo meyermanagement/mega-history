@@ -1,32 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
     <brand>
-        <headerColor>#08BE1B</headerColor>
+        <headerColor>#0070D2</headerColor>
         <shouldOverrideOrgTheme>true</shouldOverrideOrgTheme>
     </brand>
-    <description>Setup and Configure Mega History managed package</description>
     <formFactors>Small</formFactors>
     <formFactors>Large</formFactors>
     <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
     <isNavPersonalizationDisabled>true</isNavPersonalizationDisabled>
     <isNavTabPersistenceDisabled>false</isNavTabPersistenceDisabled>
     <isOmniPinnedViewEnabled>false</isOmniPinnedViewEnabled>
-    <label>Mega History</label>
-    <navType>Console</navType>
+    <label>MEGA History Admin</label>
+    <navType>Standard</navType>
     <tabs>Setup</tabs>
     <tabs>Tracking</tabs>
-    <tabs>Views</tabs>
     <uiType>Lightning</uiType>
-    <utilityBar>Mega_History_UtilityBar</utilityBar>
-    <workspaceConfig>
-        <mappings>
-            <tab>Setup</tab>
-        </mappings>
-        <mappings>
-            <tab>Tracking</tab>
-        </mappings>
-        <mappings>
-            <tab>Views</tab>
-        </mappings>
-    </workspaceConfig>
+    <utilityBar>MEGA_History_Administration_UtilityBar</utilityBar>
 </CustomApplication>
