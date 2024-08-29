@@ -370,7 +370,17 @@ export default class Tracking extends LightningElement {
             }
             this.mdData = mdList;
             refreshApex(this._wiredData);
+            if(this.mdData.length == 0) this.handleClose();
+            let operation = row.mdOperation.endsWith('e') ? row.mdOperation.toLowerCase()+'d' : row.mdOperation.toLowerCase()+'ed';
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: "Success!",
+                    message: `You have successfully ${operation} the ${row.mdName} ${row.mdType.toLowerCase()} configuration!`,
+                    variant: "success",
+                }),
+            );
             this.loading = false;
+            
         })
         .catch(error => {
 			console.error(error);
