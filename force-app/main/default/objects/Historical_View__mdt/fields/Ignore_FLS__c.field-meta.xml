@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Ignore_FLS__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Ignores Field Level Security so any user can see the full history of the record and related records</description>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>Ignore FLS</label>
+    <type>Checkbox</type>
+</CustomField>

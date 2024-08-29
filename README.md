@@ -1,18 +1,25 @@
-# Salesforce DX Project: Next Steps
+# Mega History App
 
-Now that you’ve created a Salesforce DX project, what’s next? Here are some documentation resources to get you started.
+A History Tracking app for fields not included in out of the box history tracking plus tracking create/delete/undelete events of child objects and the ability to see history tracking of records across multiple objects.  Integrated seemlessly with existing history tracking to save on storage space.
 
-## How Do You Plan to Deploy Your Changes?
+## Features
 
-Do you want to deploy a set of changes, or create a self-contained application? Choose a [development model](https://developer.salesforce.com/tools/vscode/en/user-guide/development-models).
+**Deployable configuration.**: 
+* Generate necessary triggers dynamically in production directly or through a deployment process.
+* Custom Metadata types control record history views and tracking configuration so they also can be deployed if desired.
 
-## Configure Your Salesforce DX Project
+**Enhanced history tracking on objects.**:
+* Track as many fields as needed, beyond Salesforce limits
 
-The `sfdx-project.json` file contains useful configuration information for your project. See [Salesforce DX Project Configuration](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_config.htm) in the _Salesforce DX Developer Guide_ for details about this file.
+**View history of child records on parents**:
+* CRUD History: See when child records were created, deleted, and undeleted on parent and/or grand-parent records
+* See Field History of child records on parent records
+* (future enhancements) control visibility based on FLS of current user
+* (future enhancements) create different views based on profiles and/or record types
 
-## Read All About It
+**Enhanced control/adjustment of history**:
+* Create and Delete events to import history/rectify data
+* Custom created date and created by field for historical data load to correctly merge data with standard history
+* Cannot be used to modify existing standarad history but can supplement it
 
-- [Salesforce Extensions Documentation](https://developer.salesforce.com/tools/vscode/)
-- [Salesforce CLI Setup Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_intro.htm)
-- [Salesforce DX Developer Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_intro.htm)
-- [Salesforce CLI Command Reference](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_reference.meta/sfdx_cli_reference/cli_reference.htm)
+

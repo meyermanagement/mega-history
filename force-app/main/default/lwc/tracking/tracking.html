@@ -1,0 +1,267 @@
+<template>
+    <lightning-card>
+        <lightning-layout multiple-rows="true">
+            <lightning-layout-item size="6">
+                <div class="cardTitle slds-p-left_x-large">
+                    <h1>
+                        Tracking
+                        <p>
+                            Configure which objects and fields you want to track.
+                        </p>
+                    </h1>
+                </div>
+            </lightning-layout-item>
+            <lightning-layout-item size="6">
+                <div class="cardLogo slds-p-right_xx-large" align="right">
+                    <h1>
+                        MEGA History
+                    </h1>
+                </div>
+            </lightning-layout-item>
+            <lightning-layout-item size="12" class="slds-p-horizontal_large slds-p-top_small">
+                <div class="action-completed" style="width: auto;" align="center">
+                    <template lwc:if={loading}>
+                        <div class="spinnerHolder">
+                            <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <lightning-datatable
+                            key-field="objectName"
+                            data={trackingData}
+                            columns={columns}
+                            onrowaction={handleRowAction}
+                            hide-checkbox-column="true"
+                            >
+                    </lightning-datatable>
+                    </template>
+                </div>
+            </lightning-layout-item>\
+            <lightning-layout-item size="12" class="slds-p-horizontal_xx-large slds-p-bottom_small">
+                <div align="right">
+                    <lightning-button label="Track New Object" title="Track New Object" onclick={newTracking} icon-name="utility:add" variant="brand-outline" class="slds-p-right_small"></lightning-button>
+                    <lightning-button label="Deploy" title="Deploy" onclick={openDeployModal} icon-name="utility:target_mode" variant="brand" disabled={deploymentComplete}></lightning-button>
+                </div>
+            </lightning-layout-item>
+        </lightning-layout>
+    </lightning-card>
+    <template lwc:if={editModal}>
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_medium">
+            <div class="slds-modal__container">
+             <!-- modal header start -->
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={handleClose}>
+                        <lightning-icon icon-name="utility:close"
+                        alternative-text="close"
+                        variant="inverse"
+                        size="small" ></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">
+                        <template lwc:if={showObjectLookup}>
+                            Create New Object Tracking Configuration
+                        </template>
+                        <template lwc:else>
+                            <p>Edit {selectedObject.objectName} Tracking Configuration</p>
+                        </template>
+                    </h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <template lwc:if={loading}>
+                        <div class="spinnerHolder">
+                            <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="slds-section slds-is-open slds-p-bottom_small">
+                            <h3 class="slds-section__title slds-theme_shade">
+                                <span class="slds-truncate" title="Object">Object Information</span>
+                            </h3>
+                            <div class="slds-section__content slds-p-horizontal_small">
+                                <lightning-layout multiple-rows>
+                                    <lightning-layout-item size="6" class="slds-p-right_small">
+                                        <template lwc:if={showObjectLookup}>
+                                            <lightning-select
+                                                name="objects"
+                                                label="Available Objects"
+                                                value={objectSelected}
+                                                options={objects}
+                                                onchange={handleObjectSelected}
+                                                class="slds-p-right_small"
+                                                required ></lightning-select>
+                                        </template>
+                                        <template lwc:else>
+                                            <lightning-input type="text" label="Object API Name" value={selectedObject.objectName} readonly></lightning-input>
+                                        </template>
+                                    </lightning-layout-item>
+                                    <lightning-layout-item size="6">
+                                        <template lwc:if={hasSelectedObject}>
+                                            <lightning-select
+                                                name="objects"
+                                                label="Parent Reference Field"
+                                                value={selectedObject.parentRef}
+                                                options={parentRefs}
+                                                onchange={handleParentChange}
+                                                field-level-help="Reference to the parent record to view when a record was Created, Deleted, and/or Undeleted"
+                                                ></lightning-select>
+                                        </template>
+                                    </lightning-layout-item>
+                                </lightning-layout>
+                            </div>
+                        </div>
+                        <template lwc:if={hasParentRef}>
+                            <div class="slds-section slds-is-open slds-p-bottom_small">
+                                <h3 class="slds-section__title slds-theme_shade">
+                                    <span class="slds-truncate" title="Events">Select Events to Track on Parent Object</span>
+                                </h3>
+                                <div class="slds-section__content slds-p-horizontal_small">
+                                    <lightning-layout>
+                                        <lightning-layout-item size="6" class="slds-p-top_medium slds-p-bottom_small">
+                                            <lightning-input type="checkbox" label="Track Create" name="input1" checked={selectedObject.trackCreate} onchange={handleTrackCreate} class="slds-p-around_small"></lightning-input>
+                                            <lightning-input type="checkbox" label="Track Delete" name="input1" checked={selectedObject.trackDelete} onchange={handleTrackDelete} class="slds-p-around_small"></lightning-input>
+                                            <lightning-input type="checkbox" label="Track Undelete" name="input1" checked={selectedObject.trackUndelete} onchange={handleTrackUndelete} class="slds-p-around_small"></lightning-input>
+                                        </lightning-layout-item>
+                                        <lightning-layout-item size="6">
+                                            <template lwc:if={trackDelete}>
+                                                <div style="padding:0.5rem; background:#16325c">
+                                                    <div class="slds-text-color_inverse-weak">
+                                                        <lightning-icon icon-name="utility:info" alternative-text="help" title="help" size="x-small" class="slds-p-right_xx-small"></lightning-icon>
+                                                        Select additional identifier fields for deleted records.  Record Name is automatically tracked.
+                                                    </div>
+                                                </div>
+                                                <lightning-select
+                                                    name="objects"
+                                                    label="Additional Field 1"
+                                                    value={selectedObject.additionalField1}
+                                                    options={options}
+                                                    onchange={handleAdditionalField1}
+                                                    class="slds-p-top_x-small" 
+                                                ></lightning-select>
+                                            </template>
+                                            <template lwc:if={trackDelete}>
+                                                <lightning-select
+                                                    name="objects"
+                                                    label="Additional Field 2"
+                                                    value={selectedObject.additionalField2}
+                                                    options={options}
+                                                    onchange={handleAdditionalField2}
+                                                    class="slds-p-top_x-small"
+                                                ></lightning-select>
+                                            </template>
+                                        </lightning-layout-item>
+                                    </lightning-layout>
+                                </div>
+                            </div>
+                        </template>
+                        <template lwc:if={hasSelectedObject}>
+                            <div class="slds-section slds-is-open slds-p-bottom_small">
+                                <h3 class="slds-section__title slds-theme_shade">
+                                    <span class="slds-truncate" title="Fields">Select Fields To Track</span>
+                                </h3>
+                                <div class="slds-section__content slds-p-horizontal_small">
+                                    <lightning-dual-listbox name="fields"
+                                        label="Note: Fields are sorted by API Name, not Label"
+                                        source-label="Available"
+                                        selected-label="Selected"
+                                        field-level-help="Locked selections are configured by standard history tracking.  To remove, disable fields from your object's history tracking selections."
+                                        options={options}
+                                        required-options={requiredOptions}
+                                        value={values}
+                                        onchange={handleFieldChange}>
+                                    </lightning-dual-listbox>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+               <!-- modal footer start-->
+               <footer class="slds-modal__footer">
+                    <lightning-button label="Cancel" title="Cancel" onclick={handleClose} class="slds-float_left"></lightning-button>
+                    <lightning-button label="Save" title="Save" onclick={handleSave} icon-name="utility:save" variant="brand"></lightning-button>
+               </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+    <template lwc:if={deleteConfirmModal}>
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_medium">
+            <div class="slds-modal__container">
+             <!-- modal header start -->
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={handleClose}>
+                        <lightning-icon icon-name="utility:close"
+                        alternative-text="close"
+                        variant="inverse"
+                        size="small" ></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 id="modal-heading-02" class="slds-text-heading_medium slds-hyphenate">
+                        Please Confirm
+                    </h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-2">
+                    <template lwc:if={loading}>
+                        <div class="spinnerHolder">
+                            <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="slds-p-around_x-large" align="center">
+                            <h3>
+                               Are you sure you want to remove the configuration for {selectedObject.objectName}?
+                            </h3>
+                        </div>
+                    </template>
+                </div>
+               <!-- modal footer start-->
+               <footer class="slds-modal__footer">
+                    <lightning-button label="Cancel" title="Cancel" onclick={handleClose} class="slds-float_left"></lightning-button>
+                    <lightning-button label="Confirm" title="Confirm" onclick={handleDelete} variant="brand"></lightning-button>
+               </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+    <template lwc:if={deployModal}>
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_medium">
+            <div class="slds-modal__container">
+             <!-- modal header start -->
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={handleClose}>
+                        <lightning-icon icon-name="utility:close"
+                        alternative-text="close"
+                        variant="inverse"
+                        size="small" ></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 id="modal-heading-03" class="slds-text-heading_medium slds-hyphenate">
+                        Items to Deploy
+                    </h2>
+                </header>
+                <div class="slds-modal__content" id="modal-content-id-3">
+                    <template lwc:if={loading}>
+                        <div class="spinnerHolder">
+                            <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div >
+                            <lightning-datatable
+                                key-field="mdName"
+                                data={mdData}
+                                columns={mdColumns}
+                                onrowaction={handleRowAction}
+                                hide-checkbox-column="true"
+                            ></lightning-datatable>
+                        </div>
+                    </template>
+                </div>
+               <!-- modal footer start-->
+               <footer class="slds-modal__footer">
+                    <lightning-button label="Close" title="Close" onclick={handleClose} class="slds-float_center"></lightning-button>
+               </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>

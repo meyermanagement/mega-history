@@ -1,0 +1,63 @@
+.redIcn {
+    fill: red;
+}
+
+.greenIcn {
+    fill: green;
+}
+
+
+.cardTitle p {
+    font-size: 16px;
+    color: #a7a5a5;
+}
+
+.cardBody p {
+    font-size: 12px;
+    color: #a7a5a5;
+}
+
+.cardTitle h1 {
+    font-size: 30px;
+}
+
+.cardLogo h1 {
+    font-size: 48px;
+}
+
+.action-needed{
+    cursor: pointer;
+    vertical-align: middle;
+    border-radius: 4px; 
+    border: solid; 
+    border-width: .667px; 
+    border-color: rgba(0, 0, 0, 0.2); 
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 7px 0px; 
+    padding: 8px; 
+    border-color:red;
+}
+
+.action-completed{
+    vertical-align: middle;
+    border-radius: 4px; 
+    border: solid; 
+    border-width: .667px; 
+    border-color: rgba(0, 0, 0, 0.2); 
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 7px 0px; 
+    padding: 8px; 
+}
+
+.my_cool_flex_container {
+    display: flex;
+}
+
+.spinnerHolder{
+    position: relative;
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+}
+
+.custom-link{
+    cursor: pointer;
+}

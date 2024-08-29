@@ -1,0 +1,381 @@
+<template>
+    <lightning-card>
+        <lightning-layout multiple-rows="true">
+            <lightning-layout-item size="6">
+                <div class="cardTitle slds-p-left_x-large">
+                    <h1>
+                        Setup
+                        <p>
+                            Review the items below to install and configure the MEGA History app.
+                        </p>
+                    </h1>
+                </div>
+            </lightning-layout-item>
+            <lightning-layout-item size="6">
+                <div class="cardLogo slds-p-right_xx-large" align="right">
+                    <h1>
+                        MEGA History
+                    </h1>
+                </div>
+            </lightning-layout-item>
+            <lightning-layout-item size="12" class="slds-p-horizontal_large slds-p-vertical_small">
+                <div class={connectionClass} onclick={handleConnectionClick}>
+                    <div class="slds-p-around_medium cardTitle slds-grid slds-grid_vertical-align-center">
+                        <div class="slds-col">
+                            <div class="my_cool_flex_container">
+                                <div class="slds-p-right_small">
+                                    <lightning-icon icon-name="action:web_link" alternative-text="Check Connection" size="large"></lightning-icon>
+                                </div>
+                                <h1>
+                                    Check Connection
+                                    <p>
+                                        Check connection and deploy remote site setting if needed
+                                    </p>
+                                </h1>
+                            </div>
+                        </div>
+                        <div class="slds-p-right_xx-small slds-col" align="right">
+                            <template lwc:if={connectionLoading}>
+                                <div class="spinnerHolder">
+                                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                                </div>
+                            </template>
+                            <template lwc:elseif={connectionFailure}>
+                                <lightning-icon icon-name="action:close" alternative-text="Connection Failure" size="large" class="redIcn"></lightning-icon>
+                            </template>
+                            <template lwc:else>
+                                <lightning-icon icon-name="action:approval" alternative-text="Connection Successful" size="large" class="greenIcn"></lightning-icon>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </lightning-layout-item>
+            <lightning-layout-item size="12" class="slds-p-horizontal_large slds-p-vertical_small">
+                <div class={permissionClass} onclick={handlePermissionClick}>
+                    <div class="slds-p-around_medium cardTitle slds-grid slds-grid_vertical-align-center">
+                        <div class="slds-col">
+                            <div class="my_cool_flex_container">
+                                <div class="slds-p-right_small">
+                                    <lightning-icon icon-name="action:manage_perm_sets" alternative-text="Check Permissions" size="large"></lightning-icon>
+                                </div>
+                                <h1>
+                                    Check Permissions
+                                    <p>
+                                        Check user permission configuration
+                                    </p>
+                                </h1>
+                            </div>
+                        </div>
+                        <div class="slds-p-right_xx-small slds-col" align="right">
+                            <template lwc:if={permissionLoading}>
+                                <div class="spinnerHolder">
+                                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                                </div>
+                            </template>
+                            <template lwc:elseif={permissionFailure}>
+                                <lightning-icon icon-name="action:close" alternative-text="Permission Failure" size="large" class="redIcn"></lightning-icon>
+                            </template>
+                            <template lwc:else>
+                                <lightning-icon icon-name="action:approval" alternative-text="Permission Successful" size="large" class="greenIcn"></lightning-icon>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </lightning-layout-item>
+            <lightning-layout-item size="12" class="slds-p-horizontal_large slds-p-vertical_small">
+                <div class={trackingClass} onclick={handleTrackingClick}>
+                    <div class="slds-p-around_medium cardTitle slds-grid slds-grid_vertical-align-center">
+                        <div class="slds-col">
+                            <div class="my_cool_flex_container">
+                                <div class="slds-p-right_small">
+                                    <lightning-icon icon-name="action:record" alternative-text="Check Record Tracking" size="large"></lightning-icon>
+                                </div>
+                                <h1>
+                                    Check Record Tracking
+                                    <p>
+                                        Check what fields and related records to track
+                                    </p>
+                                </h1>
+                            </div>
+                        </div>
+                        <div class="slds-p-right_xx-small slds-col" align="right">
+                            <template lwc:if={trackingLoading}>
+                                <div class="spinnerHolder">
+                                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                                </div>
+                            </template>
+                            <template lwc:elseif={trackingFailure}>
+                                <lightning-icon icon-name="action:close" alternative-text="Tracking Failure" size="large" class="redIcn"></lightning-icon>
+                            </template>
+                            <template lwc:else>
+                                <lightning-icon icon-name="action:approval" alternative-text="Tracking Successful" size="large" class="greenIcn"></lightning-icon>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </lightning-layout-item>
+            <!-- <lightning-layout-item size="12" class="slds-p-horizontal_large slds-p-vertical_small">
+                <div class={viewsClass} onclick={handleViewsClick}>
+                    <div class="slds-p-around_medium cardTitle slds-grid slds-grid_vertical-align-center">
+                        <div class="slds-col">
+                            <div class="my_cool_flex_container">
+                                <div class="slds-p-right_small">
+                                    <lightning-icon icon-name="action:filter" alternative-text="Check Views Configuration" size="large"></lightning-icon>
+                                </div>
+                                <h1>
+                                    Check View Configuration
+                                    <p>
+                                        Check what view of record history to show and where
+                                    </p>
+                                </h1>
+                            </div>
+                        </div>
+                        <div class="slds-p-right_xx-small slds-col" align="right">
+                            <template lwc:if={viewsLoading}>
+                                <div class="spinnerHolder">
+                                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                                </div>
+                            </template>
+                            <template lwc:elseif={viewsFailure}>
+                                <lightning-icon icon-name="action:close" alternative-text="Views Failure" size="large" class="redIcn"></lightning-icon>
+                            </template>
+                            <template lwc:else>
+                                <lightning-icon icon-name="action:approval" alternative-text="Views Successful" size="large" class="greenIcn"></lightning-icon>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </lightning-layout-item> -->
+        </lightning-layout>
+    </lightning-card>
+    <template lwc:if={showConnectionModal}>
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_small">
+            <div class="slds-modal__container">
+             <!-- modal header start -->
+               <header class="slds-modal__header">
+                  <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={handleClose}>
+                     <lightning-icon icon-name="utility:close"
+                        alternative-text="close"
+                        variant="inverse"
+                        size="small" ></lightning-icon>
+                     <span class="slds-assistive-text">Close</span>
+                  </button>
+                  <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Connection Failure</h2>
+               </header>
+           
+               <template lwc:if={showRemoteSiteConfiguration}>
+                    <div class="slds-modal__content slds-p-around_xx-small" id="modal-content-id-2">
+                        <div class="slds-p-around_medium">
+                            <p>To add a Remote Site Setting, open <a href="/lightning/setup/SecurityRemoteProxy/home" target="_blank">Remote Site Settings</a> and follow the instructions below.</p>
+                            </br>
+                            <ul class="slds-list_dotted">
+                                <li class="slds-p-bottom_small">
+                                    Click "New Remote Site".
+                                </li>
+                                <li class="slds-p-bottom_small">
+                                    Enter the following fields:
+                                    <ul class="slds-list_dotted slds-is-nested">
+                                        <li>
+                                            Remote Site Name: MEGA History
+                                        </li>
+                                        <li>
+                                            Remote Site URL: {orgURL}
+                                        </li>
+                                        <li>
+                                            Leave Disable Protocol Security unchecked.
+                                        </li>
+                                        <li>
+                                            Description: "Remote site for MEGA History package to dynamically generate triggers."
+                                        </li>
+                                        <li>
+                                            Leave Active checked.
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                            <p>Once saved, click Close to Check Connection again.</p>
+                        </div>
+                    </div>
+               </template>
+               <template lwc:else>
+                    <div class="slds-modal__content slds-p-around_xx-small" id="modal-content-id-1">
+                        <p style="color: red;" align="center">You do not have permission to dynamically generate triggers from this package in this environment.</p>
+                        <div class="slds-p-around_medium">
+                            <p>In order to track field and record history, MEGA History dynamically generates and deploys triggers to the objects you wish to track.</p>
+                            <p>These triggers can be deployed in multiple ways:</p>
+                            </br>
+                            <ul class="slds-list_dotted">
+                                <li class="slds-p-bottom_small">
+                                    Authorize MEGA History to generate and deploy these triggers directly in production.
+                                    <ul class="slds-list_dotted slds-is-nested">
+                                        <li>
+                                            If this is your production environment and you would like to deploy triggers directly, click the "Add Remote Site Setting" button below.
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    Authorize MEGA History to generate and deploy these triggers in a sandbox/scratch org for testing to be manually deployed to production via change set or your organization's chosen deployment configuration.
+                                    <ul class="slds-list_dotted slds-is-nested">
+                                        <li>
+                                            If this is your production environment and you would like to deploy triggers to a sandbox/scratch org first, install this package in that environment.  Follow these setup instructions in that environment.  Once you have tested your desired configuration, deploy the Apex Triggers, Apex Classes(tests only), and custom metadata records from that environment to production.
+                                        </li>
+                                        <li>
+                                            If this is a development(sandbox/scratch) environment and you would like to deploy triggers here first, click the "Add Remote Site Setting" button below.
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+               </template>
+               <!-- modal footer start-->
+               <footer class="slds-modal__footer">
+                    <template lwc:if={showRemoteSiteConfiguration}>
+                        <div align="center">
+                            <lightning-button label="Close" title="Close" onclick={handleClose}></lightning-button>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <lightning-button label="Cancel" title="Cancel" onclick={handleClose} class="slds-float_left"></lightning-button>
+                        <lightning-button variant="brand" label="Add Remote Site Setting" title="Add Remote Site Setting" onclick={addRSS}></lightning-button>
+                    </template>
+               </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+    <template lwc:if={showPermissionModal}>
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_small">
+            <div class="slds-modal__container">
+             <!-- modal header start -->
+               <header class="slds-modal__header">
+                  <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={handleClosePermission}>
+                     <lightning-icon icon-name="utility:close"
+                        alternative-text="close"
+                        variant="inverse"
+                        size="small" ></lightning-icon>
+                     <span class="slds-assistive-text">Close</span>
+                  </button>
+                  <h2 id="modal-heading-02" class="slds-text-heading_medium slds-hyphenate">Permission Assignment Incomplete</h2>
+               </header>
+                <div class="slds-modal__content slds-p-around_xx-small" id="modal-content-id-3">
+                    <p style="color: red;" align="center">You have not assigned basic permissions to view MEGA History to any users.</p>
+                    <div class="slds-p-around_medium">
+                        <p>Below is a summary of the permission sets available:</p>
+                        </br>
+                        <ul class="slds-list_dotted">
+                            <li class="slds-p-bottom_small">
+                                MEGA History User
+                                <ul class="slds-list_dotted slds-is-nested">
+                                    <li>
+                                        Ability to see MEGA History on configured Lightnig Record Pages.
+                                    </li>
+                                    <li>
+                                        Most common permissions to see both standard field history and custom field/record history.
+                                    </li>
+                                </ul>
+                            </li>
+                            <li class="slds-p-bottom_small">
+                                MEGA History Admin
+                                <ul class="slds-list_dotted slds-is-nested">
+                                    <li>
+                                        Ability to see MEGA History on configured Lightnig Record Pages.
+                                    </li>
+                                    <li>
+                                        Ability to configure MEGA History via the MEGA History App.
+                                    </li>
+                                    <li>
+                                        Used by administrative personnel to configure what fields and objects should be tracked by MEGA History.
+                                    </li>
+                                </ul>
+                            </li>
+                            <li class="slds-p-bottom_small">
+                                MEGA History Super Admin
+                                <ul class="slds-list_dotted slds-is-nested">
+                                    <li>
+                                        Ability to see MEGA History on configured Lightnig Record Pages.
+                                    </li>
+                                    <li>
+                                        Ability to configure MEGA History via the MEGA History App.
+                                    </li>
+                                    <li>
+                                        Ability to create, update, and delete MEGA History Records.  
+                                    </li>
+                                    <li>
+                                        Used by System Administrators to manipulate custom history records, perform data loads, and archive data.
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                    <p style="color: navy;" align="center" class="slds-p-bottom_small"><a href="/lightning/setup/PermSets/home" target="_blank">Configure Permission Sets Here</a></p>
+                </div>
+               <!-- modal footer start-->
+               <footer class="slds-modal__footer">
+                    <div align="center">
+                        <lightning-button label="Close" title="Close" onclick={handleClosePermission}></lightning-button>
+                    </div>
+               </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+    <template lwc:if={showTrackingModal}>
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_small">
+            <div class="slds-modal__container">
+             <!-- modal header start -->
+               <header class="slds-modal__header">
+                  <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={handleCloseTracking}>
+                     <lightning-icon icon-name="utility:close"
+                        alternative-text="close"
+                        variant="inverse"
+                        size="small" ></lightning-icon>
+                     <span class="slds-assistive-text">Close</span>
+                  </button>
+                  <h2 id="modal-heading-03" class="slds-text-heading_medium slds-hyphenate">Record Tracking Configuration Incomplete</h2>
+               </header>
+                <div class="slds-modal__content slds-p-around_xx-small" id="modal-content-id-4">
+                    <div class="slds-p-around_xx-large custom-link" onclick={navigateTracking}>
+                        <p style="color: navy;" align="center" class="slds-p-bottom_small">Click Here to Configure Tracking for your objects and fields.</p>
+                    </div>
+                </div>
+               <!-- modal footer start-->
+               <footer class="slds-modal__footer">
+                    <div align="center">
+                        <lightning-button label="Close" title="Close" onclick={handleCloseTracking}></lightning-button>
+                    </div>
+               </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+    <template lwc:if={showViewsModal}>
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_small">
+            <div class="slds-modal__container">
+             <!-- modal header start -->
+               <header class="slds-modal__header">
+                  <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={handleCloseViews}>
+                     <lightning-icon icon-name="utility:close"
+                        alternative-text="close"
+                        variant="inverse"
+                        size="small" ></lightning-icon>
+                     <span class="slds-assistive-text">Close</span>
+                  </button>
+                  <h2 id="modal-heading-04" class="slds-text-heading_medium slds-hyphenate">View Configuration Incomplete</h2>
+               </header>
+                <div class="slds-modal__content slds-p-around_xx-small" id="modal-content-id-5">
+                    <div class="slds-p-around_xx-large custom-link" onclick={navigateViews}>
+                        <p style="color: navy;" align="center" class="slds-p-bottom_small">Click Here to Configure Views for MEGA History on tracked objects.</p>
+                    </div>
+                </div>
+               <!-- modal footer start-->
+               <footer class="slds-modal__footer">
+                    <div align="center">
+                        <lightning-button label="Close" title="Close" onclick={handleCloseViews}></lightning-button>
+                    </div>
+               </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>
