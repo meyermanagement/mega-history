@@ -8,8 +8,46 @@ import getObjectDetails from '@salesforce/apex/TrackingController.getObjectDetai
 import getObjectSelectedDetails from '@salesforce/apex/TrackingController.getObjectSelectedDetails';
 import getObjects from '@salesforce/apex/TrackingController.getObjects';
 import submitMetaData from '@salesforce/apex/TrackingController.submitMetaData';
+import generateMetadata from '@salesforce/apex/TrackingController.generateMetadata';
+import deployMetadataFiles from '@salesforce/apex/TrackingController.deployMetaData';
 export default class Tracking extends LightningElement {
    
+    @track mdColumns = [
+        {
+            label: 'Name', 
+            fieldName: 'mdName', 
+            type: 'text'            
+        },
+        { 
+            label: 'Type', 
+            initialWidth: 150,
+            fieldName: 'mdType', 
+            type: 'text' 
+        },
+        { 
+            label: 'Object', 
+            initialWidth: 150,
+            fieldName: 'mdObject', 
+            type: 'text'
+        },
+        { 
+            label: 'Operation', 
+            initialWidth: 150,
+            fieldName: 'mdOperation', 
+            type: 'text'
+        },
+        {
+            type: 'button',
+            initialWidth: 120,
+            typeAttributes: { 
+                label: 'Deploy', 
+                iconName: 'utility:target_mode',
+                name: 'deploy_md', 
+                variant: 'brand',
+                title: 'Deploy'
+            }
+        }
+    ];
 
     @track columns = [
         {
@@ -79,6 +117,7 @@ export default class Tracking extends LightningElement {
     _wiredData;
     loading;
     @track trackingData;
+    @track mdData;
     @track editModal = false;
     showObjectLookup = false;
     @track selectedObject = {};
@@ -180,6 +219,9 @@ export default class Tracking extends LightningElement {
             case 'edit_tracking':
                 this.editTracking(row);
                 break;
+            case 'deploy_md':
+                this.deployMetadata(row);
+                break;
             default:
         }
     }
@@ -243,6 +285,7 @@ export default class Tracking extends LightningElement {
     handleClose() {
         this.editModal = false;
         this.deleteConfirmModal = false;
+        this.deployModal = false;
         refreshApex(this._wiredData);
         this.options = [];
         this.values = [];
@@ -297,14 +340,50 @@ export default class Tracking extends LightningElement {
     }
 
     openDeployModal(){
-
-        this.deployModal = true;
+        this.loading = true;
+        generateMetadata({trackingData : JSON.stringify(this.trackingData)})
+        .then((data) => {
+            this.mdData = data;
+            this.deployModal = true;
+            this.loading = false;
+        })
+        .catch(error => {
+			console.error(error);
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: "An error has occurred. Please contact the system administrator for further assistance.",
+                    message: error.body.message,
+                    variant: "error",
+                }),
+            );
+            this.loading = false;
+		}); 
     }
 
-    deploy(){
+    deployMetadata(row){
         this.loading = true;
-        refreshApex(this._wiredData);
-        this.loading = false;
+        deployMetadataFiles({ mdRow : JSON.stringify(row) })
+        .then(() => {
+            let mdList = [];
+            for(var md of this.mdData){
+                if(row.mdName != md.mdName) mdList.push(md);
+            }
+            this.mdData = mdList;
+            refreshApex(this._wiredData);
+            this.loading = false;
+        })
+        .catch(error => {
+			console.error(error);
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: "An error has occurred. Please contact the system administrator for further assistance.",
+                    message: error.body.message,
+                    variant: "error",
+                }),
+            );
+            this.loading = false;
+		}); 
+        
     }
 
     handleObjectSelected(event) {

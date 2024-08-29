@@ -19,7 +19,7 @@
                 </div>
             </lightning-layout-item>
             <lightning-layout-item size="12" class="slds-p-horizontal_large slds-p-top_small">
-                <div class="action-completed" style="width: 99%;" align="center">
+                <div class="action-completed" style="width: auto;" align="center">
                     <template lwc:if={loading}>
                         <div class="spinnerHolder">
                             <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
@@ -27,12 +27,12 @@
                     </template>
                     <template lwc:else>
                         <lightning-datatable
-                        key-field="objectName"
-                        data={trackingData}
-                        columns={columns}
-                        onrowaction={handleRowAction}
-                        hide-checkbox-column="true"
-                        >
+                            key-field="objectName"
+                            data={trackingData}
+                            columns={columns}
+                            onrowaction={handleRowAction}
+                            hide-checkbox-column="true"
+                            >
                     </lightning-datatable>
                     </template>
                 </div>
@@ -40,7 +40,7 @@
             <lightning-layout-item size="12" class="slds-p-horizontal_xx-large slds-p-bottom_small">
                 <div align="right">
                     <lightning-button label="Track New Object" title="Track New Object" onclick={newTracking} icon-name="utility:add" variant="brand-outline" class="slds-p-right_small"></lightning-button>
-                    <lightning-button label="Deploy" title="Deploy" onclick={deploy} icon-name="utility:target_mode" variant="brand" disabled={deploymentComplete}></lightning-button>
+                    <lightning-button label="Deploy" title="Deploy" onclick={openDeployModal} icon-name="utility:target_mode" variant="brand" disabled={deploymentComplete}></lightning-button>
                 </div>
             </lightning-layout-item>
         </lightning-layout>
@@ -217,6 +217,48 @@
                <footer class="slds-modal__footer">
                     <lightning-button label="Cancel" title="Cancel" onclick={handleClose} class="slds-float_left"></lightning-button>
                     <lightning-button label="Confirm" title="Confirm" onclick={handleDelete} variant="brand"></lightning-button>
+               </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+    <template lwc:if={deployModal}>
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-modal_medium">
+            <div class="slds-modal__container">
+             <!-- modal header start -->
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={handleClose}>
+                        <lightning-icon icon-name="utility:close"
+                        alternative-text="close"
+                        variant="inverse"
+                        size="small" ></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 id="modal-heading-03" class="slds-text-heading_medium slds-hyphenate">
+                        Items to Deploy
+                    </h2>
+                </header>
+                <div class="slds-modal__content" id="modal-content-id-3">
+                    <template lwc:if={loading}>
+                        <div class="spinnerHolder">
+                            <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div >
+                            <lightning-datatable
+                                key-field="mdName"
+                                data={mdData}
+                                columns={mdColumns}
+                                onrowaction={handleRowAction}
+                                hide-checkbox-column="true"
+                            ></lightning-datatable>
+                        </div>
+                    </template>
+                </div>
+               <!-- modal footer start-->
+               <footer class="slds-modal__footer">
+                    <lightning-button label="Close" title="Close" onclick={handleClose} class="slds-float_center"></lightning-button>
                </footer>
             </div>
         </section>

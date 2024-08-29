@@ -198,10 +198,22 @@ global with sharing class TrackingController {
             System.debug(fields);
             TrackingWrapper wrapper = (TrackingWrapper)JSON.deserialize(wrapperString, TrackingWrapper.class);
             TrackingWrapper orignal = new TrackingWrapper(wrapper);
+            List<Tracked_Object__mdt> toList = [SELECT Id, MasterLabel, DeveloperName, Additional_Field_1__c, Additional_Field_2__c, Parent_Reference_Field__c, Track_Create__c, Track_Delete__c, Track_Undelete__c FROM Tracked_Object__mdt WHERE DeveloperName = :wrapper.objectName ORDER BY MasterLabel LIMIT 1];
+            if(!toList.isEmpty()){
+                Tracked_Object__mdt to = toList[0];
+                orignal.parentRef = to.Parent_Reference_Field__c;
+                orignal.additionalField1 = to.Additional_Field_1__c;
+                orignal.additionalField2 = to.Additional_Field_2__c;
+            }
             for(TrackingFieldDefinition tfd : wrapper.fieldList){
+                if(tfd.customTracked && !fields.contains(tfd.fieldAPIName)) {
+                    tfd.customTracked = false;
+                    tfd.operation = 'Remove';
+                }
                 for(String f : fields){
-                    if(tfd.fieldAPIName == f && !tfd.standardTracked){
+                    if(tfd.fieldAPIName == f && !tfd.standardTracked && !tfd.customTracked){
                         tfd.customTracked = true;
+                        tfd.operation = 'Add';
                     }
                 }
             }
@@ -263,5 +275,75 @@ global with sharing class TrackingController {
         return false;
     }
 
-    
+    @AuraEnabled
+    global static List<MetadataWrapper> generateMetadata(String trackingData){
+        try {
+            System.debug(trackingData);
+            List<MetadataWrapper> mdWrapperList = new List<MetadataWrapper>();
+            List<TrackingWrapper> wrapperList = (List<TrackingWrapper>)JSON.deserialize(trackingData, List<TrackingWrapper>.class);
+            for(TrackingWrapper wrapp : wrapperList){
+                System.debug(wrapp);
+                if(wrapp.mdtStatusLabel != 'Deployed'){
+                    
+                    MetadataWrapper md = new MetadataWrapper();
+                    md.mdName = wrapp.objectName;
+                    md.mdType = 'Object';
+                    md.mdObject = wrapp.objectName;
+                    Tracked_Object__mdt to = Tracked_Object__mdt.getInstance(wrapp.objectName);
+                    if(to != null){
+                        TrackingWrapper orignal = new TrackingWrapper(wrapp);
+                        orignal.parentRef = to.Parent_Reference_Field__c;
+                        orignal.additionalField1 = to.Additional_Field_1__c;
+                        orignal.additionalField2 = to.Additional_Field_2__c;
+                        if(compareWrapper(wrapp, orignal)) {
+                            md.mdOperation = wrapp.mdtStatusLabel == 'Pending Removal' ? 'Remove' : 'Change';
+                            System.debug(md);
+                            mdWrapperList.add(md);
+                        }
+                    } else {
+                        md.mdOperation = 'Add';
+                        System.debug(md);
+                        mdWrapperList.add(md);
+                    }
+                    for(TrackingFieldDefinition tfd : wrapp.fieldList){
+                        if(String.isNotBlank(tfd.operation)){
+                            MetadataWrapper mdf = new MetadataWrapper();
+                            mdf.mdName = wrapp.objectName+'_'+tfd.fieldAPIName;
+                            mdf.mdType = 'Field';
+                            mdf.mdObject = wrapp.objectName;
+                            mdf.mdOperation = tfd.operation;
+                            System.debug(mdf);
+                            mdWrapperList.add(mdf);
+                        }
+                    }
+                }
+                if(wrapp.trigStatusLabel != 'Deployed'){
+                    MetadataWrapper md = new MetadataWrapper();
+                    md.mdName = 'megahistory'+wrapp.objectName+'Trigger';
+                    md.mdType = 'Trigger';
+                    md.mdObject = wrapp.objectName;
+                    md.mdOperation = wrapp.trigStatusLabel == 'Pending Removal' ? 'Remove' : 'Add';
+                    System.debug(md);
+                    mdWrapperList.add(md);
+                }
+            }
+            System.debug(mdWrapperList);
+            return mdWrapperList;
+        } catch (Exception e) {
+            System.debug(e.getMessage());
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    @AuraEnabled
+    global static void deployMetaData(String mdRow){
+        try {
+            System.debug(mdRow);
+            MetadataWrapper wrapper = (MetadataWrapper)JSON.deserialize(mdRow, MetadataWrapper.class);
+            
+        } catch (Exception e) {
+            System.debug(e.getMessage());
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
 }

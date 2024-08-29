@@ -1,0 +1,66 @@
+<template>
+    <template if:true={showRelatedList}>
+        <c-related-list-new-edit-popup 
+            onrefreshdata={handleRefreshData}>
+
+        </c-related-list-new-edit-popup>
+        <c-related-list-delete-popup
+            onrefreshdata={handleRefreshData}>
+
+        </c-related-list-delete-popup>
+
+        <div class="slds-box slds-theme_shade my-box">
+            <template lwc:if={loading}>
+                <div align="center">
+                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                </div>
+            </template>
+            <div class="slds-grid slds-theme_shade">
+                <header class="slds-media slds-media_center slds-has-flexi-truncate slds-p-top_small slds-p-horizontal_small">
+                    <div class="slds-media__figure">
+                        <lightning-icon icon-name={state.iconName} size="small"></lightning-icon>
+                    </div>
+                    <div class="slds-media__body">
+                        <h2 class="slds-card__header-title">
+                            <a class="slds-card__header-link" onclick={handleGotoRelatedList}>{state.title}</a>
+                        </h2>
+                    </div>
+                    <template lwc:if={superUser}>
+                        <div class="slds-no-flex">
+                            <!-- <lightning-button-icon icon-name="utility:refresh" alternative-text="Refresh" class="slds-p-right_small slds-p-bottom_xx-small" title="Refresh" onclick={handleRefreshData}></lightning-button-icon> -->
+                            <lightning-button label="New" onclick={handleCreateRecord}></lightning-button>
+                        </div>
+                    </template>
+                </header>
+            </div>
+            <template lwc:if={hasRecords}>
+                <div style="width: auto;">
+                    <lightning-datatable class="related-list"
+                                        onrowaction={handleRowAction}
+                                        columns={columns}
+                                        data={state.records}
+                                        key-field="historyId"
+                                        hide-checkbox-column="true"
+                                        resize-column-disabled="true"
+                                        sorted-by={sortBy}
+                                        sorted-direction={sortDirection}
+                                        >
+                    </lightning-datatable>   
+                </div>
+                <footer class="slds-card__footer">
+                    <template lwc:if={fullView}>
+                        <a onclick={handleView}>View Options</a>
+                    </template>
+                    <template lwc:else>
+                        <a onclick={handleGotoRelatedList}>View All</a>
+                    </template>
+                </footer>                            
+            </template>
+            <template lwc:else>
+                <div class="slds-p-around_large" align="center">
+                    No History Currently Recorded.
+                </div>
+            </template>
+        </div>                    
+    </template>
+</template>

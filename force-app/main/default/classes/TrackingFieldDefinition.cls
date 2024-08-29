@@ -4,4 +4,5 @@ global with sharing class TrackingFieldDefinition {
     @AuraEnabled global String fieldAPIName;
     @AuraEnabled global Boolean standardTracked = false;
     @AuraEnabled global Boolean customTracked = false;
+    @AuraEnabled global String operation;
 }
