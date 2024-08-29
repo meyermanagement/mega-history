@@ -46,8 +46,12 @@ public without sharing class HistoryTrackingService {
         } else {
             Map<String,Schema.SObjectField> mfields = objectDescribe.fields.getMap();
             Map<String, Schema.DescribeFieldResult> fieldMap = new Map<String, Schema.DescribeFieldResult>();
+            Set<String> standardTrackedFields = new Set<String>();
+            for(FieldDefinition fd : [SELECT Label, QualifiedApiName FROM FieldDefinition WHERE EntityDefinition.QualifiedApiName = :objectDescribe.getName() AND IsFieldHistoryTracked = true]){
+                standardTrackedFields.add(fd.QualifiedApiName);
+            }
             for(Tracked_Field__mdt field : [SELECT Field_API_Name__c FROM Tracked_Field__mdt WHERE Tracked_Object__c = :tobj.Id]) {
-                fieldMap.put(field.Field_API_Name__c, mfields.get(field.Field_API_Name__c).getDescribe());
+                if(!standardTrackedFields.contains(field.Field_API_Name__c)) fieldMap.put(field.Field_API_Name__c, mfields.get(field.Field_API_Name__c).getDescribe());
             }
             for(Sobject so : newList){
                 for(String field : fieldMap.keySet()){
