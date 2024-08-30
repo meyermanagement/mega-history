@@ -258,9 +258,8 @@
                 </div>
                <!-- modal footer start-->
                <footer class="slds-modal__footer">
-                    <div align="center">
-                        <lightning-button label="Close" title="Close" onclick={handleClose}></lightning-button>
-                    </div>
+                <lightning-button label="Cancel" title="Cancel" onclick={handleClose} class="slds-float_left"></lightning-button>
+                <lightning-button label="Deploy All" title="Deploy All" onclick={deployAllMetadata} variant="brand"></lightning-button>
                </footer>
             </div>
         </section>

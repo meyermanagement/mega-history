@@ -1,8 +1,9 @@
 import { LightningElement, wire, track } from 'lwc';
 import { refreshApex } from "@salesforce/apex";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
-import { loadStyle } from 'lightning/platformResourceLoader';
+import { loadStyle, loadScript } from 'lightning/platformResourceLoader';
 import iconColor from '@salesforce/resourceUrl/iconColor';
+import jszip from '@salesforce/resourceUrl/jszip';
 import getTrackingRecords from '@salesforce/apex/TrackingController.getRecords';
 import getObjectDetails from '@salesforce/apex/TrackingController.getObjectDetails';
 import getObjectSelectedDetails from '@salesforce/apex/TrackingController.getObjectSelectedDetails';
@@ -10,6 +11,7 @@ import getObjects from '@salesforce/apex/TrackingController.getObjects';
 import submitMetaData from '@salesforce/apex/TrackingController.submitMetaData';
 import generateMetadata from '@salesforce/apex/TrackingController.generateMetadata';
 import deployMetadataFiles from '@salesforce/apex/TrackingController.deployMetaData';
+import generateFiles from '@salesforce/apex/TrackingController.generateFiles';
 export default class Tracking extends LightningElement {
    
     @track mdColumns = [
@@ -157,6 +159,10 @@ export default class Tracking extends LightningElement {
     connectedCallback(){
         if(this.trackingData == undefined) this.loading = true;
         loadStyle(this, iconColor);
+        loadScript(this, jszip + '/jszip.js');
+        loadScript(this, jszip + '/jszip-load.js');
+        loadScript(this, jszip + '/jszip-deflate.js');
+        loadScript(this, jszip + '/jszip-inflate.js');
     }
 
     @wire(getTrackingRecords)
@@ -227,7 +233,6 @@ export default class Tracking extends LightningElement {
     }
 
     deleteTracking(row){
-        console.log(JSON.stringify(row));
         this.deleteConfirmModal = true;
         this.selectedObject = {...row};
     }
@@ -292,6 +297,7 @@ export default class Tracking extends LightningElement {
         this.requiredOptions = [];
         this.parentRefs = [];
         this.objectSelected = '';
+        this.mdData = [];
     }
 
     handleSave(){
@@ -360,10 +366,43 @@ export default class Tracking extends LightningElement {
 		}); 
     }
 
+    deployAllMetadata(){
+        this.loading = true;
+        generateFiles({ wrappers : JSON.stringify(this.mdData) })
+        .then(() => {
+            refreshApex(this._wiredData);
+            this.handleClose();
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: "Success!",
+                    message: `You have successfully deployed all configurations!`,
+                    variant: "success",
+                }),
+            );
+            this.loading = false;
+        })
+        .catch(error => {
+			console.error(error);
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: "An error has occurred. Please contact the system administrator for further assistance.",
+                    message: error.body.message,
+                    variant: "error",
+                }),
+            );
+            this.loading = false;
+		}); 
+        
+    }
+
     deployMetadata(row){
         this.loading = true;
-        deployMetadataFiles({ mdRow : JSON.stringify(row) })
+        let wrappers = [];
+        wrappers.push(row);
+        //let zipFile = this.generateZIP();
+        generateFiles({ wrappers : JSON.stringify(wrappers) })
         .then(() => {
+            
             let mdList = [];
             for(var md of this.mdData){
                 if(row.mdName != md.mdName) mdList.push(md);
@@ -394,6 +433,17 @@ export default class Tracking extends LightningElement {
             this.loading = false;
 		}); 
         
+    }
+
+    generateZIP(fileMap){
+        var zip = new JSZip();
+        for(var file of fileMap){
+            
+        }
+        zip.file("package.xml", fileMap);
+        zip.file("Hello.txt", "Hello World\n");
+        zip.file("Hello.xls", "Hello World\n");
+        return zip.generate();
     }
 
     handleObjectSelected(event) {

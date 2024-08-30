@@ -336,14 +336,27 @@ global with sharing class TrackingController {
     }
 
     @AuraEnabled
-    global static void deployMetaData(String mdRow){
+    global static void deployMetaData(String zipFile){
         try {
-            System.debug(mdRow);
-            MetadataWrapper wrapper = (MetadataWrapper)JSON.deserialize(mdRow, MetadataWrapper.class);
+            
             
         } catch (Exception e) {
             System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }
+
+    @AuraEnabled
+    global static Map<String, String> generateFiles(String wrappers){
+        try {
+            System.debug(wrappers);
+            Map<String, String> metaDataMap = new Map<String, String>();
+            List<MetadataWrapper> wrapper = (List<MetadataWrapper>)JSON.deserialize(wrappers, List<MetadataWrapper>.class);
+            return metaDataMap;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    
 }
