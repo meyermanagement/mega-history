@@ -74,10 +74,13 @@ global with sharing class TrackingController {
     @AuraEnabled(cacheable=true)
     global static List<TrackingWrapper> getObjects(){
         Map<String, TrackingWrapper> wrapperMap = new Map<String, TrackingWrapper>();
-        Set<String> existingTracking = new Set<String>();
-        List<Tracked_Object__mdt> trackedObjects = [SELECT Id, MasterLabel, DeveloperName, Additional_Field_1__c, Additional_Field_2__c, Parent_Reference_Field__c, Track_Create__c, Track_Delete__c, Track_Undelete__c, (SELECT DeveloperName, Field_API_Name__c FROM Tracked_Fields__r ORDER BY Field_API_Name__c) FROM Tracked_Object__mdt ORDER BY MasterLabel];
+        Map<String, List<Tracked_Field__mdt>> objectNameMap = new Map<String, List<Tracked_Field__mdt>>();
+        List<Tracked_Object__mdt> trackedObjects = [SELECT Id, MasterLabel, DeveloperName, Additional_Field_1__c, Additional_Field_2__c, Parent_Reference_Field__c, Track_Create__c, Track_Delete__c, Track_Undelete__c FROM Tracked_Object__mdt ORDER BY MasterLabel];
         for(Tracked_Object__mdt to : trackedObjects){
-            existingTracking.add(to.DeveloperName);
+            objectNameMap.put(to.DeveloperName, new List<Tracked_Field__mdt>());
+        }
+        for(Tracked_Field__mdt tf : [SELECT Tracked_Object__r.DeveloperName, DeveloperName, Field_API_Name__c FROM Tracked_Field__mdt ORDER BY Field_API_Name__c]){
+            objectNameMap.get(tf.Tracked_Object__r.DeveloperName).add(tf);
         }
         Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe(); 
         for(Schema.SObjectType d : gd.values())
@@ -85,7 +88,7 @@ global with sharing class TrackingController {
             Schema.DescribeSObjectResult ds = d.getDescribe();
             System.debug(ds.getName());
             System.debug(ds.isCreateable());
-            if(!ds.isCreateable() || existingTracking.contains(ds.getName()) || ds.isCustomSetting() || !ds.isQueryable()) continue;
+            if(!ds.isCreateable() || objectNameMap.keySet().contains(ds.getName()) || ds.isCustomSetting() || !ds.isQueryable()) continue;
             else {
                 TrackingWrapper wrapper = new TrackingWrapper();
                 wrapper.objectName = ds.getName();
