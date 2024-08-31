@@ -10,8 +10,9 @@ import getObjectSelectedDetails from '@salesforce/apex/TrackingController.getObj
 import getObjects from '@salesforce/apex/TrackingController.getObjects';
 import submitMetaData from '@salesforce/apex/TrackingController.submitMetaData';
 import generateMetadata from '@salesforce/apex/TrackingController.generateMetadata';
-import deployMetadataFiles from '@salesforce/apex/TrackingController.deployMetaData';
-import generateFiles from '@salesforce/apex/TrackingController.generateFiles';
+import handleCustomMetadata from '@salesforce/apex/TrackingController.handleCustomMetadata';
+import deployTriggerFiles from '@salesforce/apex/TrackingController.deployTriggers';
+import generateTriggerFiles from '@salesforce/apex/TrackingController.generateTriggerFiles';
 export default class Tracking extends LightningElement {
    
     @track mdColumns = [
@@ -367,31 +368,33 @@ export default class Tracking extends LightningElement {
     }
 
     deployAllMetadata(){
-        this.loading = true;
-        generateFiles({ wrappers : JSON.stringify(this.mdData) })
-        .then(() => {
-            refreshApex(this._wiredData);
-            this.handleClose();
-            this.dispatchEvent(
-                new ShowToastEvent({
-                    title: "Success!",
-                    message: `You have successfully deployed all configurations!`,
-                    variant: "success",
-                }),
-            );
-            this.loading = false;
-        })
-        .catch(error => {
-			console.error(error);
-            this.dispatchEvent(
-                new ShowToastEvent({
-                    title: "An error has occurred. Please contact the system administrator for further assistance.",
-                    message: error.body.message,
-                    variant: "error",
-                }),
-            );
-            this.loading = false;
-		}); 
+        // this.loading = true;
+        // generateFiles({ wrappers : JSON.stringify(this.mdData) })
+        // .then((data) => {
+        //     let zip = this.generateZIP(data);
+        //     this.deployFiles(zip);
+        //     refreshApex(this._wiredData);
+        //     this.handleClose();
+        //     this.dispatchEvent(
+        //         new ShowToastEvent({
+        //             title: "Success!",
+        //             message: `You have successfully deployed all configurations!`,
+        //             variant: "success",
+        //         }),
+        //     );
+        //     this.loading = false;
+        // })
+        // .catch(error => {
+		// 	console.error(error);
+        //     this.dispatchEvent(
+        //         new ShowToastEvent({
+        //             title: "An error has occurred. Please contact the system administrator for further assistance.",
+        //             message: error.body.message,
+        //             variant: "error",
+        //         }),
+        //     );
+        //     this.loading = false;
+		// }); 
         
     }
 
@@ -399,51 +402,89 @@ export default class Tracking extends LightningElement {
         this.loading = true;
         let wrappers = [];
         wrappers.push(row);
-        //let zipFile = this.generateZIP();
-        generateFiles({ wrappers : JSON.stringify(wrappers) })
-        .then(() => {
-            
-            let mdList = [];
-            for(var md of this.mdData){
-                if(row.mdName != md.mdName) mdList.push(md);
-            }
-            this.mdData = mdList;
-            refreshApex(this._wiredData);
-            if(this.mdData.length == 0) this.handleClose();
-            let operation = row.mdOperation.endsWith('e') ? row.mdOperation.toLowerCase()+'d' : row.mdOperation.toLowerCase()+'ed';
-            this.dispatchEvent(
-                new ShowToastEvent({
-                    title: "Success!",
-                    message: `You have successfully ${operation} the ${row.mdName} ${row.mdType.toLowerCase()} configuration!`,
-                    variant: "success",
-                }),
-            );
-            this.loading = false;
-            
-        })
-        .catch(error => {
-			console.error(error);
-            this.dispatchEvent(
-                new ShowToastEvent({
-                    title: "An error has occurred. Please contact the system administrator for further assistance.",
-                    message: error.body.message,
-                    variant: "error",
-                }),
-            );
-            this.loading = false;
-		}); 
-        
+        if(row.mdType != 'Trigger'){
+            handleCustomMetadata({ wrappers : JSON.stringify(wrappers) })
+            .then(() => {
+                let mdList = [];
+                for(var md of this.mdData){
+                    if(row.mdName != md.mdName) mdList.push(md);
+                }
+                this.mdData = mdList;
+                refreshApex(this._wiredData);
+                if(this.mdData.length == 0) this.handleClose();
+                let operation = row.mdOperation.endsWith('e') ? row.mdOperation.toLowerCase()+'d' : row.mdOperation.toLowerCase()+'ed';
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: "Success!",
+                        message: `You have successfully ${operation} the ${row.mdName} ${row.mdType.toLowerCase()} configuration!`,
+                        variant: "success",
+                    }),
+                );
+                this.loading = false;
+                
+            })
+            .catch(error => {
+                console.error(error);
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: "An error has occurred. Please contact the system administrator for further assistance.",
+                        message: error.body.message,
+                        variant: "error",
+                    }),
+                );
+                this.loading = false;
+            }); 
+        } else {
+            generateTriggerFiles({ wrappers : JSON.stringify(wrappers) })
+            .then((data) => {
+                let zip = this.generateZIP(data);
+                this.deployFiles(zip);
+                let mdList = [];
+                for(var md of this.mdData){
+                    if(row.mdName != md.mdName) mdList.push(md);
+                }
+                this.mdData = mdList;
+                refreshApex(this._wiredData);
+                if(this.mdData.length == 0) this.handleClose();
+                let operation = row.mdOperation.endsWith('e') ? row.mdOperation.toLowerCase()+'d' : row.mdOperation.toLowerCase()+'ed';
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: "Success!",
+                        message: `You have successfully ${operation} the ${row.mdName} ${row.mdType.toLowerCase()} configuration!`,
+                        variant: "success",
+                    }),
+                );
+                this.loading = false;
+                
+            })
+            .catch(error => {
+                console.error(error);
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: "An error has occurred. Please contact the system administrator for further assistance.",
+                        message: error.body.message,
+                        variant: "error",
+                    }),
+                );
+                this.loading = false;
+            }); 
+        }
     }
 
     generateZIP(fileMap){
         var zip = new JSZip();
         for(var file of fileMap){
-            
+            zip.file(file, fileMap[file]);
         }
-        zip.file("package.xml", fileMap);
-        zip.file("Hello.txt", "Hello World\n");
-        zip.file("Hello.xls", "Hello World\n");
         return zip.generate();
+    }
+
+    async deployFiles(zip){
+        try {
+            await deployTriggerFiles({zipFile : zip});
+        } catch(e){
+            console.log(e);
+        }
     }
 
     handleObjectSelected(event) {

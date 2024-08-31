@@ -4,17 +4,21 @@ global with sharing class TrackingController {
     global static List<TrackingWrapper> getRecords() {
         try {
             Map<String, TrackingWrapper> wrapperMap = new Map<String, TrackingWrapper>();
-            List<String> objectNames = new List<String>();
-            List<Tracked_Object__mdt> trackedObjects = [SELECT Id, MasterLabel, DeveloperName, Additional_Field_1__c, Additional_Field_2__c, Parent_Reference_Field__c, Track_Create__c, Track_Delete__c, Track_Undelete__c, (SELECT DeveloperName, Field_API_Name__c FROM Tracked_Fields__r ORDER BY Field_API_Name__c) FROM Tracked_Object__mdt ORDER BY MasterLabel];
+            Map<String, List<Tracked_Field__mdt>> objectNameMap = new Map<String, List<Tracked_Field__mdt>>();
+            List<Tracked_Object__mdt> trackedObjects = [SELECT Id, MasterLabel, DeveloperName, Additional_Field_1__c, Additional_Field_2__c, Parent_Reference_Field__c, Track_Create__c, Track_Delete__c, Track_Undelete__c FROM Tracked_Object__mdt ORDER BY MasterLabel];
             for(Tracked_Object__mdt to : trackedObjects){
-                objectNames.add(to.DeveloperName);
+                objectNameMap.put(to.DeveloperName, new List<Tracked_Field__mdt>());
+            }
+            for(Tracked_Field__mdt tf : [SELECT Tracked_Object__r.DeveloperName, DeveloperName, Field_API_Name__c FROM Tracked_Field__mdt ORDER BY Field_API_Name__c]){
+                objectNameMap.get(tf.Tracked_Object__r.DeveloperName).add(tf);
             }
             Map<String, Schema.DescribeSobjectResult> describeMap = new Map<String, Schema.DescribeSObjectResult>();
-            for(Schema.DescribeSobjectResult res : Schema.describeSObjects(objectNames)) {
+            for(Schema.DescribeSobjectResult res : Schema.describeSObjects(new List<String>(objectNameMap.keySet()))) {
                 System.debug(res.getLabel());
                 describeMap.put(res.getLabel(), res);
             }
             for(Tracked_Object__mdt to : trackedObjects){
+                System.debug(to);
                 TrackingWrapper wrapper = new TrackingWrapper();
                 wrapper.objectName = to.DeveloperName;
                 wrapper.parentRef = to.Parent_Reference_Field__c;
@@ -37,7 +41,8 @@ global with sharing class TrackingController {
                 wrapper.events = concatEvents;
                 String concatFields = '';
                 wrapper.fieldList = new List<TrackingFieldDefinition>();
-                for(Tracked_Field__mdt field: to.Tracked_Fields__r){
+                for(Tracked_Field__mdt field: objectNameMap.get(to.DeveloperName)){
+                    System.debug(field);
                     concatFields = concatFields += field.Field_API_Name__c+', ';
                     TrackingFieldDefinition fd = new TrackingFieldDefinition();
                     fd.fieldLabel = describeMap.get(to.DeveloperName).fields.getMap().get(field.Field_API_Name__c).getDescribe().getLabel();
@@ -204,6 +209,9 @@ global with sharing class TrackingController {
                 orignal.parentRef = to.Parent_Reference_Field__c;
                 orignal.additionalField1 = to.Additional_Field_1__c;
                 orignal.additionalField2 = to.Additional_Field_2__c;
+                orignal.trackCreate = to.Track_Create__c;
+                orignal.trackDelete = to.Track_Delete__c;
+                orignal.trackUndelete = to.Track_Undelete__c;
             }
             for(TrackingFieldDefinition tfd : wrapper.fieldList){
                 if(tfd.customTracked && !fields.contains(tfd.fieldAPIName)) {
@@ -272,6 +280,9 @@ global with sharing class TrackingController {
         if(wrapper.fields != original.fields) return true;
         if(wrapper.additionalField1 != original.additionalField1) return true;
         if(wrapper.additionalField2 != original.additionalField2) return true;
+        if(wrapper.trackCreate != original.trackCreate) return true;
+        if(wrapper.trackDelete != original.trackDelete) return true;
+        if(wrapper.trackUndelete != original.trackUndelete) return true;
         return false;
     }
 
@@ -282,21 +293,31 @@ global with sharing class TrackingController {
             List<MetadataWrapper> mdWrapperList = new List<MetadataWrapper>();
             List<TrackingWrapper> wrapperList = (List<TrackingWrapper>)JSON.deserialize(trackingData, List<TrackingWrapper>.class);
             for(TrackingWrapper wrapp : wrapperList){
-                System.debug(wrapp);
+                System.debug(wrapp.objectName);
+                System.debug(wrapp.mdtStatusLabel);
                 if(wrapp.mdtStatusLabel != 'Deployed'){
-                    
                     MetadataWrapper md = new MetadataWrapper();
                     md.mdName = wrapp.objectName;
                     md.mdType = 'Object';
                     md.mdObject = wrapp.objectName;
+                    md.mdObjectWrapper = wrapp;
                     Tracked_Object__mdt to = Tracked_Object__mdt.getInstance(wrapp.objectName);
+                    System.debug(to);
                     if(to != null){
                         TrackingWrapper orignal = new TrackingWrapper(wrapp);
                         orignal.parentRef = to.Parent_Reference_Field__c;
                         orignal.additionalField1 = to.Additional_Field_1__c;
                         orignal.additionalField2 = to.Additional_Field_2__c;
+                        orignal.trackCreate = to.Track_Create__c;
+                        orignal.trackDelete = to.Track_Delete__c;
+                        orignal.trackUndelete = to.Track_Undelete__c;
+                        System.debug(compareWrapper(wrapp, orignal));
                         if(compareWrapper(wrapp, orignal)) {
-                            md.mdOperation = wrapp.mdtStatusLabel == 'Pending Removal' ? 'Remove' : 'Change';
+                            md.mdOperation = 'Change';
+                            System.debug(md);
+                            mdWrapperList.add(md);
+                        } else if (wrapp.mdtStatusLabel == 'Pending Removal'){
+                            md.mdOperation = 'Remove';
                             System.debug(md);
                             mdWrapperList.add(md);
                         }
@@ -308,7 +329,7 @@ global with sharing class TrackingController {
                     for(TrackingFieldDefinition tfd : wrapp.fieldList){
                         if(String.isNotBlank(tfd.operation)){
                             MetadataWrapper mdf = new MetadataWrapper();
-                            mdf.mdName = wrapp.objectName+'_'+tfd.fieldAPIName;
+                            mdf.mdName = tfd.fieldAPIName;
                             mdf.mdType = 'Field';
                             mdf.mdObject = wrapp.objectName;
                             mdf.mdOperation = tfd.operation;
@@ -336,10 +357,69 @@ global with sharing class TrackingController {
     }
 
     @AuraEnabled
-    global static void deployMetaData(String zipFile){
+    global static void handleCustomMetadata(String wrappers){
         try {
+            System.debug(wrappers);
+            Map<String, String> metaDataMap = new Map<String, String>();
+            List<MetadataWrapper> wrapperList = (List<MetadataWrapper>)JSON.deserialize(wrappers, List<MetadataWrapper>.class);
+            List<MetadataWrapper> metadataToDelete = new List<MetadataWrapper>();
+            List<MetadataWrapper> metadataFieldsToDeploy = new List<MetadataWrapper>();
+            List<MetadataWrapper> metadataObjectsToDeploy = new List<MetadataWrapper>();
+            for(MetadataWrapper wrapper : wrapperList){
+                if(wrapper.mdType != 'Trigger'){
+                    if(wrapper.mdOperation != 'Remove'){
+                        if(wrapper.mdType == 'Object'){
+                            metadataObjectsToDeploy.add(wrapper);
+                        } else {
+                            metadataFieldsToDeploy.add(wrapper);
+                        }
+                    } else {
+                        metadataToDelete.add(wrapper);
+                    }
+                }
+            }
+            System.debug(metadataToDelete);
+            if(!metadataObjectsToDeploy.isEmpty()) CreateMetadata.updateAndDeployMetadata(metadataObjectsToDeploy);
+            if(!metadataFieldsToDeploy.isEmpty()) CreateMetadata.updateAndDeployMetadata(metadataFieldsToDeploy);
+            if(!metadataToDelete.isEmpty()) deleteMetadata(metadataToDelete);
             
-            
+        } catch (Exception e) {
+            System.debug(e.getMessage());
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+    
+    private static void deleteMetadata(List<MetadataWrapper> wrappers){
+        List<String> recordsToDelete = new List<String>();
+        for(MetadataWrapper wrapper : wrappers){
+            String metadataTypeName = wrapper.mdType == 'Object' ? 'megahistory__Tracked_Object__mdt' : 'megahistory__Tracked_Field__mdt';
+            String metadataRecordName = wrapper.mdType == 'Object' ? wrapper.mdObject : wrapper.mdObject+'_'+wrapper.mdName.replaceAll('_', '');
+            recordsToDelete.add(metadataTypeName+'.'+metadataRecordName);
+        }
+        System.debug(recordsToDelete);
+        MetadataService.MetadataPort service = new MetadataService.MetadataPort();
+        service.SessionHeader = new MetadataService.SessionHeader_element();
+        service.SessionHeader.sessionId = SetupController.getSessionIdFromVFPage();
+        service.deleteMetadata('CustomMetadata', recordsToDelete);
+    }
+
+    @AuraEnabled
+    global static Map<String, String> generateTriggerFiles(String wrappers){
+        try {
+            System.debug(wrappers);
+            Map<String, String> metaDataMap = new Map<String, String>();
+            List<MetadataWrapper> wrapperList = (List<MetadataWrapper>)JSON.deserialize(wrappers, List<MetadataWrapper>.class);
+            for(MetadataWrapper wrapper : wrapperList){
+                if(wrapper.mdType == 'Trigger'){
+                    metaDataMap.put('PackageXML', TriggerFiles.getPackageXml(wrapper));
+                    metaDataMap.put('DestructiveChangesXML', TriggerFiles.getDestructiveChangesXml(wrapper));
+                    metaDataMap.put('TriggerTestMetadata', TriggerFiles.getTriggerTestCodeMetadata());
+                    metaDataMap.put('TriggerTest', TriggerFiles.getTriggerTestCode(wrapper));
+                    metaDataMap.put('TriggerMetadata', TriggerFiles.getTriggerCodeMetadata());
+                    metaDataMap.put('Trigger', TriggerFiles.getTriggerCode(wrapper));
+                }
+            }
+            return metaDataMap;
         } catch (Exception e) {
             System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
@@ -347,16 +427,14 @@ global with sharing class TrackingController {
     }
 
     @AuraEnabled
-    global static Map<String, String> generateFiles(String wrappers){
+    global static void deployTriggers(String zipFile){
         try {
-            System.debug(wrappers);
-            Map<String, String> metaDataMap = new Map<String, String>();
-            List<MetadataWrapper> wrapper = (List<MetadataWrapper>)JSON.deserialize(wrappers, List<MetadataWrapper>.class);
-            return metaDataMap;
+            System.debug(zipFile);
+            
+            
         } catch (Exception e) {
+            System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }
-
-    
 }

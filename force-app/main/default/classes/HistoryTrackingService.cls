@@ -1,9 +1,9 @@
-public without sharing class HistoryTrackingService {
+global without sharing class HistoryTrackingService {
     
     static Map<String, String> operationTypeMap = new Map<String, String>{'AFTER_INSERT'=>'Created', 'AFTER_DELETE'=>'Deleted', 'AFTER_UNDELETE'=>'Undeleted'};
     static Map<String, String> objectTypeToNameMap = new Map<String, String>{'Contact'=>'LastName', 'Case'=>'CaseNumber', 'Contract'=>'ContractNumber'};
 
-    public static void track(List<Sobject> newList, Map<Id, sObject> oldMap, String operationType){
+    global static void track(List<Sobject> newList, Map<Id, sObject> oldMap, String operationType){
         System.debug(operationType);
         // Possible values of the System.TriggerOperation enum are: AFTER_INSERT, AFTER_UPDATE, AFTER_DELETE, and AFTER_UNDELETE. 
         Schema.sObjectType objectType;
@@ -86,4 +86,13 @@ public without sharing class HistoryTrackingService {
         }
         if(!histories.isEmpty()) insert histories;
     }
+
+    global static void testHandler(SObject dummyRecord) {
+        try {
+          insert dummyRecord;
+        } catch (Exception e) {
+            System.debug(e.getMessage());
+            throw e;
+        }
+      }
 }
