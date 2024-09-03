@@ -18,7 +18,7 @@
                     </h1>
                 </div>
             </lightning-layout-item>
-            <lightning-layout-item size="12" class="slds-p-horizontal_large slds-p-top_small">
+            <lightning-layout-item size="12" class="slds-p-horizontal_large slds-p-vertical_small">
                 <div class="action-completed" style="width: auto;" align="center">
                     <template lwc:if={loading}>
                         <div class="spinnerHolder">
@@ -26,18 +26,35 @@
                         </div>
                     </template>
                     <template lwc:else>
-                        <lightning-datatable
-                            key-field="objectName"
-                            data={trackingData}
-                            columns={columns}
-                            onrowaction={handleRowAction}
-                            hide-checkbox-column="true"
-                            >
-                    </lightning-datatable>
+                        <template lwc:if={hasMetadata}>
+                            <div style="width:99%;">
+                                <lightning-datatable
+                                    key-field="objectName"
+                                    data={trackingData}
+                                    columns={columns}
+                                    onrowaction={handleRowAction}
+                                    hide-checkbox-column="true"
+                                    >
+                                </lightning-datatable>
+                            </div>
+                        </template>
+                        <template lwc:else>
+                            <div align="center" class="cardBody slds-p-vertical_large">
+                                <p>
+                                    No Record Tracking configuration present.  
+                                </p>
+                                <p>  
+                                    You can still see standard field history and data-loaded history without this configuration by adding the MEGA History Related List component to your Lightning Record Page.
+                                </p>
+                                <p>
+                                    Check the Views tab for more detailed instructions.
+                                </p>
+                            </div>
+                        </template>
                     </template>
                 </div>
             </lightning-layout-item>
-            <lightning-layout-item size="12" class="slds-p-horizontal_x-large slds-p-bottom_small">
+            <lightning-layout-item size="12" class="slds-p-horizontal_x-large slds-p-vertical_small">
                 <div class="slds-grid slds-gutters">
                     <div class="slds-col">
                         <div class="cardTitle">

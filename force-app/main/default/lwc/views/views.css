@@ -13,8 +13,13 @@
 }
 
 .cardBody p {
-    font-size: 12px;
+    font-size: 16px;
     color: #a7a5a5;
+}
+
+.cardBody h2 {
+    font-size: 20px;
+    color: #575757;
 }
 
 .cardTitle h1 {
@@ -61,3 +66,5 @@
 .custom-link{
     cursor: pointer;
 }
+
+ul li { padding: 10px 0px; }

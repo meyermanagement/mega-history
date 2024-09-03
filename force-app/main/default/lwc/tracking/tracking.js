@@ -157,6 +157,10 @@ export default class Tracking extends LightningElement {
         return this.objectSelected != '' || JSON.stringify(this.selectedObject) != '{}';
     }
 
+    get hasMetadata(){
+        return this.trackingData.length > 0;
+    }
+
     connectedCallback(){
         if(this.trackingData == undefined) this.loading = true;
         loadStyle(this, iconColor);
