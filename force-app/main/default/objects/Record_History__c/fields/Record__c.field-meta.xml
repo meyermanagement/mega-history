@@ -3,6 +3,7 @@
     <fullName>Record__c</fullName>
     <description>Record that this history is related to</description>
     <externalId>true</externalId>
+    <inlineHelpText>Record Id of the record being tracked.</inlineHelpText>
     <label>Record</label>
     <length>18</length>
     <required>true</required>
