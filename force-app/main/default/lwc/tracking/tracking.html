@@ -96,8 +96,10 @@
                 </header>
                 <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
                     <template lwc:if={loading}>
-                        <div class="spinnerHolder">
-                            <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                        <div align="center">
+                            <div class="spinnerHolder">
+                                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                            </div>
                         </div>
                     </template>
                     <template lwc:else>

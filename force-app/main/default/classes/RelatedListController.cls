@@ -36,6 +36,12 @@ public with sharing class RelatedListController {
                 isSuperUser = true;
             }
             responseMap.put(SUPER_USER_PARAM, String.valueOf(isSuperUser));
+            Initialization__c initialization = Initialization__c.getOrgDefaults();
+            if(!initialization.initialized__c){
+                initialization.Name = 'Default Initialization';
+                initialization.initialized__c = true;
+                upsert initialization;
+            }
             return JSON.serialize(responseMap);
         } catch (Exception e){
             System.debug(e.getMessage());

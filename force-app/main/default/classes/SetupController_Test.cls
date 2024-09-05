@@ -1,5 +1,5 @@
 @isTest
-public class RelatedListControllerTest {
+public class SetupController_Test {
     
     @isTest public static void testInit(){
         

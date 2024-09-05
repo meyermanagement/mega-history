@@ -44,8 +44,8 @@ global with sharing class SetupController {
     @AuraEnabled(cacheable=true)
     global static Boolean checkViews() {
         try {
-            List<Historical_View__mdt> records = [SELECT Id FROM Historical_View__mdt LIMIT 1];
-            return records.isEmpty();
+            Initialization__c initialization = Initialization__c.getInstance();
+            return !initialization.initialized__c;
         } catch (Exception e) {
             System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());

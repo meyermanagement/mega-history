@@ -13,6 +13,7 @@ import generateMetadata from '@salesforce/apex/TrackingController.generateMetada
 import handleCustomMetadata from '@salesforce/apex/TrackingController.handleCustomMetadata';
 import deployTriggerFiles from '@salesforce/apex/TrackingController.deployTriggers';
 import generateTriggerFiles from '@salesforce/apex/TrackingController.generateTriggerFiles';
+import checkDeploymentStatus from '@salesforce/apex/TrackingController.checkAsyncRequest'; 
 export default class Tracking extends LightningElement {
    
     @track mdColumns = [
@@ -47,7 +48,8 @@ export default class Tracking extends LightningElement {
                 iconName: 'utility:target_mode',
                 name: 'deploy_md', 
                 variant: 'brand',
-                title: 'Deploy'
+                title: 'Deploy',
+                disabled: {fieldName: 'mdDisabled'}
             }
         }
     ];
@@ -133,6 +135,8 @@ export default class Tracking extends LightningElement {
     @track deleteConfirmModal = false;
     @track deployModal = false;
     @track trackingDeployment;
+    asyncId;
+    intervalId;
     
 
     get deploymentComplete(){
@@ -354,7 +358,22 @@ export default class Tracking extends LightningElement {
         this.loading = true;
         generateMetadata({trackingData : JSON.stringify(this.trackingData)})
         .then((data) => {
-            this.mdData = data;
+            var mdList = data;
+            var hasNewObject = false;
+            for(var md of mdList){
+                if(md.mdType == 'Object' && md.mdOperation == 'Add') hasNewObject = true;
+            }
+            if(hasNewObject){
+                for(var md of mdList){
+                    if(md.mdType == 'Object' && md.mdOperation == 'Add') md.mdDisabled = false;
+                    else md.mdDisabled = true;
+                }
+            } else {
+                for(var md of mdList){
+                    md.mdDisabled = false;
+                }
+            }
+            this.mdData = mdList;
             this.deployModal = true;
             this.loading = false;
         })
@@ -408,24 +427,15 @@ export default class Tracking extends LightningElement {
         wrappers.push(row);
         if(row.mdType != 'Trigger'){
             handleCustomMetadata({ wrappers : JSON.stringify(wrappers) })
-            .then(() => {
-                let mdList = [];
-                for(var md of this.mdData){
-                    if(row.mdName != md.mdName) mdList.push(md);
+            .then((data) => {
+                if(data == 'Success'){
+                    this.handleSuccessfulDeployment(row);
+                } else {
+                    this.asyncId = data;
+                    this.interval = setInterval(() => {
+                        this.pollDeploymentStatus(row);
+                    }, 2000);
                 }
-                this.mdData = mdList;
-                refreshApex(this._wiredData);
-                if(this.mdData.length == 0) this.handleClose();
-                let operation = row.mdOperation.endsWith('e') ? row.mdOperation.toLowerCase()+'d' : row.mdOperation.toLowerCase()+'ed';
-                this.dispatchEvent(
-                    new ShowToastEvent({
-                        title: "Success!",
-                        message: `You have successfully ${operation} the ${row.mdName} ${row.mdType.toLowerCase()} configuration!`,
-                        variant: "success",
-                    }),
-                );
-                this.loading = false;
-                
             })
             .catch(error => {
                 console.error(error);
@@ -441,25 +451,11 @@ export default class Tracking extends LightningElement {
         } else {
             generateTriggerFiles({ wrappers : JSON.stringify(wrappers) })
             .then((data) => {
-                let zip = this.generateZIP(data);
-                this.deployFiles(zip);
-                let mdList = [];
-                for(var md of this.mdData){
-                    if(row.mdName != md.mdName) mdList.push(md);
-                }
-                this.mdData = mdList;
-                refreshApex(this._wiredData);
-                if(this.mdData.length == 0) this.handleClose();
-                let operation = row.mdOperation.endsWith('e') ? row.mdOperation.toLowerCase()+'d' : row.mdOperation.toLowerCase()+'ed';
-                this.dispatchEvent(
-                    new ShowToastEvent({
-                        title: "Success!",
-                        message: `You have successfully ${operation} the ${row.mdName} ${row.mdType.toLowerCase()} configuration!`,
-                        variant: "success",
-                    }),
-                );
-                this.loading = false;
-                
+                var fileMap = data;
+                var testName = data['testName'];
+                delete fileMap['testName'];
+                let zip = this.generateZIP(fileMap);
+                this.deployFiles(zip, testName, row);
             })
             .catch(error => {
                 console.error(error);
@@ -477,18 +473,91 @@ export default class Tracking extends LightningElement {
 
     generateZIP(fileMap){
         var zip = new JSZip();
-        for(var file of fileMap){
+        for(var file in fileMap){
+            console.log('file>>'+file);
             zip.file(file, fileMap[file]);
         }
         return zip.generate();
     }
 
-    async deployFiles(zip){
-        try {
-            await deployTriggerFiles({zipFile : zip});
-        } catch(e){
-            console.log(e);
+    async deployFiles(zip, testName, row){
+        await deployTriggerFiles({zipFile : zip, testName : testName})
+        .then((data) => {
+            this.asyncId = data;
+            this.interval = setInterval(() => {
+                this.pollDeploymentStatus(row);
+            }, 2000);
+        })
+        .catch(error => {
+            console.error(error);
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: "An error has occurred. Please contact the system administrator for further assistance.",
+                    message: error.body.message,
+                    variant: "error",
+                }),
+            );
+            this.loading = false;
+        }); 
+    }
+
+    pollDeploymentStatus(row){
+        if(this.asyncId){
+            checkDeploymentStatus({asyncId: this.asyncId})
+            .then((data) => {
+                if(data){
+                    clearInterval(this.interval);
+                    this.handleSuccessfulDeployment(row);
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: "An error has occurred. Please contact the system administrator for further assistance.",
+                        message: error.body.message,
+                        variant: "error",
+                    }),
+                );
+                this.loading = false;
+            }); 
+        } else {
+            this.loading = false;
         }
+    }
+
+    handleSuccessfulDeployment(row){
+        this.asyncId = undefined;
+        var mdList = [];
+        var hasNewObject = false;
+        for(var md of this.mdData){
+            if(row.mdName != md.mdName) {
+                mdList.push(md);
+                if(md.mdType == 'Object' && md.mdOperation == 'Add') hasNewObject = true;
+            }
+        }
+        if(hasNewObject){
+            for(var md of mdList){
+                if(md.mdType == 'Object' && md.mdOperation == 'Add') md.mdDisabled = false;
+                else md.mdDisabled = true;
+            }
+        } else {
+            for(var md of mdList){
+                md.mdDisabled = false;
+            }
+        }
+        this.mdData = mdList;
+        refreshApex(this._wiredData);
+        if(this.mdData.length == 0) this.handleClose();
+        let operation = row.mdOperation.endsWith('e') ? row.mdOperation.toLowerCase()+'d' : row.mdOperation.toLowerCase()+'ed';
+        this.dispatchEvent(
+            new ShowToastEvent({
+                title: "Success!",
+                message: `You have successfully ${operation} the ${row.mdName} ${row.mdType.toLowerCase()} configuration!`,
+                variant: "success",
+            }),
+        );
+        this.loading = false;
     }
 
     handleObjectSelected(event) {

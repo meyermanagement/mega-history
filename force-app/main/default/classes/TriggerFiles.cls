@@ -2,29 +2,38 @@ public with sharing class TriggerFiles {
 
     private static String componentApiVersion = '61.0';
 
-    public static String getPackageXml(MetadataWrapper wrapp) {
+    public static String getPackageXml(MetadataWrapper wrapp, Boolean includeMembers) {
         String triggerName = wrapp.mdName;
         String className = wrapp.mdName.removeEnd('Trigger');
         className = className + '_Test';
           // package.xml for deploy
-          return '<?xml version="1.0" encoding="UTF-8"?>' +
-            '<Package xmlns="http://soap.sforce.com/2006/04/metadata">' +
-            '<types>' +
-            '<members>' +
-            triggerName +
-            '</members>' +
-            '<name>ApexTrigger</name>' +
-            '</types>' +
-            '<types>' +
-            '<members>' +
-            className +
-            '</members>' +
-            '<name>ApexClass</name>' +
-            '</types>' +
-            '<version>' +
-            componentApiVersion +
-            '</version>' +
-            '</Package>';
+          if(includeMembers){
+            return '<?xml version="1.0" encoding="UTF-8"?>' +
+              '<Package xmlns="http://soap.sforce.com/2006/04/metadata">' +
+              '<types>' +
+              '<members>' +
+              triggerName +
+              '</members>' +
+              '<name>ApexTrigger</name>' +
+              '</types>' +
+              '<types>' +
+              '<members>' +
+              className +
+              '</members>' +
+              '<name>ApexClass</name>' +
+              '</types>' +
+              '<version>' +
+              componentApiVersion +
+              '</version>' +
+              '</Package>';
+          } else {
+            return '<?xml version="1.0" encoding="UTF-8"?>' +
+              '<Package xmlns="http://soap.sforce.com/2006/04/metadata">' +
+              '<version>' +
+              componentApiVersion +
+              '</version>' +
+              '</Package>';
+          }
       }
     
     public static String getDestructiveChangesXml(MetadataWrapper wrapp) {
@@ -109,7 +118,7 @@ public with sharing class TriggerFiles {
         ' on ' +
         wrapp.mdObject +
         '\n' +
-        '    (after insert, after update, after delete, after undelete)\n' +
+        '    (before insert, after insert, after update, after delete, after undelete)\n' +
         '{\n' +
         '    ' +
         'megahistory.HistoryTrackingService.track(Trigger.new, Trigger.oldMap, Trigger.OperationType.toString());\n' +

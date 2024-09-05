@@ -1,4 +1,6 @@
 global with sharing class TrackingController {
+
+    public class TrackingException extends Exception {}
     
     @AuraEnabled(cacheable=true)
     global static List<TrackingWrapper> getRecords() {
@@ -14,8 +16,8 @@ global with sharing class TrackingController {
             }
             Map<String, Schema.DescribeSobjectResult> describeMap = new Map<String, Schema.DescribeSObjectResult>();
             for(Schema.DescribeSobjectResult res : Schema.describeSObjects(new List<String>(objectNameMap.keySet()))) {
-                System.debug(res.getLabel());
-                describeMap.put(res.getLabel(), res);
+                System.debug(res.getName());
+                describeMap.put(res.getName(), res);
             }
             for(Tracked_Object__mdt to : trackedObjects){
                 System.debug(to);
@@ -42,7 +44,6 @@ global with sharing class TrackingController {
                 String concatFields = '';
                 wrapper.fieldList = new List<TrackingFieldDefinition>();
                 for(Tracked_Field__mdt field: objectNameMap.get(to.DeveloperName)){
-                    System.debug(field);
                     concatFields = concatFields += field.Field_API_Name__c+', ';
                     TrackingFieldDefinition fd = new TrackingFieldDefinition();
                     fd.fieldLabel = describeMap.get(to.DeveloperName).fields.getMap().get(field.Field_API_Name__c).getDescribe().getLabel();
@@ -58,11 +59,22 @@ global with sharing class TrackingController {
                 wrapper.mdtStatusClass = 'slds-text-color_success slds-text-title_caps';
                 wrapperMap.put(to.DeveloperName, wrapper);
             }
-            for(ApexTrigger at : [SELECT Id, NamespacePrefix, name, Body, Status, TableEnumOrId FROM ApexTrigger WHERE TableEnumOrId IN :wrapperMap.keySet() AND Name LIKE 'megahistory%' AND Status = 'Active']){
-                TrackingWrapper wrapper = wrapperMap.get(at.TableEnumOrId);
-                wrapper.trigStatusLabel = 'Deployed';
-                wrapper.trigStatusClass = 'slds-text-color_success slds-text-title_caps';
-                wrapperMap.put(at.TableEnumOrId, wrapper);
+            for(ApexTrigger at : [SELECT Id, NamespacePrefix, name, Body, Status, TableEnumOrId FROM ApexTrigger WHERE Name LIKE 'mh%' AND Status = 'Active']){
+                if(wrapperMap.get(at.TableEnumOrId) != null){
+                    TrackingWrapper wrapper = wrapperMap.get(at.TableEnumOrId);
+                    wrapper.trigStatusLabel = 'Deployed';
+                    wrapper.trigStatusClass = 'slds-text-color_success slds-text-title_caps';
+                    wrapperMap.put(at.TableEnumOrId, wrapper);
+                } else {
+                    TrackingWrapper wrapper = new TrackingWrapper();
+                    wrapper.objectName = at.TableEnumOrId;
+                    wrapper.trigStatusLabel = 'Deployed';
+                    wrapper.trigStatusClass = 'slds-text-color_success slds-text-title_caps';
+                    wrapper.mdtStatusLabel = 'Not Deployed';
+                    wrapper.mdtStatusClass = 'slds-text-color_error slds-text-title_caps';
+                    wrapperMap.put(at.TableEnumOrId, wrapper);
+                }
+            
             }
             return wrapperMap.values();
         } catch (Exception e) {
@@ -86,14 +98,25 @@ global with sharing class TrackingController {
         for(Schema.SObjectType d : gd.values())
         {
             Schema.DescribeSObjectResult ds = d.getDescribe();
-            System.debug(ds.getName());
-            System.debug(ds.isCreateable());
-            if(!ds.isCreateable() || objectNameMap.keySet().contains(ds.getName()) || ds.isCustomSetting() || !ds.isQueryable()) continue;
-            else {
-                TrackingWrapper wrapper = new TrackingWrapper();
-                wrapper.objectName = ds.getName();
-                wrapper.objectLabel = ds.getLabel();
-                wrapperMap.put(ds.getName(), wrapper);
+            String sobjStruct = JSON.serialize(ds);
+            DescribeSobjectResultJSON sobjProps = (DescribeSobjectResultJSON)JSON.deserialize(sobjStruct, DescribeSobjectResultJSON.class);
+            if(sobjProps.triggerable){
+                System.debug(sobjProps);
+                System.debug(ds.fields.getMap());
+                Boolean updateableFields = false;
+                Map<String,Schema.SObjectField> mfields = ds.fields.getMap();
+                for(Schema.SObjectField soField : mfields.values()){
+                    Schema.DescribeFieldResult fieldResult = soField.getDescribe();
+                    if(fieldResult.isUpdateable() && !fieldResult.isDeprecatedAndHidden()){
+                        updateableFields = true;
+                    }
+                }
+                if(updateableFields){
+                    TrackingWrapper wrapper = new TrackingWrapper();
+                    wrapper.objectName = ds.getName();
+                    wrapper.objectLabel = ds.getLabel();
+                    wrapperMap.put(ds.getName(), wrapper);
+                }
             }
         }
         List<String> orderedList = new List<String>(wrapperMap.keySet());
@@ -103,6 +126,11 @@ global with sharing class TrackingController {
             results.add(wrapperMap.get(s));
         }
         return results;
+    }
+
+    public class DescribeSobjectResultJSON { 
+        public String name {get;set;}
+        public Boolean triggerable {get;set;}
     }
 
     @AuraEnabled(cacheable=true)
@@ -324,7 +352,7 @@ global with sharing class TrackingController {
                             System.debug(md);
                             mdWrapperList.add(md);
                         }
-                    } else {
+                    } else if(wrapp.mdtStatusLabel != 'Pending Removal') {
                         md.mdOperation = 'Add';
                         System.debug(md);
                         mdWrapperList.add(md);
@@ -343,7 +371,7 @@ global with sharing class TrackingController {
                 }
                 if(wrapp.trigStatusLabel != 'Deployed'){
                     MetadataWrapper md = new MetadataWrapper();
-                    md.mdName = 'megahistory'+wrapp.objectName+'Trigger';
+                    md.mdName = 'mh'+wrapp.objectName+'Trigger';
                     md.mdType = 'Trigger';
                     md.mdObject = wrapp.objectName;
                     md.mdOperation = wrapp.trigStatusLabel == 'Pending Removal' ? 'Remove' : 'Add';
@@ -360,7 +388,7 @@ global with sharing class TrackingController {
     }
 
     @AuraEnabled
-    global static void handleCustomMetadata(String wrappers){
+    global static String handleCustomMetadata(String wrappers){
         try {
             System.debug(wrappers);
             Map<String, String> metaDataMap = new Map<String, String>();
@@ -381,45 +409,72 @@ global with sharing class TrackingController {
                     }
                 }
             }
-            System.debug(metadataToDelete);
-            if(!metadataObjectsToDeploy.isEmpty()) CreateMetadata.updateAndDeployMetadata(metadataObjectsToDeploy);
-            if(!metadataFieldsToDeploy.isEmpty()) CreateMetadata.updateAndDeployMetadata(metadataFieldsToDeploy);
-            if(!metadataToDelete.isEmpty()) deleteMetadata(metadataToDelete);
-            
+            if(!metadataObjectsToDeploy.isEmpty()) return CreateMetadata.updateAndDeployMetadata(metadataObjectsToDeploy);
+            if(!metadataFieldsToDeploy.isEmpty()) return CreateMetadata.updateAndDeployMetadata(metadataFieldsToDeploy);
+            if(!metadataToDelete.isEmpty()) return deleteMetadata(metadataToDelete);
+            return null;
         } catch (Exception e) {
             System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }
     
-    private static void deleteMetadata(List<MetadataWrapper> wrappers){
+    private static String deleteMetadata(List<MetadataWrapper> wrappers){
         List<String> recordsToDelete = new List<String>();
+        Set<String> objectNames = new Set<String>();
         for(MetadataWrapper wrapper : wrappers){
-            String metadataTypeName = wrapper.mdType == 'Object' ? 'megahistory__Tracked_Object__mdt' : 'megahistory__Tracked_Field__mdt';
-            String metadataRecordName = wrapper.mdType == 'Object' ? wrapper.mdObject : wrapper.mdObject+'_'+wrapper.mdName.replaceAll('_', '');
+            String metadataTypeName;
+            String metadataRecordName;
+            if(wrapper.mdType == 'Object'){
+                metadataTypeName = 'megahistory__Tracked_Object__mdt';
+                metadataRecordName =  wrapper.mdObject;
+                objectNames.add(metadataRecordName);
+            } else {
+                metadataTypeName = 'megahistory__Tracked_Field__mdt';
+                metadataRecordName = wrapper.mdObject+'_'+wrapper.mdName.replaceAll('_', '');
+            }
             recordsToDelete.add(metadataTypeName+'.'+metadataRecordName);
         }
-        System.debug(recordsToDelete);
-        MetadataService.MetadataPort service = new MetadataService.MetadataPort();
-        service.SessionHeader = new MetadataService.SessionHeader_element();
-        service.SessionHeader.sessionId = SetupController.getSessionIdFromVFPage();
-        service.deleteMetadata('CustomMetadata', recordsToDelete);
+        if(!objectNames.isEmpty()){
+            for(Tracked_Field__mdt tf : [SELECT Tracked_Object__r.DeveloperName, DeveloperName, Field_API_Name__c FROM Tracked_Field__mdt WHERE Tracked_Object__r.DeveloperName IN :objectNames ORDER BY Field_API_Name__c]){
+                String metadataTypeName = 'megahistory__Tracked_Field__mdt';
+                String metadataRecordName = tf.DeveloperName;
+                recordsToDelete.add(metadataTypeName+'.'+metadataRecordName);
+            }
+        }
+        recordsToDelete.sort();
+        MetadataService.MetadataPort service = createService();
+        MetadataService.DeleteResult[] results = service.deleteMetadata('CustomMetadata', recordsToDelete);
+        for(MetadataService.DeleteResult res : results){
+            if(!res.success){
+                throw new TrackingException(res.errors[0].message);
+            } else {
+                return 'Success';
+            }
+        }
+        return null;
     }
 
     @AuraEnabled
     global static Map<String, String> generateTriggerFiles(String wrappers){
         try {
-            System.debug(wrappers);
             Map<String, String> metaDataMap = new Map<String, String>();
             List<MetadataWrapper> wrapperList = (List<MetadataWrapper>)JSON.deserialize(wrappers, List<MetadataWrapper>.class);
             for(MetadataWrapper wrapper : wrapperList){
                 if(wrapper.mdType == 'Trigger'){
-                    metaDataMap.put('PackageXML', TriggerFiles.getPackageXml(wrapper));
-                    metaDataMap.put('DestructiveChangesXML', TriggerFiles.getDestructiveChangesXml(wrapper));
-                    metaDataMap.put('TriggerTestMetadata', TriggerFiles.getTriggerTestCodeMetadata());
-                    metaDataMap.put('TriggerTest', TriggerFiles.getTriggerTestCode(wrapper));
-                    metaDataMap.put('TriggerMetadata', TriggerFiles.getTriggerCodeMetadata());
-                    metaDataMap.put('Trigger', TriggerFiles.getTriggerCode(wrapper));
+                    String className = wrapper.mdName.removeEnd('Trigger');
+                    className = className + '_Test';
+                    if(wrapper.mdOperation == 'Remove') {
+                        metaDataMap.put('destructiveChanges.xml', TriggerFiles.getDestructiveChangesXml(wrapper));
+                        metaDataMap.put('package.xml', TriggerFiles.getPackageXml(wrapper, false));
+                    } else {
+                        metaDataMap.put('package.xml', TriggerFiles.getPackageXml(wrapper, true));
+                        metaDataMap.put('classes/'+className+'.cls-meta.xml', TriggerFiles.getTriggerTestCodeMetadata());
+                        metaDataMap.put('classes/'+className+'.cls', TriggerFiles.getTriggerTestCode(wrapper));
+                        metaDataMap.put('triggers/'+wrapper.mdName+'.trigger-meta.xml', TriggerFiles.getTriggerCodeMetadata());
+                        metaDataMap.put('triggers/'+wrapper.mdName+'.trigger', TriggerFiles.getTriggerCode(wrapper));
+                    }
+                    metaDataMap.put('testName', className+'');
                 }
             }
             return metaDataMap;
@@ -430,14 +485,83 @@ global with sharing class TrackingController {
     }
 
     @AuraEnabled
-    global static void deployTriggers(String zipFile){
+    global static String deployTriggers(String zipFile, String testName){
         try {
-            System.debug(zipFile);
-            
-            
+            MetadataService.MetadataPort service = createService();
+            MetadataService.DeployOptions deployOptions = new MetadataService.DeployOptions();
+            deployOptions.testLevel = 'RunSpecifiedTests';
+            deployOptions.runTests = new List<String>{ testName };
+            deployOptions.allowMissingFiles = false;
+            deployOptions.autoUpdatePackage = false;
+            deployOptions.checkOnly = false;
+            deployOptions.ignoreWarnings = false;
+            deployOptions.performRetrieve = false;
+            deployOptions.purgeOnDelete = false;
+            deployOptions.rollbackOnError = true;
+            deployOptions.singlePackage = true;
+            MetadataService.AsyncResult result = service.deploy(zipFile, DeployOptions);
+            return result.id;
         } catch (Exception e) {
             System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }
+
+    @AuraEnabled
+    global static Boolean checkAsyncRequest(String asyncId){
+        try {
+            MetadataService.MetadataPort service = createService();
+            MetadataService.DeployResult deployResult = service.checkDeployStatus(asyncId, true);
+            System.debug(deployResult.done);
+            System.debug(deployResult.details);
+            if (deployResult.details != null && deployResult.details.componentFailures != null){
+                for (MetadataService.DeployMessage deployMessage : deployResult.details.componentFailures){
+                    if (deployMessage.problem != null){
+                        throw new TrackingException(deployMessage.fileName +
+                        ' (Line: ' +
+                        deployMessage.lineNumber +
+                        ': Column:' +
+                        deployMessage.columnNumber +
+                        ') : ' +
+                        deployMessage.problem);
+                    }
+                }
+                MetadataService.RunTestsResult runTestResult = deployResult.details.runTestResult;
+                if (runTestResult.numFailures > 0){
+                    for (MetadataService.RunTestFailure testFailure : runTestResult.failures)
+                    throw new TrackingException(
+                        testFailure.name +
+                        '.' +
+                        testFailure.methodName +
+                        ' ' +
+                        testFailure.message +
+                        ' ' +
+                        testFailure.stackTrace
+                    );
+                }
+                if (runTestResult.codeCoverageWarnings != null){
+                    for (MetadataService.CodeCoverageWarning codeCoverageWarning : runTestResult.codeCoverageWarnings){
+                        throw new TrackingException((codeCoverageWarning.namespace != null
+                            ? codeCoverageWarning.namespace + '.'
+                            : '') +
+                            codeCoverageWarning.name +
+                            ':' +
+                            codeCoverageWarning.message
+                        );
+                    }
+                }
+            }
+            return deployResult.done;
+        } catch (Exception e) {
+            System.debug(e.getMessage());
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    private static MetadataService.MetadataPort createService() {
+        MetadataService.MetadataPort service = new MetadataService.MetadataPort();
+        service.SessionHeader = new MetadataService.SessionHeader_element();
+        service.SessionHeader.sessionId = SetupController.getSessionIdFromVFPage();
+        return service;
+      }
 }
