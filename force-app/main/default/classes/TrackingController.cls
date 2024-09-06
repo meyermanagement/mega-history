@@ -91,31 +91,33 @@ global with sharing class TrackingController {
         for(Tracked_Object__mdt to : trackedObjects){
             objectNameMap.put(to.DeveloperName, new List<Tracked_Field__mdt>());
         }
-        for(Tracked_Field__mdt tf : [SELECT Tracked_Object__r.DeveloperName, DeveloperName, Field_API_Name__c FROM Tracked_Field__mdt ORDER BY Field_API_Name__c]){
-            objectNameMap.get(tf.Tracked_Object__r.DeveloperName).add(tf);
-        }
+        // for(Tracked_Field__mdt tf : [SELECT Tracked_Object__r.DeveloperName, DeveloperName, Field_API_Name__c FROM Tracked_Field__mdt ORDER BY Field_API_Name__c]){
+        //     objectNameMap.get(tf.Tracked_Object__r.DeveloperName).add(tf);
+        // }
         Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe(); 
         for(Schema.SObjectType d : gd.values())
         {
             Schema.DescribeSObjectResult ds = d.getDescribe();
-            String sobjStruct = JSON.serialize(ds);
-            DescribeSobjectResultJSON sobjProps = (DescribeSobjectResultJSON)JSON.deserialize(sobjStruct, DescribeSobjectResultJSON.class);
-            if(sobjProps.triggerable){
-                System.debug(sobjProps);
-                System.debug(ds.fields.getMap());
-                Boolean updateableFields = false;
-                Map<String,Schema.SObjectField> mfields = ds.fields.getMap();
-                for(Schema.SObjectField soField : mfields.values()){
-                    Schema.DescribeFieldResult fieldResult = soField.getDescribe();
-                    if(fieldResult.isUpdateable() && !fieldResult.isDeprecatedAndHidden()){
-                        updateableFields = true;
+            if(!objectNameMap.keySet().contains(ds.getName())){
+                String sobjStruct = JSON.serialize(ds);
+                DescribeSobjectResultJSON sobjProps = (DescribeSobjectResultJSON)JSON.deserialize(sobjStruct, DescribeSobjectResultJSON.class);
+                if(sobjProps.triggerable){
+                    System.debug(sobjProps);
+                    System.debug(ds.fields.getMap());
+                    Boolean updateableFields = false;
+                    Map<String,Schema.SObjectField> mfields = ds.fields.getMap();
+                    for(Schema.SObjectField soField : mfields.values()){
+                        Schema.DescribeFieldResult fieldResult = soField.getDescribe();
+                        if(fieldResult.isUpdateable() && !fieldResult.isDeprecatedAndHidden()){
+                            updateableFields = true;
+                        }
                     }
-                }
-                if(updateableFields){
-                    TrackingWrapper wrapper = new TrackingWrapper();
-                    wrapper.objectName = ds.getName();
-                    wrapper.objectLabel = ds.getLabel();
-                    wrapperMap.put(ds.getName(), wrapper);
+                    if(updateableFields){
+                        TrackingWrapper wrapper = new TrackingWrapper();
+                        wrapper.objectName = ds.getName();
+                        wrapper.objectLabel = ds.getLabel();
+                        wrapperMap.put(ds.getName(), wrapper);
+                    }
                 }
             }
         }
@@ -185,6 +187,7 @@ global with sharing class TrackingController {
         try {
             System.debug(wrapperString);
             TrackingWrapper wrapper = (TrackingWrapper)JSON.deserialize(wrapperString, TrackingWrapper.class);
+            System.debug(wrapper.parentRef);
             Schema.DescribeSobjectResult res = Schema.describeSObjects(new List<String>{wrapper.objectName})[0];
             //List<Schema.ChildRelationship> childRels = res.getChildRelationships();
             Map<String,Schema.SObjectField> mfields = res.fields.getMap();
