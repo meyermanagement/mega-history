@@ -18,7 +18,7 @@
                     </h1>
                 </div>
             </lightning-layout-item>
-            <lightning-layout-item size="12" class="slds-p-horizontal_large slds-p-top_small">
+            <lightning-layout-item size="12" class="slds-p-horizontal_large slds-p-vertical_small">
                 <div class="action-completed" style="width: auto;" align="center">
                     <template lwc:if={loading}>
                         <div class="spinnerHolder">
@@ -26,21 +26,49 @@
                         </div>
                     </template>
                     <template lwc:else>
-                        <lightning-datatable
-                            key-field="objectName"
-                            data={trackingData}
-                            columns={columns}
-                            onrowaction={handleRowAction}
-                            hide-checkbox-column="true"
-                            >
-                    </lightning-datatable>
+                        <template lwc:if={hasMetadata}>
+                            <div style="width:99%;">
+                                <lightning-datatable
+                                    key-field="objectName"
+                                    data={trackingData}
+                                    columns={columns}
+                                    onrowaction={handleRowAction}
+                                    hide-checkbox-column="true"
+                                    >
+                                </lightning-datatable>
+                            </div>
+                        </template>
+                        <template lwc:else>
+                            <div align="center" class="cardBody slds-p-vertical_large">
+                                <p>
+                                    No Record Tracking configuration present.  
+                                </p>
+                                <p>  
+                                    You can still see standard field history and data-loaded history without this configuration by adding the MEGA History Related List component to your Lightning Record Page.
+                                </p>
+                                <p>
+                                    Check the Views tab for more detailed instructions.
+                                </p>
+                            </div>
+                        </template>
                     </template>
                 </div>
-            </lightning-layout-item>\
-            <lightning-layout-item size="12" class="slds-p-horizontal_xx-large slds-p-bottom_small">
-                <div align="right">
-                    <lightning-button label="Track New Object" title="Track New Object" onclick={newTracking} icon-name="utility:add" variant="brand-outline" class="slds-p-right_small"></lightning-button>
-                    <lightning-button label="Deploy" title="Deploy" onclick={openDeployModal} icon-name="utility:target_mode" variant="brand" disabled={deploymentComplete}></lightning-button>
+            </lightning-layout-item>
+            <lightning-layout-item size="12" class="slds-p-horizontal_x-large slds-p-vertical_small">
+                <div class="slds-grid slds-gutters">
+                    <div class="slds-col">
+                        <div class="cardTitle">
+                            <p>
+                                Depending on your organization.  Some items may take a few minutes to deploy.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="slds-col">
+                        <div align="right">
+                            <lightning-button label="Track New Object" title="Track New Object" onclick={newTracking} icon-name="utility:add" variant="brand-outline" class="slds-p-right_small"></lightning-button>
+                            <lightning-button label="Deploy" title="Deploy" onclick={openDeployModal} icon-name="utility:target_mode" variant="brand" disabled={deploymentComplete}></lightning-button>
+                        </div>
+                    </div>
                 </div>
             </lightning-layout-item>
         </lightning-layout>
@@ -68,8 +96,10 @@
                 </header>
                 <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
                     <template lwc:if={loading}>
-                        <div class="spinnerHolder">
-                            <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                        <div align="center">
+                            <div class="spinnerHolder">
+                                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                            </div>
                         </div>
                     </template>
                     <template lwc:else>
@@ -240,8 +270,10 @@
                 </header>
                 <div class="slds-modal__content" id="modal-content-id-3">
                     <template lwc:if={loading}>
-                        <div class="spinnerHolder">
-                            <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                        <div align="center">
+                            <div class="spinnerHolder">
+                                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                            </div>
                         </div>
                     </template>
                     <template lwc:else>
@@ -258,7 +290,11 @@
                 </div>
                <!-- modal footer start-->
                <footer class="slds-modal__footer">
-                    <lightning-button label="Close" title="Close" onclick={handleClose} class="slds-float_center"></lightning-button>
+                <!-- <lightning-button label="Cancel" title="Cancel" onclick={handleClose} class="slds-float_left"></lightning-button>
+                <lightning-button label="Deploy All" title="Deploy All" onclick={deployAllMetadata} variant="brand"></lightning-button> -->
+                <div align="center">
+                    <lightning-button label="Close" title="Close" onclick={handleClose}></lightning-button>
+                </div>
                </footer>
             </div>
         </section>

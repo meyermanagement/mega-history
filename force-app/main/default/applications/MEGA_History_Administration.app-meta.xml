@@ -14,6 +14,7 @@
     <navType>Standard</navType>
     <tabs>Setup</tabs>
     <tabs>Tracking</tabs>
+    <tabs>Views</tabs>
     <uiType>Lightning</uiType>
     <utilityBar>MEGA_History_Administration_UtilityBar</utilityBar>
 </CustomApplication>

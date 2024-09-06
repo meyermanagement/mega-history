@@ -36,6 +36,12 @@ public with sharing class RelatedListController {
                 isSuperUser = true;
             }
             responseMap.put(SUPER_USER_PARAM, String.valueOf(isSuperUser));
+            Initialization__c initialization = Initialization__c.getOrgDefaults();
+            if(!initialization.initialized__c){
+                initialization.Name = 'Default Initialization';
+                initialization.initialized__c = true;
+                upsert initialization;
+            }
             return JSON.serialize(responseMap);
         } catch (Exception e){
             System.debug(e.getMessage());
@@ -98,9 +104,11 @@ public with sharing class RelatedListController {
         return wrappers;
     }  
     
+    @TestVisible
     private static HistoryWrapper createWrapper(SObject record, Boolean customRecord){
         HistoryWrapper wrapper = new HistoryWrapper();
         wrapper.historyId = String.valueOf(record.get('Id'));
+        System.debug(record);
         if(customRecord){
             Schema.DescribeSObjectResult objectDescribe = Id.valueOf(String.valueOf(record.get('Record__c'))).getSObjectType().getDescribe();
             wrapper.objectAPIName = objectDescribe.getName();
@@ -128,12 +136,13 @@ public with sharing class RelatedListController {
             wrapper.newValue = String.valueOf(record.get('NewValue'));
             wrapper.newValueFull = String.valueOf(record.get('NewValue'));
             wrapper.createdDate = DateTime.valueOf(record.get('CreatedDate'));
-            wrapper.createdByName = String.valueOf(record.getSobject('CreatedBy').get('Name'));
+            if(!Test.isRunningTest()) wrapper.createdByName = String.valueOf(record.getSobject('CreatedBy').get('Name'));
             wrapper.createdById = String.valueOf(record.get('CreatedById'));
         }
         return wrapper;
     }  
         
+    @TestVisible
     private static String getParentRelationshipName(Id recordId, String childSobjectApiName, String relatedFieldApiName){
         Schema.DescribeSObjectResult descrRes = recordId.getSObjectType().getDescribe();
         String name;

@@ -18,7 +18,7 @@ export default class Setup extends NavigationMixin(LightningElement) {
     wiredConnection;
     wiredPermission;
     wiredTracking;
-    wiredViews;
+    wiredViews = true;
     orgURL;
     connectionLoading;
     permissionLoading;
@@ -50,16 +50,14 @@ export default class Setup extends NavigationMixin(LightningElement) {
     }
 
     get viewsFailure() {
-        return this.wiredViews.data;
+        return this.wiredViews;
     }
 
     get viewsClass() {
-        return this.wiredViews.data ? 'action-needed' : 'action-completed'
+        return this.wiredViews ? 'action-needed' : 'action-completed'
     }
 
     connectedCallback(){
-        console.log('connectedCallback');
-        console.log('wiredTracking', this.wiredTracking.data);
         if(this.wiredTracking.data == undefined) {
             this.connectionLoading = true;
             this.permissionLoading = true;
@@ -126,8 +124,8 @@ export default class Setup extends NavigationMixin(LightningElement) {
 
     @wire(checkViews)
     getViews(result) {
-        console.log('getViews');
-        this.wiredViews = result;
+        console.log('getViewsresult>>'+JSON.stringify(result));
+        this.wiredViews = result.data;
         this.viewsLoading = false;
         if (result.error) {
             console.log(result.error.body.message);
