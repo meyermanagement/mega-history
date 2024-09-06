@@ -13,8 +13,9 @@
 }
 
 .cardBody p {
-    font-size: 12px;
-    color: #a7a5a5;
+    font-size: 14px;
+    color: #575757;
+    padding: 8px;
 }
 
 .cardTitle h1 {
@@ -24,6 +25,8 @@
 .cardLogo h1 {
     font-size: 48px;
 }
+
+
 
 .action-needed{
     cursor: pointer;

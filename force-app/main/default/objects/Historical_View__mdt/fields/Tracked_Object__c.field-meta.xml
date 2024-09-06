@@ -4,7 +4,7 @@
     <description>Reference to the custom metadata type configured for tracking</description>
     <fieldManageability>SubscriberControlled</fieldManageability>
     <label>Tracked Object</label>
-    <referenceTo>Tracked_Objects__mdt</referenceTo>
+    <referenceTo>Tracked_Object__mdt</referenceTo>
     <relationshipLabel>Historical Views</relationshipLabel>
     <relationshipName>Historical_Views</relationshipName>
     <required>true</required>

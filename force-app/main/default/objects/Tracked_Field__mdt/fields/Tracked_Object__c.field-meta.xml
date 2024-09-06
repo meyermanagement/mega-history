@@ -3,7 +3,7 @@
     <fullName>Tracked_Object__c</fullName>
     <fieldManageability>SubscriberControlled</fieldManageability>
     <label>Tracked Object</label>
-    <referenceTo>Tracked_Objects__mdt</referenceTo>
+    <referenceTo>Tracked_Object__mdt</referenceTo>
     <relationshipLabel>Tracked Fields</relationshipLabel>
     <relationshipName>Tracked_Fields</relationshipName>
     <required>true</required>

@@ -6,7 +6,7 @@
                     <h1>
                         Views
                         <p>
-                            Configure how you want to display your tracked record and field history.
+                            Configure where to display your tracked record and field history.
                         </p>
                     </h1>
                 </div>
@@ -19,11 +19,48 @@
                 </div>
             </lightning-layout-item>
             <lightning-layout-item size="12" class="slds-p-horizontal_large slds-p-top_small">
-                <template lwc:if={loading}>
-                    <div class="spinnerHolder">
-                        <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
-                    </div>
-                </template>
+                <div class="action-completed" style="width: auto;">
+                    <template lwc:if={loading}>
+                        <div class="spinnerHolder">
+                            <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="cardBody">
+                            <div align="center" class="slds-p-vertical_large">
+                                <h2>
+                                    <u>Follow the instructions below to add the MEGA History Related List component to your Lightning Record Pages.</u>
+                                </h2>
+                            </div>
+                            <div class="cardBody slds-p-horizontal_x-large">
+                                <h2>
+                                    <ul style="list-style-type:disc;">
+                                        <li>
+                                            Using the App Launcher, open the app(ie. Service Console, Sales, etc...) that you would like to configure to use MEGA History.
+                                        </li>
+                                        <li>
+                                            Open a record that you would like to see the MEGA History related list.
+                                        </li>
+                                        <li>
+                                            Click the gear icon on the top right of the screen and select Edit Page.
+                                        </li>
+                                        <li>
+                                            In the search bar on the left side of the screen, search for the "MEGA History Related List" and drag it onto your page wherever you want.
+                                        </li>
+                                        <li>
+                                            Click Save on the top right and activate your Lightning Record Page by following the prompts(if not already activated).  From the Activation screen, you can add this Lighting Record Page across all your apps or only for certain record types.
+                                        </li>
+                                    </ul>
+                                </h2>
+                            </div>
+                            <div align="center" class="slds-p-vertical_large">
+                                <h2>
+                                    <u>IMPORTANT: You can use data-loaded/custom history along with standard history for Objects not available in the Tracking tab.</u>
+                                </h2>
+                            </div>
+                        </div>
+                    </template>
+                </div>
             </lightning-layout-item>
         </lightning-layout>
     </lightning-card>

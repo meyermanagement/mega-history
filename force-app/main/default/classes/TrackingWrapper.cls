@@ -44,5 +44,8 @@ global with sharing class TrackingWrapper {
         this.fields = original.fields;
         this.additionalField1 = original.additionalField1;
         this.additionalField2 = original.additionalField2;
+        this.trackCreate = original.trackCreate;
+        this.trackDelete = original.trackDelete;
+        this.trackUndelete = original.trackUndelete;
     }
 }

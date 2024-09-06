@@ -44,8 +44,8 @@ global with sharing class SetupController {
     @AuraEnabled(cacheable=true)
     global static Boolean checkViews() {
         try {
-            List<Historical_View__mdt> records = [SELECT Id FROM Historical_View__mdt LIMIT 1];
-            return records.isEmpty();
+            Initialization__c initialization = Initialization__c.getInstance();
+            return !initialization.initialized__c;
         } catch (Exception e) {
             System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
@@ -55,10 +55,14 @@ global with sharing class SetupController {
     @AuraEnabled(cacheable=true)
     global static String getSessionIdFromVFPage(){
         try {
-            String content = Page.SessionIdPage.getContent().toString();
-            Integer s = content.indexOf('Start_Of_Session_Id') + 'Start_Of_Session_Id'.length(),
-                    e = content.indexOf('End_Of_Session_Id');
-            return content.substring(s, e);
+            if(!Test.isRunningTest()){
+                String content = Page.SessionIdPage.getContent().toString();
+                Integer s = content.indexOf('Start_Of_Session_Id') + 'Start_Of_Session_Id'.length(),
+                        e = content.indexOf('End_Of_Session_Id');
+                return content.substring(s, e);
+            } else {
+                return null;
+            }
         } catch (Exception e) {
             System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
