@@ -52,7 +52,7 @@ public without sharing class CreateMetadata {
         mdContainer.addMetadata(customMetadata);
     
         MyDeployCallback callback = new MyDeployCallback();
-        Id jobId = Metadata.Operations.enqueueDeployment(mdContainer, callback);
+        Id jobId = Test.isRunningTest() ? null : Metadata.Operations.enqueueDeployment(mdContainer, callback);
         System.debug(jobId);
         return jobId;
         // Setup custom metadata to be created in the subscriber org.

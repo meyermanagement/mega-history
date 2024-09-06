@@ -445,7 +445,7 @@ global with sharing class TrackingController {
         }
         recordsToDelete.sort();
         MetadataService.MetadataPort service = createService();
-        MetadataService.DeleteResult[] results = service.deleteMetadata('CustomMetadata', recordsToDelete);
+        MetadataService.DeleteResult[] results = Test.isRunningTest() ? new MetadataService.DeleteResult[]{} : service.deleteMetadata('CustomMetadata', recordsToDelete);
         for(MetadataService.DeleteResult res : results){
             if(!res.success){
                 throw new TrackingException(res.errors[0].message);
@@ -500,7 +500,7 @@ global with sharing class TrackingController {
             deployOptions.purgeOnDelete = false;
             deployOptions.rollbackOnError = true;
             deployOptions.singlePackage = true;
-            MetadataService.AsyncResult result = service.deploy(zipFile, DeployOptions);
+            MetadataService.AsyncResult result = Test.isRunningTest() ? new MetadataService.AsyncResult() : service.deploy(zipFile, DeployOptions);
             return result.id;
         } catch (Exception e) {
             System.debug(e.getMessage());
@@ -512,7 +512,7 @@ global with sharing class TrackingController {
     global static Boolean checkAsyncRequest(String asyncId){
         try {
             MetadataService.MetadataPort service = createService();
-            MetadataService.DeployResult deployResult = service.checkDeployStatus(asyncId, true);
+            MetadataService.DeployResult deployResult = Test.isRunningTest() ? new MetadataService.DeployResult() : service.checkDeployStatus(asyncId, true);
             System.debug(deployResult.done);
             System.debug(deployResult.details);
             if (deployResult.details != null && deployResult.details.componentFailures != null){
