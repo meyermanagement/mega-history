@@ -9,7 +9,7 @@ public class TrackingControllerTest {
         List<String> fieldList = new List<String>();
         for(TrackingFieldDefinition tfd : wrapper.fieldList) fieldList.add(tfd.fieldAPIName);
         wrappers = TrackingController.submitMetaData(JSON.serialize(wrapper), JSON.serialize(wrappers), fieldList);
-        List<MetadataWrapper> mdWrappers = TrackingController.generateMetadata(JSON.serialize(wraptpers));
+        List<MetadataWrapper> mdWrappers = TrackingController.generateMetadata(JSON.serialize(wrappers));
         String asyncId = TrackingController.handleCustomMetadata(JSON.serialize(mdWrappers));
         asyncId = TrackingController.deleteMetadata(mdWrappers);
         Map<String, String> fileMap = TrackingController.generateTriggerFiles(JSON.serialize(mdWrappers));

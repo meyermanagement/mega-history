@@ -15,7 +15,7 @@ echo doPostDeploysAndSetup - org_alias is $org_alias
 echo
 echo
 echo Switch default DX User to MEGA_History_Super_Admin permission set
-sf apex run -o $org_alias -f scripts/assignUserCurrentAdminToSuperAdminPermissionSet.apex
+sf apex run -o $org_alias -f scripts/apex/assignUserCurrentAdminToSuperAdminPermissionSet.apex
 
 
 sleep 45 
