@@ -419,6 +419,7 @@ global with sharing class TrackingController {
         }
     }
     
+    @TestVisible
     private static String deleteMetadata(List<MetadataWrapper> wrappers){
         List<String> recordsToDelete = new List<String>();
         Set<String> objectNames = new Set<String>();

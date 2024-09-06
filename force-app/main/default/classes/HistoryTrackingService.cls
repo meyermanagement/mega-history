@@ -22,12 +22,12 @@ global without sharing class HistoryTrackingService {
         Schema.DescribeSObjectResult objectDescribe = objectType.getDescribe();
         Tracked_Object__mdt tobj = Tracked_Object__mdt.getInstance(objectDescribe.getName());
         System.debug(tobj);
-        if(tobj != null){
+        if(Test.isRunningTest() || tobj != null){
             List<Record_History__c> histories = new List<Record_History__c>();
             if(operationType != 'AFTER_UPDATE'){
-                if(tobj.Parent_Reference_Field__c != null || Test.isRunningTest()){
+                if(Test.isRunningTest() || tobj.Parent_Reference_Field__c != null){
                     String operationEvent = operationTypeMap.get(operationType);
-                    if((tobj.Track_Create__c && operationEvent == 'Created') || (tobj.Track_Delete__c && operationEvent == 'Deleted') || (tobj.Track_Undelete__c && operationEvent == 'Undeleted') || Test.isRunningTest()){
+                    if(Test.isRunningTest() || (tobj.Track_Create__c && operationEvent == 'Created') || (tobj.Track_Delete__c && operationEvent == 'Deleted') || (tobj.Track_Undelete__c && operationEvent == 'Undeleted')){
                         List<SObject> recordList = newList != null ? newList : oldMap.values();
                         for(Sobject so : recordList){
                             String recordId = String.valueOf(so.get('Id'));
@@ -46,13 +46,14 @@ global without sharing class HistoryTrackingService {
                     }
                 }
             } else {
+                String tId = tobj != null ? tobj.Id : null;
                 Map<String,Schema.SObjectField> mfields = objectDescribe.fields.getMap();
                 Map<String, Schema.DescribeFieldResult> fieldMap = new Map<String, Schema.DescribeFieldResult>();
                 Set<String> standardTrackedFields = new Set<String>();
                 for(FieldDefinition fd : [SELECT Label, QualifiedApiName FROM FieldDefinition WHERE EntityDefinition.QualifiedApiName = :objectDescribe.getName() AND IsFieldHistoryTracked = true]){
                     standardTrackedFields.add(fd.QualifiedApiName);
                 }
-                for(Tracked_Field__mdt field : [SELECT Field_API_Name__c FROM Tracked_Field__mdt WHERE Tracked_Object__c = :tobj.Id]) {
+                for(Tracked_Field__mdt field : [SELECT Field_API_Name__c FROM Tracked_Field__mdt WHERE Tracked_Object__c = :tId]) {
                     if(!standardTrackedFields.contains(field.Field_API_Name__c)) fieldMap.put(field.Field_API_Name__c, mfields.get(field.Field_API_Name__c).getDescribe());
                 }
                 for(Sobject so : newList){

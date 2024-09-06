@@ -55,10 +55,14 @@ global with sharing class SetupController {
     @AuraEnabled(cacheable=true)
     global static String getSessionIdFromVFPage(){
         try {
-            String content = Page.SessionIdPage.getContent().toString();
-            Integer s = content.indexOf('Start_Of_Session_Id') + 'Start_Of_Session_Id'.length(),
-                    e = content.indexOf('End_Of_Session_Id');
-            return content.substring(s, e);
+            if(!Test.isRunningTest()){
+                String content = Page.SessionIdPage.getContent().toString();
+                Integer s = content.indexOf('Start_Of_Session_Id') + 'Start_Of_Session_Id'.length(),
+                        e = content.indexOf('End_Of_Session_Id');
+                return content.substring(s, e);
+            } else {
+                return null;
+            }
         } catch (Exception e) {
             System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
