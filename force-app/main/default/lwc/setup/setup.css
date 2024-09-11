@@ -21,6 +21,11 @@
     font-size: 30px;
 }
 
+.cardLogo {
+    width: 200px;
+    height: auto;
+}
+
 .cardLogo h1 {
     font-size: 48px;
 }
