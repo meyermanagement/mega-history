@@ -171,6 +171,14 @@ if [ 11 -gt "$progress_marker_value" ] && [ 11 -le "$stop_marker" ]
     progress_marker_value=11
 fi
 
+# Do all post deploy tasks and setup
+if [ 12 -gt "$progress_marker_value" ] && [ 12 -le "$stop_marker" ]
+  then
+    sf org open -u $org_alias
+    echo 12 > "$temp_dir/$progress_marker_filename"
+    progress_marker_value=12
+fi
+
 ## Remove the temp file from deployment failures ##
 if [ "$deleteTempFailFile" == "true" ]
   then

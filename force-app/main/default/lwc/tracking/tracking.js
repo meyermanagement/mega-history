@@ -14,6 +14,7 @@ import handleCustomMetadata from '@salesforce/apex/TrackingController.handleCust
 import deployTriggerFiles from '@salesforce/apex/TrackingController.deployTriggers';
 import generateTriggerFiles from '@salesforce/apex/TrackingController.generateTriggerFiles';
 import checkDeploymentStatus from '@salesforce/apex/TrackingController.checkAsyncRequest'; 
+import MEGA_HISTORY_LOGO from "@salesforce/contentAssetUrl/MEGA_Main_Logo";
 export default class Tracking extends LightningElement {
    
     @track mdColumns = [
@@ -138,6 +139,7 @@ export default class Tracking extends LightningElement {
     @track trackingDeployment;
     asyncId;
     intervalId;
+    logoUrl = MEGA_HISTORY_LOGO;
     
 
     get deploymentComplete(){
