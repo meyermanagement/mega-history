@@ -14,6 +14,7 @@ import handleCustomMetadata from '@salesforce/apex/TrackingController.handleCust
 import deployTriggerFiles from '@salesforce/apex/TrackingController.deployTriggers';
 import generateTriggerFiles from '@salesforce/apex/TrackingController.generateTriggerFiles';
 import checkDeploymentStatus from '@salesforce/apex/TrackingController.checkAsyncRequest'; 
+import MEGA_HISTORY_LOGO from "@salesforce/contentAssetUrl/MEGA_Main_Logo";
 export default class Tracking extends LightningElement {
    
     @track mdColumns = [
@@ -121,6 +122,7 @@ export default class Tracking extends LightningElement {
 
     _wiredData;
     loading;
+    modalLoading;
     @track trackingData;
     @track mdData;
     @track editModal = false;
@@ -137,6 +139,7 @@ export default class Tracking extends LightningElement {
     @track trackingDeployment;
     asyncId;
     intervalId;
+    logoUrl = MEGA_HISTORY_LOGO;
     
 
     get deploymentComplete(){
@@ -193,7 +196,7 @@ export default class Tracking extends LightningElement {
     }
 
     newTracking() {
-        this.loading = true;
+        this.modalLoading = true;
         this.showObjectLookup = true;
         this.editModal = true;
         this.selectedObject = {};
@@ -207,7 +210,7 @@ export default class Tracking extends LightningElement {
                 });
             }
             this.objects.push(...items);
-            this.loading = false;
+            this.modalLoading = false;
         })
         .catch(error => {
 			console.error(error);
@@ -218,7 +221,7 @@ export default class Tracking extends LightningElement {
                     variant: "error",
                 }),
             );
-            this.loading = false;
+            this.modalLoading = false;
 		}); 
     }
 
@@ -247,13 +250,29 @@ export default class Tracking extends LightningElement {
     }
 
     editTracking(row) {
-        this.loading = true;
+        this.modalLoading = true;
         this.showObjectLookup = false;
         this.editModal = true;
         this.selectedObject = {...row};
         getObjectDetails({ wrapperString : JSON.stringify(this.selectedObject) })
         .then((data) => {
             this.selectedObject = data;
+            if(this.selectedObject.parentRef == undefined) {
+                let tempObj = {...this.selectedObject};
+                tempObj.parentRef = '';
+                this.selectedObject = {...tempObj};
+            }
+            if(this.selectedObject.additionalField1 == undefined) {
+                let tempObj = {...this.selectedObject};
+                tempObj.additionalField1 = '';
+                this.selectedObject = {...tempObj};
+            }
+            if(this.selectedObject.additionalField2 == undefined) {
+                let tempObj = {...this.selectedObject};
+                tempObj.additionalField2 = '';
+                this.selectedObject = {...tempObj};
+            }
+            console.log('this.selectedObject>>'+JSON.stringify(this.selectedObject));
             const items = [];
             const selected = [];
             const required = [];
@@ -280,7 +299,7 @@ export default class Tracking extends LightningElement {
             this.values.push(...selected);
             this.requiredOptions.push(...required);
             this.parentRefs.push(...parentItems);
-            this.loading = false;
+            this.modalLoading = false;
         })
         .catch(error => {
 			console.error(error);
@@ -291,7 +310,7 @@ export default class Tracking extends LightningElement {
                     variant: "error",
                 }),
             );
-            this.loading = false;
+            this.modalLoading = false;
 		}); 
         
     }
@@ -310,10 +329,19 @@ export default class Tracking extends LightningElement {
     }
 
     handleSave(){
-        this.loading = true;
+        this.modalLoading = true;
         submitMetaData({ wrapperString : JSON.stringify(this.selectedObject), trackingData : JSON.stringify(this.trackingData), fields : this.values })
         .then((data) => {
             this.trackingData = data;
+            var objectList = [];
+            for(var i of this.objects){
+                if(i.value != this.selectedObject.objectName) objectList.push(i);
+            }
+            this.objects = objectList;
+            refreshApex(this._wiredData);
+            this.selectedObject = {};
+            this.handleClose();
+            this.modalLoading = false;
         })
         .catch(error => {
 			console.error(error);
@@ -324,12 +352,8 @@ export default class Tracking extends LightningElement {
                     variant: "error",
                 }),
             );
-            this.loading = false;
+            this.modalLoading = false;
 		}); 
-        refreshApex(this._wiredData);
-        this.selectedObject = {};
-        this.handleClose();
-        this.loading = false;
     }
 
     handleDelete(){
@@ -355,7 +379,7 @@ export default class Tracking extends LightningElement {
     }
 
     openDeployModal(){
-        this.loading = true;
+        this.modalLoading = true;
         generateMetadata({trackingData : JSON.stringify(this.trackingData)})
         .then((data) => {
             var mdList = data;
@@ -375,7 +399,7 @@ export default class Tracking extends LightningElement {
             }
             this.mdData = mdList;
             this.deployModal = true;
-            this.loading = false;
+            this.modalLoading = false;
         })
         .catch(error => {
 			console.error(error);
@@ -386,7 +410,7 @@ export default class Tracking extends LightningElement {
                     variant: "error",
                 }),
             );
-            this.loading = false;
+            this.modalLoading = false;
 		}); 
     }
 
@@ -422,7 +446,7 @@ export default class Tracking extends LightningElement {
     }
 
     deployMetadata(row){
-        this.loading = true;
+        this.modalLoading = true;
         let wrappers = [];
         wrappers.push(row);
         if(row.mdType != 'Trigger'){
@@ -446,7 +470,7 @@ export default class Tracking extends LightningElement {
                         variant: "error",
                     }),
                 );
-                this.loading = false;
+                this.modalLoading = false;
             }); 
         } else {
             generateTriggerFiles({ wrappers : JSON.stringify(wrappers) })
@@ -466,7 +490,7 @@ export default class Tracking extends LightningElement {
                         variant: "error",
                     }),
                 );
-                this.loading = false;
+                this.modalLoading = false;
             }); 
         }
     }
@@ -497,7 +521,7 @@ export default class Tracking extends LightningElement {
                     variant: "error",
                 }),
             );
-            this.loading = false;
+            this.modalLoading = false;
         }); 
     }
 
@@ -519,10 +543,10 @@ export default class Tracking extends LightningElement {
                         variant: "error",
                     }),
                 );
-                this.loading = false;
+                this.modalLoading = false;
             }); 
         } else {
-            this.loading = false;
+            this.modalLoading = false;
         }
     }
 
@@ -557,7 +581,7 @@ export default class Tracking extends LightningElement {
                 variant: "success",
             }),
         );
-        this.loading = false;
+        this.modalLoading = false;
     }
 
     handleObjectSelected(event) {
@@ -595,7 +619,7 @@ export default class Tracking extends LightningElement {
             this.values.push(...selected);
             this.requiredOptions.push(...required);
             this.parentRefs.push(...parentItems);
-            this.loading = false;
+            this.modalLoading = false;
         })
         .catch(error => {
 			console.error(error);
@@ -606,7 +630,7 @@ export default class Tracking extends LightningElement {
                     variant: "error",
                 }),
             );
-            this.loading = false;
+            this.modalLoading = false;
 		}); 
     }
 

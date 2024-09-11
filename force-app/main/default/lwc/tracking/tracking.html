@@ -12,10 +12,8 @@
                 </div>
             </lightning-layout-item>
             <lightning-layout-item size="6">
-                <div class="cardLogo slds-p-right_xx-large" align="right">
-                    <h1>
-                        MEGA History
-                    </h1>
+                <div class="slds-p-right_xx-large " align="right">
+                    <img src={logoUrl} class="cardLogo"/>
                 </div>
             </lightning-layout-item>
             <lightning-layout-item size="12" class="slds-p-horizontal_large slds-p-vertical_small">
@@ -27,7 +25,7 @@
                     </template>
                     <template lwc:else>
                         <template lwc:if={hasMetadata}>
-                            <div style="width:99%;">
+                            <div style="width:auto;">
                                 <lightning-datatable
                                     key-field="objectName"
                                     data={trackingData}
@@ -95,7 +93,7 @@
                     </h2>
                 </header>
                 <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
-                    <template lwc:if={loading}>
+                    <template lwc:if={modalLoading}>
                         <div align="center">
                             <div class="spinnerHolder">
                                 <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
@@ -230,7 +228,7 @@
                     </h2>
                 </header>
                 <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-2">
-                    <template lwc:if={loading}>
+                    <template lwc:if={modalLoading}>
                         <div class="spinnerHolder">
                             <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
                         </div>
@@ -269,7 +267,7 @@
                     </h2>
                 </header>
                 <div class="slds-modal__content" id="modal-content-id-3">
-                    <template lwc:if={loading}>
+                    <template lwc:if={modalLoading}>
                         <div align="center">
                             <div class="spinnerHolder">
                                 <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>

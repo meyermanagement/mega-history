@@ -7,6 +7,7 @@ import checkPermissions from "@salesforce/apex/SetupController.checkPermissionAs
 import checkTracking from "@salesforce/apex/SetupController.checkRecordTracking";
 import checkViews from "@salesforce/apex/SetupController.checkViews";
 import getURL from "@salesforce/apex/SetupController.getOrgURL";
+import MEGA_HISTORY_LOGO from "@salesforce/contentAssetUrl/MEGA_Main_Logo";
 
 export default class Setup extends NavigationMixin(LightningElement) {
 
@@ -24,6 +25,7 @@ export default class Setup extends NavigationMixin(LightningElement) {
     permissionLoading;
     trackingLoading;
     viewsLoading;
+    logoUrl = MEGA_HISTORY_LOGO;
 
     get connectionFailure() {
         return this.wiredConnection.data;
