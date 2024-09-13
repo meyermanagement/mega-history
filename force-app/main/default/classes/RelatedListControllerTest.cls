@@ -25,8 +25,8 @@ public class RelatedListControllerTest {
         rh.Record__c = cnt.Id;
         rh.Record_Name__c = cnt.LastName;
         rh.ParentId__c = acc.Id;
-        AccountHistory ah = new AccountHistory();
-        HistoryWrapper hw = RelatedListController.createWrapper(ah, false);
+        //AccountHistory ah = new AccountHistory();
+        HistoryWrapper hw = RelatedListController.createWrapper(rh, false);
         hw = RelatedListController.createWrapper(rh, true);
 
         String relationshipName = RelatedListController.getParentRelationshipName(acc.Id, 'Contact', 'AccountId');

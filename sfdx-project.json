@@ -1,12 +1,23 @@
 {
   "packageDirectories": [
     {
+      "versionName": "ver 0.1",
+      "versionNumber": "0.1.0.NEXT",
       "path": "force-app",
-      "default": true
+      "default": true,
+      "package": "MEGA History",
+      "versionDescription": ""
     }
   ],
   "name": "mega-history",
   "namespace": "megahistory",
   "sfdcLoginUrl": "https://login.salesforce.com",
-  "sourceApiVersion": "61.0"
+  "sourceApiVersion": "61.0",
+  "packageAliases": {
+    "MEGA History": "0Hobn00000029gjCAA",
+    "MEGA History@0.1.0-1": "04tbn000000m5ztAAA",
+    "MEGA History@0.1.0-2": "04tbn000000m6KrAAI",
+    "MEGA History@0.1.0-3": "04tbn000000m6kfAAA",
+    "MEGA History@0.1.0-4": "04tbn000000m75dAAA"
+  }
 }
