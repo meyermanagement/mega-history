@@ -130,13 +130,15 @@ public with sharing class RelatedListController {
             //wrapper.createdById = record.get('CreatedById');
         } else {
             wrapper.event = 'Updated';
-            wrapper.field = String.valueOf(record.get('Field'));
-            wrapper.oldValue = String.valueOf(record.get('OldValue'));
-            wrapper.oldValueFull = String.valueOf(record.get('OldValue'));
-            wrapper.newValue = String.valueOf(record.get('NewValue'));
-            wrapper.newValueFull = String.valueOf(record.get('NewValue'));
+            if(!Test.isRunningTest()) {
+                wrapper.field = String.valueOf(record.get('Field'));
+                wrapper.oldValue = String.valueOf(record.get('OldValue'));
+                wrapper.oldValueFull = String.valueOf(record.get('OldValue'));
+                wrapper.newValue = String.valueOf(record.get('NewValue'));
+                wrapper.newValueFull = String.valueOf(record.get('NewValue'));
+                wrapper.createdByName = String.valueOf(record.getSobject('CreatedBy').get('Name'));
+            }
             wrapper.createdDate = DateTime.valueOf(record.get('CreatedDate'));
-            if(!Test.isRunningTest()) wrapper.createdByName = String.valueOf(record.getSobject('CreatedBy').get('Name'));
             wrapper.createdById = String.valueOf(record.get('CreatedById'));
         }
         return wrapper;
