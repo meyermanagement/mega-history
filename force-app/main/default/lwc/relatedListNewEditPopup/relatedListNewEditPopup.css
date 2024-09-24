@@ -1,0 +1,13 @@
+.spinnerHolder{
+    position: relative;
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+}
+.slds-spinner_container {
+    background-color: #ffffff;
+}
+.clearBtn {
+    padding-left: 10px;
+    padding-top: 57px;
+}

@@ -22,15 +22,23 @@ export default class RelatedListHelper {
 
     processData(data, state){
         const records = data.records;
+        const childRecords = data.childRecords;
         //this.generateLinks(records);
         if(state.fullView){
                data.title = `${data.sobjectLabelPlural} (${records.length})`
+               data.childtitle = `Related ${data.sobjectLabelPlural} (${childRecords.length})`
         } else {
             if (records.length > state.numberOfRecords) {
                 records.pop();
                 data.title = `${data.sobjectLabelPlural} (${state.numberOfRecords}+)`;
             } else {
                 data.title = `${data.sobjectLabelPlural} (${Math.min(state.numberOfRecords, records.length)})`;
+            }  
+            if (childRecords.length > state.numberOfRecords) {
+                childRecords.pop();
+                data.childtitle = `Related ${data.sobjectLabelPlural} (${state.numberOfRecords}+)`;
+            } else {
+                data.childtitle = `Related ${data.sobjectLabelPlural} (${Math.min(state.numberOfRecords, childRecords.length)})`;
             }  
         }
         return data;

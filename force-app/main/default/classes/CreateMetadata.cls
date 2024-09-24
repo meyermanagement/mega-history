@@ -35,8 +35,9 @@ public without sharing class CreateMetadata {
             customMetadata.values.add(customField);
         } else {
             String metadataRecordName = wrapper.mdObject+'_'+wrapper.mdName.replaceAll('_', '');
+            metadataRecordName = metadataRecordName.left(40);
             customMetadata.fullName = 'megahistory__Tracked_Field__mdt.'+metadataRecordName;
-            customMetadata.label = wrapper.mdObject+'_'+wrapper.mdName;
+            customMetadata.label = metadataRecordName;
             System.debug(String.valueOf(Tracked_Object__mdt.getInstance(wrapper.mdObject).Id));
             Metadata.CustomMetadataValue customField = new Metadata.CustomMetadataValue();
             customField.field = 'megahistory__Field_API_Name__c';

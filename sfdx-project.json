@@ -8,6 +8,7 @@
       "package": "MEGA History",
       "versionDescription": "",
       "postInstallUrl": "https://jetsetandboogie.com/mega-history-installation/",
+      "releaseNotesUrl": "https://jetsetandboogie.com/mega-history-user-guide/",
       "postInstallScript": "AssignAdminPermSet",
       "ancestorVersion": "HIGHEST"
     }
