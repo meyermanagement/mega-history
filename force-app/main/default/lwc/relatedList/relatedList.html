@@ -42,7 +42,13 @@
             </template>
             <template lwc:elseif={hasAdults}>
                 <template lwc:if={showTile}>
-                    Tile View
+                    <lightning-layout multiple-rows="true">
+                        <template for:each={state.records} for:item="rec">
+                            <lightning-layout-item size="12" key={rec.historyId}>
+                                <c-record-tile onselect={handleRowAction} record={rec} related-record={isNotRelated}></c-record-tile>
+                            </lightning-layout-item>
+                        </template>
+                    </lightning-layout>
                 </template>
                 <template lwc:else>
                     <div style="width: auto;">
@@ -102,7 +108,13 @@
                     </template>
                     <template lwc:else>
                         <template lwc:if={showTile}>
-                            Tile View
+                            <lightning-layout multiple-rows="true">
+                                <template for:each={state.childRecords} for:item="rec">
+                                    <lightning-layout-item size="12" key={rec.historyId}>
+                                        <c-record-tile onselect={handleRowAction} record={rec} related-record={isRelated}></c-record-tile>
+                                    </lightning-layout-item>
+                                </template>
+                            </lightning-layout>
                         </template>
                         <template lwc:else>
                             <div style="width: auto;">

@@ -48,6 +48,14 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
         }
     }
 
+    get isRelated(){
+        return true;
+    }
+
+    get isNotRelated(){
+        return false;
+    }
+
     get hasRecords() {
         return this.hasAdults || this.hasChildren;
     }
