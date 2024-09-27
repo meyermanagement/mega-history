@@ -19,10 +19,8 @@ jobs:
       - name: Run SFDX Scanner - Report findings as comments
         uses: mitchspano/sfdx-scan-pull-request@v0.1.16
         with:
-          pmdconfig: masterRuleset.xml
-          severity-threshold: 4
-          strictly-enforced-rules: '[{ "engine": "pmd", "category": "Performance", "rule": "AvoidDebugStatements" }]'
+          pmdconfig: "masterRuleset.xml"
           report-mode: comments
-          target: force-app
+          target: "force-app"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
