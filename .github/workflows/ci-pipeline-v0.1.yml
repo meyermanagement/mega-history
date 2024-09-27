@@ -12,7 +12,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      # - name: Install SFDX CLI and Scanner
+      #   run: |
+      #     npm install @salesforce/cli --global
+      #     sfdx plugins:install @salesforce/sfdx-scanner@latest
+
       - name: Run SFDX Scanner
         run: |
-          sf scanner:run --target sfdx-source --format=junit --severity-threshold=1
+          sf scanner:run --target force-app --format=junit --severity-threshold=1
             
