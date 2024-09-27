@@ -22,5 +22,7 @@ jobs:
           pmdconfig: masterRuleset.xml
           severity-threshold: 4
           strictly-enforced-rules: '[{ "engine": "pmd", "category": "Performance", "rule": "AvoidDebugStatements" }]'
+          report-mode: comments
+          target: force-app
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
