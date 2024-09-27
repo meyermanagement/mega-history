@@ -17,5 +17,5 @@ jobs:
           sfdx plugins:install @salesforce/sfdx-scanner@latest
 
       - name: SFDX Scan Pull Request
-        uses: mitchspano/sfdx-scan-pull-request@v0.1.15
+        uses: mitchspano/sfdx-scan-pull-request@v0.1.16
             
