@@ -12,7 +12,6 @@ public without sharing class CreateMetadata {
      */
     public static String updateAndDeployMetadata(List<MetadataWrapper> wrappers) {
         MetadataWrapper wrapper = wrappers[0];
-        System.debug(wrapper);
         
         Metadata.CustomMetadata customMetadata =  new Metadata.CustomMetadata();
         if(wrapper.mdType == 'Object'){
@@ -48,7 +47,6 @@ public without sharing class CreateMetadata {
             metadataRecordName = metadataRecordName.left(40);
             customMetadata.fullName = 'megahistory__Tracked_Field__mdt.'+metadataRecordName;
             customMetadata.label = metadataRecordName;
-            System.debug(String.valueOf(Tracked_Object__mdt.getInstance(wrapper.mdObject).Id));
             Metadata.CustomMetadataValue customField = new Metadata.CustomMetadataValue();
             customField.field = 'megahistory__Field_API_Name__c';
             customField.value = wrapper.mdName;
@@ -64,7 +62,6 @@ public without sharing class CreateMetadata {
     
         MyDeployCallback callback = new MyDeployCallback();
         Id jobId = Test.isRunningTest() ? null : Metadata.Operations.enqueueDeployment(mdContainer, callback);
-        System.debug(jobId);
         return jobId;
         // Setup custom metadata to be created in the subscriber org.
     } 

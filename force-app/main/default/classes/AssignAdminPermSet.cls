@@ -32,7 +32,9 @@ public class AssignAdminPermSet implements InstallHandler {
                 }
             }
 
-            if(!permissionSetAssignments.isEmpty()) insert permissionSetAssignments;
+            if(!permissionSetAssignments.isEmpty()) {
+                insert permissionSetAssignments;
+            }
         }
     }
 }

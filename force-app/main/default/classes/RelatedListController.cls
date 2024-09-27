@@ -87,7 +87,6 @@ public with sharing class RelatedListController {
             List<HistoryWrapper> standardRecords = getStandardHistory(recordId, objectDescribe, numberOfRecords);
             List<HistoryWrapper> results = mergeLists(customRecords, standardRecords);
             results = scrubFields(results, objectDescribe);
-            System.debug(results);
             Map<String, List<HistoryWrapper>> resultsMap = splitLists(results);
             responseMap.put(CHILD_RECORDS_PARAM, resultsMap.get('Child'));
             responseMap.put(RECORDS_PARAM, resultsMap.get('Adult'));
@@ -344,7 +343,6 @@ public with sharing class RelatedListController {
     @AuraEnabled
     public static Record_History__c getHistoryRecord(String recordId, String historyId, Boolean isRelated){
         try {
-            System.debug(isRelated);
             List<Record_History__c> histList = [SELECT Id, Name, Additional_Field_1__c, Additional_Field_2__c, CreatedById, Created_By_DL__c, Created_By_Formula__c, Created_Date_DL__c,Created_Date_Formula__c, Event__c, Field__c, New_Value__c, New_Value_Extended__c, Old_Value__c, Old_Value_Extended__c,ParentId__c, Record__c, Record_Name__c FROM Record_History__c WHERE Id = :historyId];
             Record_History__c histRec;
             if(!histList.isEmpty()){
@@ -363,7 +361,6 @@ public with sharing class RelatedListController {
                     histRec.Created_Date_DL__c = System.now();
                 }
             }  
-            System.debug(histRec);
             return histRec;
         } catch (Exception e) {
             System.debug(e.getMessage());
@@ -382,12 +379,10 @@ public with sharing class RelatedListController {
             if(String.isBlank(rh.Created_By_DL__c)){
                 rh.Created_By_DL__c = null;
             }
-            System.debug(rh);
             if(rh.Created_Date_DL__c == null){
                 rh.Created_Date_DL__c = null;
             }
             Id recordId = rh.Record__c != null ? Id.valueOf(rh.Record__c) : null;
-            System.debug(recordId);
             if(rh.Event__c != 'Updated' && String.isBlank(rh.Record_Name__c)) throw new RelatedListControllerException('Record Name is required');
             upsert rh;
         } catch (Exception e) {

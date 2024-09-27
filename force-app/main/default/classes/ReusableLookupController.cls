@@ -12,7 +12,6 @@ public with sharing class ReusableLookupController {
      */
     @AuraEnabled(cacheable=true)
     public static List<ResultWrapper> fetchRecords(String input) {
-        System.debug(input);
         try {
             if(input != null){
                 SearchWrapper inputWrapper = (SearchWrapper)JSON.deserialize(input, SearchWrapper.class);

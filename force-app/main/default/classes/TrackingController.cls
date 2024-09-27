@@ -25,11 +25,9 @@ public with sharing class TrackingController {
             }
             Map<String, Schema.DescribeSobjectResult> describeMap = new Map<String, Schema.DescribeSObjectResult>();
             for(Schema.DescribeSobjectResult res : Schema.describeSObjects(new List<String>(objectNameMap.keySet()))) {
-                System.debug(res.getName());
                 describeMap.put(res.getName(), res);
             }
             for(Tracked_Object__mdt to : trackedObjects){
-                System.debug(to);
                 TrackingWrapper wrapper = new TrackingWrapper();
                 wrapper.objectName = to.DeveloperName;
                 wrapper.parentRef = to.Parent_Reference_Field__c;
@@ -115,8 +113,6 @@ public with sharing class TrackingController {
                 String sobjStruct = JSON.serialize(ds);
                 DescribeSobjectResultJSON sobjProps = (DescribeSobjectResultJSON)JSON.deserialize(sobjStruct, DescribeSobjectResultJSON.class);
                 if(sobjProps.triggerable){
-                    System.debug(sobjProps);
-                    System.debug(ds.fields.getMap());
                     Boolean updateableFields = false;
                     Map<String,Schema.SObjectField> mfields = ds.fields.getMap();
                     for(Schema.SObjectField soField : mfields.values()){
@@ -165,7 +161,6 @@ public with sharing class TrackingController {
             wrapper.mdtStatusClass = 'slds-text-color_error slds-text-title_caps';
             wrapper.trigStatusLabel = 'Not Deployed';
             wrapper.trigStatusClass = 'slds-text-color_error slds-text-title_caps';
-            System.debug(objectName);
             Schema.DescribeSobjectResult res = Schema.describeSObjects(new List<String>{objectName})[0];
             //List<Schema.ChildRelationship> childRels = res.getChildRelationships();
             Map<String,Schema.SObjectField> mfields = res.fields.getMap();
@@ -211,9 +206,7 @@ public with sharing class TrackingController {
     @AuraEnabled(cacheable=true)
     public static TrackingWrapper getObjectDetails(String wrapperString){
         try {
-            System.debug(wrapperString);
             TrackingWrapper wrapper = (TrackingWrapper)JSON.deserialize(wrapperString, TrackingWrapper.class);
-            System.debug(wrapper.parentRef);
             Schema.DescribeSobjectResult res = Schema.describeSObjects(new List<String>{wrapper.objectName})[0];
             //List<Schema.ChildRelationship> childRels = res.getChildRelationships();
             Map<String,Schema.SObjectField> mfields = res.fields.getMap();
@@ -265,9 +258,6 @@ public with sharing class TrackingController {
     @AuraEnabled
     public static List<TrackingWrapper> submitMetaData(String wrapperString, String trackingData, List<String> fields){
         try {
-            System.debug(wrapperString);
-            System.debug(trackingData);
-            System.debug(fields);
             TrackingWrapper wrapper = (TrackingWrapper)JSON.deserialize(wrapperString, TrackingWrapper.class);
             TrackingWrapper orignal = new TrackingWrapper(wrapper);
             List<Tracked_Object__mdt> toList = [SELECT Id, MasterLabel, DeveloperName, Additional_Field_1__c, Additional_Field_2__c, Parent_Reference_Field__c, Track_Create__c, Track_Delete__c, Track_Undelete__c FROM Tracked_Object__mdt WHERE DeveloperName = :wrapper.objectName ORDER BY MasterLabel LIMIT 1];
@@ -292,7 +282,6 @@ public with sharing class TrackingController {
                     }
                 }
             }
-            System.debug(wrapper);
             String concatEvents = '';
             if(wrapper.trackCreate) {
                 concatEvents = concatEvents += 'Create, ';
@@ -314,7 +303,6 @@ public with sharing class TrackingController {
             concatFields = concatFields.removeEnd(', ');
             wrapper.fields = concatFields;
 
-            System.debug(compareWrapper(wrapper, orignal));
             if(compareWrapper(wrapper, orignal)){
                 wrapper.mdtStatusLabel = 'Not Deployed';
                 wrapper.mdtStatusClass = 'slds-text-color_error slds-text-title_caps';
@@ -346,8 +334,6 @@ public with sharing class TrackingController {
      * @return matches
      */
     private static Boolean compareWrapper(TrackingWrapper wrapper, TrackingWrapper original){
-        System.debug(wrapper);
-        System.debug(original);
         if(wrapper.parentRef != original.parentRef) return true;
         if(wrapper.events != original.events) return true;
         if(wrapper.fields != original.fields) return true;
@@ -367,12 +353,9 @@ public with sharing class TrackingController {
     @AuraEnabled
     public static List<MetadataWrapper> generateMetadata(String trackingData){
         try {
-            System.debug(trackingData);
             List<MetadataWrapper> mdWrapperList = new List<MetadataWrapper>();
             List<TrackingWrapper> wrapperList = (List<TrackingWrapper>)JSON.deserialize(trackingData, List<TrackingWrapper>.class);
             for(TrackingWrapper wrapp : wrapperList){
-                System.debug(wrapp.objectName);
-                System.debug(wrapp.mdtStatusLabel);
                 if(wrapp.mdtStatusLabel != 'Deployed'){
                     MetadataWrapper md = new MetadataWrapper();
                     md.mdName = wrapp.objectName;
@@ -380,7 +363,6 @@ public with sharing class TrackingController {
                     md.mdObject = wrapp.objectName;
                     md.mdObjectWrapper = wrapp;
                     Tracked_Object__mdt to = Tracked_Object__mdt.getInstance(wrapp.objectName);
-                    System.debug(to);
                     if(to != null){
                         TrackingWrapper orignal = new TrackingWrapper(wrapp);
                         orignal.parentRef = to.Parent_Reference_Field__c;
@@ -389,19 +371,15 @@ public with sharing class TrackingController {
                         orignal.trackCreate = to.Track_Create__c;
                         orignal.trackDelete = to.Track_Delete__c;
                         orignal.trackUndelete = to.Track_Undelete__c;
-                        System.debug(compareWrapper(wrapp, orignal));
                         if(compareWrapper(wrapp, orignal)) {
                             md.mdOperation = 'Change';
-                            System.debug(md);
                             mdWrapperList.add(md);
                         } else if (wrapp.mdtStatusLabel == 'Pending Removal'){
                             md.mdOperation = 'Remove';
-                            System.debug(md);
                             mdWrapperList.add(md);
                         }
                     } else if(wrapp.mdtStatusLabel != 'Pending Removal') {
                         md.mdOperation = 'Add';
-                        System.debug(md);
                         mdWrapperList.add(md);
                     }
                     for(TrackingFieldDefinition tfd : wrapp.fieldList){
@@ -411,7 +389,6 @@ public with sharing class TrackingController {
                             mdf.mdType = 'Field';
                             mdf.mdObject = wrapp.objectName;
                             mdf.mdOperation = tfd.operation;
-                            System.debug(mdf);
                             mdWrapperList.add(mdf);
                         }
                     }
@@ -422,11 +399,9 @@ public with sharing class TrackingController {
                     md.mdType = 'Trigger';
                     md.mdObject = wrapp.objectName;
                     md.mdOperation = wrapp.trigStatusLabel == 'Pending Removal' ? 'Remove' : 'Add';
-                    System.debug(md);
                     mdWrapperList.add(md);
                 }
             }
-            System.debug(mdWrapperList);
             return mdWrapperList;
         } catch (Exception e) {
             System.debug(e.getMessage());
@@ -442,7 +417,6 @@ public with sharing class TrackingController {
     @AuraEnabled
     public static String handleCustomMetadata(String wrappers){
         try {
-            System.debug(wrappers);
             Map<String, String> metaDataMap = new Map<String, String>();
             List<MetadataWrapper> wrapperList = (List<MetadataWrapper>)JSON.deserialize(wrappers, List<MetadataWrapper>.class);
             List<MetadataWrapper> metadataToDelete = new List<MetadataWrapper>();
@@ -586,8 +560,6 @@ public with sharing class TrackingController {
         try {
             MetadataService.MetadataPort service = createService();
             MetadataService.DeployResult deployResult = Test.isRunningTest() ? new MetadataService.DeployResult() : service.checkDeployStatus(asyncId, true);
-            System.debug(deployResult.done);
-            System.debug(deployResult.details);
             if (deployResult.details != null && deployResult.details.componentFailures != null){
                 for (MetadataService.DeployMessage deployMessage : deployResult.details.componentFailures){
                     if (deployMessage.problem != null){

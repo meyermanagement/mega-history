@@ -11606,7 +11606,6 @@ public class MetadataService {
               'MetadataService.listMetadataResponse_element'}
             );
             response_x = response_map_x.get('response_x');
-            System.debug(response_x);
             return response_x.result;
         }
     }
