@@ -25,10 +25,11 @@ public with sharing class RelatedListController {
             Map<String, Object> responseMap = new Map<String, Object>();
             
             String recordId = (String)requestMap.get(RECORD_ID_PARAM);
+            Integer numberOfRecords = (Integer)requestMap.get(NUMBER_OF_RECORDS_PARAM);
             Schema.DescribeSObjectResult objectDescribe = Id.valueOf(recordId).getSObjectType().getDescribe();
             String sobjectApiName = objectDescribe.getName();
-            List<HistoryWrapper> customRecords = getCustomHistory(recordId);
-            List<HistoryWrapper> standardRecords = getStandardHistory(recordId, objectDescribe);
+            List<HistoryWrapper> customRecords = getCustomHistory(recordId, numberOfRecords);
+            List<HistoryWrapper> standardRecords = getStandardHistory(recordId, objectDescribe, numberOfRecords);
             List<HistoryWrapper> results = mergeLists(customRecords, standardRecords);
             results = scrubFields(results, objectDescribe);
             System.debug(results);
@@ -56,21 +57,21 @@ public with sharing class RelatedListController {
         }
     }
     
-    private static List<HistoryWrapper> getCustomHistory(String recordId){
+    private static List<HistoryWrapper> getCustomHistory(String recordId, Integer numberOfRecords){
         List<HistoryWrapper> wrappers = new List<HistoryWrapper>();
         String query = 'SELECT Id, Name, Additional_Field_1__c, Additional_Field_2__c, CreatedById, Created_By_DL__c, Created_By_Formula__c, Created_Date_DL__c,'+
                         'Created_Date_Formula__c, Event__c, Field__c, New_Value__c, New_Value_Extended__c, Old_Value__c, Old_Value_Extended__c,'+
-                        'ParentId__c, Record__c, Record_Name__c FROM Record_History__c WHERE (Record__c = :recordId AND ParentId__c = null)'+
-                        ' OR ParentId__c = :recordId'+
+                        'ParentId__c, Record__c, Record_Name__c FROM Record_History__c WHERE Record__c = :recordId'+
+                        ' OR (ParentId__c = :recordId AND Event__c != \'Updated\')'+
                         ' ORDER BY Created_Date_Formula__c DESC'+
-                        ' Limit 5000';
-        for(Sobject sobj : Database.query(String.escapeSingleQuotes(query))){
+                        ' Limit '+numberOfRecords;
+        for(Sobject sobj : Database.query(query)){
             wrappers.add(createWrapper(sobj, true));
         }
         return wrappers;
 	}
 
-    private static List<HistoryWrapper> getStandardHistory(String recordId, Schema.DescribeSObjectResult objectDescribe){
+    private static List<HistoryWrapper> getStandardHistory(String recordId, Schema.DescribeSObjectResult objectDescribe, Integer numberOfRecords){
         List<HistoryWrapper> wrappers = new List<HistoryWrapper>();
         String objectHistoryFieldAPIName;
         String objectHistoryName;
@@ -89,7 +90,7 @@ public with sharing class RelatedListController {
                         objectHistoryName+' WHERE '+
                         objectHistoryFieldAPIName+' = :recordId'+
                         ' ORDER BY CreatedDate DESC'+
-                        ' Limit 5000';
+                        ' Limit '+numberOfRecords;
         for(Sobject sobj : Database.query(String.escapeSingleQuotes(query))){
             HistoryWrapper wrapp = createWrapper(sobj, false);
             wrapp.objectAPIName = apiName;

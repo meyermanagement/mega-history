@@ -96,6 +96,7 @@ global without sharing class HistoryTrackingService {
                                 rh.Old_Value_Extended__c = oldValue;
                             }
                             rh.Record__c = recordId;
+                            if(tobj != null && String.isNotBlank(tobj.Parent_Reference_Field__c)) rh.ParentId__c = String.valueOf(so.get(tobj.Parent_Reference_Field__c));
                             histories.add(rh);
                         }
                     }
