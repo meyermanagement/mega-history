@@ -1,5 +1,15 @@
+/**
+ * @description     Test to Assign super admin access to installing user of package
+ * @author          Mark Meyer
+ * @date            09/27/2024
+ */
 @isTest
 public class AssignAdminPermSetTest {
+
+    /**
+     * @description WHEN install script is run
+     *              THEN permission set is assigned
+     */
     @isTest
     static void testInstallScript() {
         AssignAdminPermSet postinstall = new AssignAdminPermSet();

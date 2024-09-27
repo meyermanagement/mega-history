@@ -1,9 +1,14 @@
-global with sharing class MetadataWrapper {
+/**
+ * @description     wrapper for metadata records
+ * @author          Mark Meyer
+ * @date            09/27/2024
+ */
+public with sharing class MetadataWrapper {
     
-    @AuraEnabled global String mdName;
-    @AuraEnabled global String mdType;
-    @AuraEnabled global String mdObject;
-    @AuraEnabled global String mdOperation;
-    @AuraEnabled global TrackingWrapper mdObjectWrapper;
+    @AuraEnabled public String mdName;
+    @AuraEnabled public String mdType;
+    @AuraEnabled public String mdObject;
+    @AuraEnabled public String mdOperation;
+    @AuraEnabled public TrackingWrapper mdObjectWrapper;
     
 }

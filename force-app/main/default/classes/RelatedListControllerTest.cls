@@ -1,7 +1,15 @@
+/**
+ * @description     test for Related List Controller
+ * @author          Mark Meyer
+ * @date            09/27/2024
+ */
 @isTest
 public class RelatedListControllerTest {
 
-@isTest public static void testInit(){
+    /**
+     * @description     test all methods
+     */
+    @isTest public static void testInit(){
         Account acc = new Account(Name = 'test');
         insert acc;
         Contact cnt = new Contact(LastName = 'test', AccountId = acc.Id);

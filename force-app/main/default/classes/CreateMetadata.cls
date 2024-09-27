@@ -1,5 +1,13 @@
+/**
+ * @description     Class to handle custom metadata deployements
+ * @author          Mark Meyer
+ * @date            09/27/2024
+ */
 public without sharing class CreateMetadata {
 
+    /**
+     * @description Updates and Deploys custom metadata
+     */
     public static String updateAndDeployMetadata(List<MetadataWrapper> wrappers) {
         MetadataWrapper wrapper = wrappers[0];
         System.debug(wrapper);

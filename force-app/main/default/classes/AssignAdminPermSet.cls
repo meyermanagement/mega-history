@@ -1,6 +1,14 @@
-global class AssignAdminPermSet implements InstallHandler {
+/**
+ * @description     Assigns super admin access to installing user of package
+ * @author          Mark Meyer
+ * @date            09/27/2024
+ */
+public class AssignAdminPermSet implements InstallHandler {
 
-    global void onInstall(InstallContext context) {
+    /**
+     * @description runs the install
+     */
+    public void onInstall(InstallContext context) {
         if(context.previousVersion() == null) {
             /*
             * Assign the MEGA_History_Super_Admin permission set to the defailt DX User so that you can access the MEGA History Admin app

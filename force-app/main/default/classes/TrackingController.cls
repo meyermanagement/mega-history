@@ -1,9 +1,17 @@
-global with sharing class TrackingController {
+/**
+ * @description     Controller for the Tracking LWC
+ * @author          Mark Meyer
+ * @date            09/27/2024
+ */
+public with sharing class TrackingController {
 
     public class TrackingException extends Exception {}
     
+    /**
+     * @description     get all tracking records
+     */
     @AuraEnabled(cacheable=true)
-    global static List<TrackingWrapper> getRecords() {
+    public static List<TrackingWrapper> getRecords() {
         try {
             Map<String, TrackingWrapper> wrapperMap = new Map<String, TrackingWrapper>();
             Map<String, List<Tracked_Field__mdt>> objectNameMap = new Map<String, List<Tracked_Field__mdt>>();
@@ -83,8 +91,11 @@ global with sharing class TrackingController {
         }
     }
 
+    /**
+     * @description     get available objects
+     */
     @AuraEnabled(cacheable=true)
-    global static List<TrackingWrapper> getObjects(){
+    public static List<TrackingWrapper> getObjects(){
         Map<String, TrackingWrapper> wrapperMap = new Map<String, TrackingWrapper>();
         Map<String, List<Tracked_Field__mdt>> objectNameMap = new Map<String, List<Tracked_Field__mdt>>();
         List<Tracked_Object__mdt> trackedObjects = [SELECT Id, MasterLabel, DeveloperName, Additional_Field_1__c, Additional_Field_2__c, Parent_Reference_Field__c, Track_Create__c, Track_Delete__c, Track_Undelete__c FROM Tracked_Object__mdt ORDER BY MasterLabel];
@@ -94,7 +105,7 @@ global with sharing class TrackingController {
         // for(Tracked_Field__mdt tf : [SELECT Tracked_Object__r.DeveloperName, DeveloperName, Field_API_Name__c FROM Tracked_Field__mdt ORDER BY Field_API_Name__c]){
         //     objectNameMap.get(tf.Tracked_Object__r.DeveloperName).add(tf);
         // }
-        Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe(); 
+        Map<String, Schema.SObjectType> gd = Schema.getpublicDescribe(); 
         for(Schema.SObjectType d : gd.values())
         {
             Schema.DescribeSObjectResult ds = d.getDescribe();
@@ -130,13 +141,19 @@ global with sharing class TrackingController {
         return results;
     }
 
+    /**
+     * @description     wrapper class for finding triggerable objects
+     */
     public class DescribeSobjectResultJSON { 
         public String name {get;set;}
         public Boolean triggerable {get;set;}
     }
 
+    /**
+     * @description     get Tracking coniguration for given object
+     */
     @AuraEnabled(cacheable=true)
-    global static TrackingWrapper getObjectSelectedDetails(String objectName){
+    public static TrackingWrapper getObjectSelectedDetails(String objectName){
         try {
             TrackingWrapper wrapper = new TrackingWrapper();
             wrapper.objectName = objectName;
@@ -182,8 +199,11 @@ global with sharing class TrackingController {
         }
     }
 
+    /**
+     * @description     get field coniguration for given tracking wrapper
+     */
     @AuraEnabled(cacheable=true)
-    global static TrackingWrapper getObjectDetails(String wrapperString){
+    public static TrackingWrapper getObjectDetails(String wrapperString){
         try {
             System.debug(wrapperString);
             TrackingWrapper wrapper = (TrackingWrapper)JSON.deserialize(wrapperString, TrackingWrapper.class);
@@ -229,8 +249,11 @@ global with sharing class TrackingController {
         }
     }
 
+    /**
+     * @description     create Tracking Wrapper from inputs
+     */
     @AuraEnabled
-    global static List<TrackingWrapper> submitMetaData(String wrapperString, String trackingData, List<String> fields){
+    public static List<TrackingWrapper> submitMetaData(String wrapperString, String trackingData, List<String> fields){
         try {
             System.debug(wrapperString);
             System.debug(trackingData);
@@ -320,8 +343,11 @@ global with sharing class TrackingController {
         return false;
     }
 
+    /**
+     * @description     create Metadata Wrappers from inputs
+     */
     @AuraEnabled
-    global static List<MetadataWrapper> generateMetadata(String trackingData){
+    public static List<MetadataWrapper> generateMetadata(String trackingData){
         try {
             System.debug(trackingData);
             List<MetadataWrapper> mdWrapperList = new List<MetadataWrapper>();
@@ -390,8 +416,11 @@ global with sharing class TrackingController {
         }
     }
 
+    /**
+     * @description     deploy custom metadata records
+     */
     @AuraEnabled
-    global static String handleCustomMetadata(String wrappers){
+    public static String handleCustomMetadata(String wrappers){
         try {
             System.debug(wrappers);
             Map<String, String> metaDataMap = new Map<String, String>();
@@ -422,6 +451,9 @@ global with sharing class TrackingController {
         }
     }
     
+    /**
+     * @description     deploy custom metadata
+     */
     @TestVisible
     private static String deleteMetadata(List<MetadataWrapper> wrappers){
         List<String> recordsToDelete = new List<String>();
@@ -459,8 +491,11 @@ global with sharing class TrackingController {
         return null;
     }
 
+    /**
+     * @description     generate the trigger files to be deployed
+     */
     @AuraEnabled
-    global static Map<String, String> generateTriggerFiles(String wrappers){
+    public static Map<String, String> generateTriggerFiles(String wrappers){
         try {
             Map<String, String> metaDataMap = new Map<String, String>();
             List<MetadataWrapper> wrapperList = (List<MetadataWrapper>)JSON.deserialize(wrappers, List<MetadataWrapper>.class);
@@ -488,8 +523,11 @@ global with sharing class TrackingController {
         }
     }
 
+    /**
+     * @description     deploy trigger using zip file
+     */
     @AuraEnabled
-    global static String deployTriggers(String zipFile, String testName){
+    public static String deployTriggers(String zipFile, String testName){
         try {
             MetadataService.MetadataPort service = createService();
             MetadataService.DeployOptions deployOptions = new MetadataService.DeployOptions();
@@ -511,8 +549,11 @@ global with sharing class TrackingController {
         }
     }
 
+    /**
+     * @description     check deployment status
+     */
     @AuraEnabled
-    global static Boolean checkAsyncRequest(String asyncId){
+    public static Boolean checkAsyncRequest(String asyncId){
         try {
             MetadataService.MetadataPort service = createService();
             MetadataService.DeployResult deployResult = Test.isRunningTest() ? new MetadataService.DeployResult() : service.checkDeployStatus(asyncId, true);
@@ -562,6 +603,9 @@ global with sharing class TrackingController {
         }
     }
 
+    /**
+     * @description     create the metadata service using the session id from vf page
+     */
     private static MetadataService.MetadataPort createService() {
         MetadataService.MetadataPort service = new MetadataService.MetadataPort();
         service.SessionHeader = new MetadataService.SessionHeader_element();

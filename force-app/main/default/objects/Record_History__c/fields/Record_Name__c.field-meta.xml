@@ -4,7 +4,7 @@
     <description>Name field of record.  Exceptions are Case(CaseNumber), Contact(LastName), and Contract(ContractNumber)</description>
     <externalId>false</externalId>
     <label>Record Name</label>
-    <length>80</length>
+    <length>255</length>
     <required>false</required>
     <trackHistory>false</trackHistory>
     <trackTrending>false</trackTrending>

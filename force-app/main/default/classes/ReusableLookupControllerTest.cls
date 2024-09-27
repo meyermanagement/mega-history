@@ -1,6 +1,14 @@
+/**
+ * @description     test for Reusable Lookup Controller
+ * @author          Mark Meyer
+ * @date            09/27/2024
+ */
 @isTest
 public class ReusableLookupControllerTest {
 
+    /**
+     * @description     test lookup
+     */
     @isTest public static void testInit(){
         Account acc = new Account(Name = 'test');
         insert acc;

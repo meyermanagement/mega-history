@@ -1,5 +1,13 @@
+/**
+ * @description     Controller for the Reusable Lookup LWC
+ * @author          Mark Meyer
+ * @date            09/27/2024
+ */
 public with sharing class ReusableLookupController {
 
+    /**
+     * @description     get records
+     */
     @AuraEnabled(cacheable=true)
     public static List<ResultWrapper> fetchRecords(String input) {
         System.debug(input);

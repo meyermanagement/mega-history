@@ -1,9 +1,23 @@
-global without sharing class HistoryTrackingService {
+/**
+ * @description     handles creation of custom history tracking records
+ * @author          Mark Meyer
+ * @date            09/27/2024
+ */
+public without sharing class HistoryTrackingService {
     
+    /**
+     * @description map of Trigger context enum to history record event type
+     */
     static Map<String, String> operationTypeMap = new Map<String, String>{'AFTER_INSERT'=>'Created', 'AFTER_DELETE'=>'Deleted', 'AFTER_UNDELETE'=>'Undeleted'};
+    /**
+     * @description map of fields to use for 
+     */
     static Map<String, String> objectTypeToNameMap = new Map<String, String>{'Contact'=>'LastName', 'Case'=>'CaseNumber', 'Contract'=>'ContractNumber'};
 
-    global static void track(List<Sobject> newList, Map<Id, sObject> oldMap, String operationType){
+    /**
+     * @description handles mapping of the object to create the history record
+     */
+    public static void track(List<Sobject> newList, Map<Id, sObject> oldMap, String operationType){
         if(operationType == 'BEFORE_INSERT') return;
         System.debug(operationType);
         // Possible values of the System.TriggerOperation enum are: AFTER_INSERT, AFTER_UPDATE, AFTER_DELETE, and AFTER_UNDELETE. 
@@ -34,11 +48,19 @@ global without sharing class HistoryTrackingService {
                         for(Sobject so : recordList){
                             if(Test.isRunningTest() || String.isNotBlank(String.valueOf(so.get(tobj.Parent_Reference_Field__c)))){
                                 String recordId = String.valueOf(so.get('Id'));
-                                String recordName = objectTypeToNameMap.containsKey(objectDescribe.getName()) ? String.valueOf(so.get(objectTypeToNameMap.get(objectDescribe.getName()))) : String.valueOf(so.get('Name'));
+                                String recordName;
+                                if(objectTypeToNameMap.containsKey(objectDescribe.getName())){
+                                    recordName = String.valueOf(so.get(objectTypeToNameMap.get(objectDescribe.getName())));
+                                    if(objectDescribe.getName() == 'Contact') {
+                                        recordName = String.valueOf(so.get('FirstName'))+' '+recordName;
+                                    }
+                                } else {
+                                    recordName = String.valueOf(so.get('Name'));
+                                } 
                                 Record_History__c rh = new Record_History__c();
                                 rh.Event__c = operationEvent;
                                 rh.Record__c = recordId;
-                                rh.Record_Name__c = recordName;
+                                rh.Record_Name__c = recordName.left(255);
                                 if(!Test.isRunningTest()){
                                     rh.ParentId__c = String.valueOf(so.get(tobj.Parent_Reference_Field__c));
                                     Schema.DescribeFieldResult fieldResult = mfields.get(tobj.Additional_Field_1__c).getDescribe();
@@ -106,7 +128,10 @@ global without sharing class HistoryTrackingService {
         }
     }
 
-    global static void testHandler(Sobject dummyRecord) {
+    /**
+     * @description inserts generic dummy record
+     */
+    public static void testHandler(Sobject dummyRecord) {
         try {
             insert dummyRecord;
         } catch (Exception e) {

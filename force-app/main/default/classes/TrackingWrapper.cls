@@ -1,22 +1,30 @@
-global with sharing class TrackingWrapper {
+/**
+ * @description     wrapper for tracking records
+ * @author          Mark Meyer
+ * @date            09/27/2024
+ */
+public with sharing class TrackingWrapper {
     
-    @AuraEnabled global String objectName;
-    @AuraEnabled global String objectLabel;
-    @AuraEnabled global String parentRef;
-    @AuraEnabled global String events;
-    @AuraEnabled global Boolean trackCreate = false;
-    @AuraEnabled global Boolean trackDelete = false;
-    @AuraEnabled global Boolean trackUndelete = false;
-    @AuraEnabled global String fields;
-    @AuraEnabled global String additionalField1;
-    @AuraEnabled global String additionalField2;
-    @AuraEnabled global String mdtStatusClass;
-    @AuraEnabled global String mdtStatusLabel;
-    @AuraEnabled global String trigStatusClass;
-    @AuraEnabled global String trigStatusLabel;
-    @AuraEnabled global List<TrackingFieldDefinition> fieldList;
-    @AuraEnabled global Map<String, String> parentRefMap;
+    @AuraEnabled public String objectName;
+    @AuraEnabled public String objectLabel;
+    @AuraEnabled public String parentRef;
+    @AuraEnabled public String events;
+    @AuraEnabled public Boolean trackCreate = false;
+    @AuraEnabled public Boolean trackDelete = false;
+    @AuraEnabled public Boolean trackUndelete = false;
+    @AuraEnabled public String fields;
+    @AuraEnabled public String additionalField1;
+    @AuraEnabled public String additionalField2;
+    @AuraEnabled public String mdtStatusClass;
+    @AuraEnabled public String mdtStatusLabel;
+    @AuraEnabled public String trigStatusClass;
+    @AuraEnabled public String trigStatusLabel;
+    @AuraEnabled public List<TrackingFieldDefinition> fieldList;
+    @AuraEnabled public Map<String, String> parentRefMap;
 
+    /**
+     * @description     constructor for new wrapper
+     */
     public TrackingWrapper(){
         this.objectName = '';
         this.objectLabel = '';
@@ -36,6 +44,9 @@ global with sharing class TrackingWrapper {
         this.parentRefMap = new Map<String, String>();
     }
 
+    /**
+     * @description     constructor for an existing record for comparison
+     */
     public TrackingWrapper(TrackingWrapper original){
         this.objectName = original.objectName;
         this.objectLabel = original.objectLabel;
