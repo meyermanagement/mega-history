@@ -4,18 +4,15 @@ on:
     types: [opened, reopened, synchronize]
   workflow_dispatch:
 jobs:
-  analyze:
+  scanner:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - name: Install SFDX CLI and Scanner
+      - name: Run SFDX Scanner
         run: |
-          npm install @salesforce/cli --global
-          sfdx plugins:install @salesforce/sfdx-scanner@latest
-
-      - name: SFDX Scan Pull Request
-        uses: mitchspano/sfdx-scan-pull-request@v0.1.16
+          sf scanner:run --target sfdx-source --format=junit --severity-threshold=1
             
