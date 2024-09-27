@@ -149,7 +149,9 @@ public with sharing class RelatedListController {
             objectHistoryFieldAPIName = 'ParentId';
         } else {
             Set<String> fieldHistoryObjects = new Set<String>{'Opportunity', 'Activity'};
-            if(fieldHistoryObjects.contains(apiName)) objectHistoryName = apiName+'FieldHistory';
+            if(fieldHistoryObjects.contains(apiName)) {
+                objectHistoryName = apiName+'FieldHistory';
+            }
             else objectHistoryName = apiName+'History';
             objectHistoryFieldAPIName = apiName+'Id';
         }
@@ -383,7 +385,9 @@ public with sharing class RelatedListController {
                 rh.Created_Date_DL__c = null;
             }
             Id recordId = rh.Record__c != null ? Id.valueOf(rh.Record__c) : null;
-            if(rh.Event__c != 'Updated' && String.isBlank(rh.Record_Name__c)) throw new RelatedListControllerException('Record Name is required');
+            if(rh.Event__c != 'Updated' && String.isBlank(rh.Record_Name__c)) {
+                throw new RelatedListControllerException('Record Name is required');
+            }
             upsert rh;
         } catch (Exception e) {
             System.debug(e.getMessage());

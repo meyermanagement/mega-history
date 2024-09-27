@@ -21,7 +21,9 @@ public without sharing class HistoryTrackingService {
      * @param operationType
      */
     public static void track(List<Sobject> newList, Map<Id, sObject> oldMap, String operationType){
-        if(operationType == 'BEFORE_INSERT') return;
+        if(operationType == 'BEFORE_INSERT') {
+            return;
+        }
         // Possible values of the System.TriggerOperation enum are: AFTER_INSERT, AFTER_UPDATE, AFTER_DELETE, and AFTER_UNDELETE. 
         Schema.sObjectType objectType;
         if(newList != null){
@@ -90,7 +92,9 @@ public without sharing class HistoryTrackingService {
                     standardTrackedFields.add(fd.QualifiedApiName);
                 }
                 for(Tracked_Field__mdt field : [SELECT Field_API_Name__c FROM Tracked_Field__mdt WHERE Tracked_Object__c = :tId]) {
-                    if(!standardTrackedFields.contains(field.Field_API_Name__c)) fieldMap.put(field.Field_API_Name__c, mfields.get(field.Field_API_Name__c).getDescribe());
+                    if(!standardTrackedFields.contains(field.Field_API_Name__c)) {
+                        fieldMap.put(field.Field_API_Name__c, mfields.get(field.Field_API_Name__c).getDescribe());
+                    }
                 }
                 for(Sobject so : newList){
                     for(String field : fieldMap.keySet()){
@@ -117,13 +121,17 @@ public without sharing class HistoryTrackingService {
                                 rh.Old_Value_Extended__c = oldValue;
                             }
                             rh.Record__c = recordId;
-                            if(tobj != null && String.isNotBlank(tobj.Parent_Reference_Field__c)) rh.ParentId__c = String.valueOf(so.get(tobj.Parent_Reference_Field__c));
+                            if(tobj != null && String.isNotBlank(tobj.Parent_Reference_Field__c)) {
+                                rh.ParentId__c = String.valueOf(so.get(tobj.Parent_Reference_Field__c));
+                            }
                             histories.add(rh);
                         }
                     }
                 }
             }
-            if(!histories.isEmpty()) insert histories;
+            if(!histories.isEmpty()) {
+                insert histories;
+            }
         }
     }
 

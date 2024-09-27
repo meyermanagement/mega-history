@@ -334,14 +334,30 @@ public with sharing class TrackingController {
      * @return matches
      */
     private static Boolean compareWrapper(TrackingWrapper wrapper, TrackingWrapper original){
-        if(wrapper.parentRef != original.parentRef) return true;
-        if(wrapper.events != original.events) return true;
-        if(wrapper.fields != original.fields) return true;
-        if(wrapper.additionalField1 != original.additionalField1) return true;
-        if(wrapper.additionalField2 != original.additionalField2) return true;
-        if(wrapper.trackCreate != original.trackCreate) return true;
-        if(wrapper.trackDelete != original.trackDelete) return true;
-        if(wrapper.trackUndelete != original.trackUndelete) return true;
+        if(wrapper.parentRef != original.parentRef) {
+            return true;
+        }
+        if(wrapper.events != original.events) {
+            return true;
+        }
+        if(wrapper.fields != original.fields) {
+            return true;
+        }
+        if(wrapper.additionalField1 != original.additionalField1) {
+            return true;
+        }
+        if(wrapper.additionalField2 != original.additionalField2) {
+            return true;
+        }
+        if(wrapper.trackCreate != original.trackCreate) {
+            return true;
+        }
+        if(wrapper.trackDelete != original.trackDelete) {
+            return true;
+        }
+        if(wrapper.trackUndelete != original.trackUndelete) {
+            return true;
+        }
         return false;
     }
 
@@ -435,9 +451,15 @@ public with sharing class TrackingController {
                     }
                 }
             }
-            if(!metadataObjectsToDeploy.isEmpty()) return CreateMetadata.updateAndDeployMetadata(metadataObjectsToDeploy);
-            if(!metadataFieldsToDeploy.isEmpty()) return CreateMetadata.updateAndDeployMetadata(metadataFieldsToDeploy);
-            if(!metadataToDelete.isEmpty()) return deleteMetadata(metadataToDelete);
+            if(!metadataObjectsToDeploy.isEmpty()) {
+                return CreateMetadata.updateAndDeployMetadata(metadataObjectsToDeploy);
+            }
+            if(!metadataFieldsToDeploy.isEmpty()) {
+                return CreateMetadata.updateAndDeployMetadata(metadataFieldsToDeploy);
+            }
+            if(!metadataToDelete.isEmpty()) {
+                return deleteMetadata(metadataToDelete);
+            }
             return null;
         } catch (Exception e) {
             System.debug(e.getMessage());
