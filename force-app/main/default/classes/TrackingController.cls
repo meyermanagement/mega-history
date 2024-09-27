@@ -9,6 +9,7 @@ public with sharing class TrackingController {
     
     /**
      * @description     get all tracking records
+     * @return List of TrackingWrapper
      */
     @AuraEnabled(cacheable=true)
     public static List<TrackingWrapper> getRecords() {
@@ -93,6 +94,7 @@ public with sharing class TrackingController {
 
     /**
      * @description     get available objects
+     * @return List of TrackingWrapper
      */
     @AuraEnabled(cacheable=true)
     public static List<TrackingWrapper> getObjects(){
@@ -151,6 +153,8 @@ public with sharing class TrackingController {
 
     /**
      * @description     get Tracking coniguration for given object
+     * @param objectName
+     * @return TrackingWrapper
      */
     @AuraEnabled(cacheable=true)
     public static TrackingWrapper getObjectSelectedDetails(String objectName){
@@ -201,6 +205,8 @@ public with sharing class TrackingController {
 
     /**
      * @description     get field coniguration for given tracking wrapper
+     * @param wrapperString
+     * @return TrackingWrapper
      */
     @AuraEnabled(cacheable=true)
     public static TrackingWrapper getObjectDetails(String wrapperString){
@@ -251,6 +257,10 @@ public with sharing class TrackingController {
 
     /**
      * @description     create Tracking Wrapper from inputs
+     * @param wrapperString
+     * @param trackingData
+     * @param fields
+     * @return List of TrackingWrapper
      */
     @AuraEnabled
     public static List<TrackingWrapper> submitMetaData(String wrapperString, String trackingData, List<String> fields){
@@ -329,6 +339,12 @@ public with sharing class TrackingController {
         }
     }
 
+    /**
+     * @description     compare Metadata Wrappers
+     * @param wrapper
+     * @param original
+     * @return matches
+     */
     private static Boolean compareWrapper(TrackingWrapper wrapper, TrackingWrapper original){
         System.debug(wrapper);
         System.debug(original);
@@ -345,6 +361,8 @@ public with sharing class TrackingController {
 
     /**
      * @description     create Metadata Wrappers from inputs
+     * @param trackingData
+     * @return List of Metadata Wrappers
      */
     @AuraEnabled
     public static List<MetadataWrapper> generateMetadata(String trackingData){
@@ -418,6 +436,8 @@ public with sharing class TrackingController {
 
     /**
      * @description     deploy custom metadata records
+     * @param wrappers
+     * @return deployment id
      */
     @AuraEnabled
     public static String handleCustomMetadata(String wrappers){
@@ -453,6 +473,8 @@ public with sharing class TrackingController {
     
     /**
      * @description     deploy custom metadata
+     * @param wrappers
+     * @return deployment response
      */
     @TestVisible
     private static String deleteMetadata(List<MetadataWrapper> wrappers){
@@ -493,6 +515,8 @@ public with sharing class TrackingController {
 
     /**
      * @description     generate the trigger files to be deployed
+     * @param wrappers
+     * @return map of file name to metadata
      */
     @AuraEnabled
     public static Map<String, String> generateTriggerFiles(String wrappers){
@@ -525,6 +549,9 @@ public with sharing class TrackingController {
 
     /**
      * @description     deploy trigger using zip file
+     * @param zipFile
+     * @param testName
+     * @return deployment id
      */
     @AuraEnabled
     public static String deployTriggers(String zipFile, String testName){
@@ -551,6 +578,8 @@ public with sharing class TrackingController {
 
     /**
      * @description     check deployment status
+     * @param asyncId
+     * @return isComplete
      */
     @AuraEnabled
     public static Boolean checkAsyncRequest(String asyncId){
@@ -605,6 +634,7 @@ public with sharing class TrackingController {
 
     /**
      * @description     create the metadata service using the session id from vf page
+     * @return metadataport
      */
     private static MetadataService.MetadataPort createService() {
         MetadataService.MetadataPort service = new MetadataService.MetadataPort();

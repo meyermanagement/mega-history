@@ -16,6 +16,9 @@ public without sharing class HistoryTrackingService {
 
     /**
      * @description handles mapping of the object to create the history record
+     * @param newList
+     * @param oldMap
+     * @param operationType
      */
     public static void track(List<Sobject> newList, Map<Id, sObject> oldMap, String operationType){
         if(operationType == 'BEFORE_INSERT') return;
@@ -130,6 +133,7 @@ public without sharing class HistoryTrackingService {
 
     /**
      * @description inserts generic dummy record
+     * @param dummyRecord
      */
     public static void testHandler(Sobject dummyRecord) {
         try {

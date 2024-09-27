@@ -5,25 +5,72 @@
  */
 public with sharing class RelatedListController {
 
+    /**
+     * @description     Custom Exception for RelatedListController
+     */
     public class RelatedListControllerException extends Exception {}
 
+    /**
+     * @description     Param for recordId
+     */
     public static final String RECORD_ID_PARAM = 'recordId';
+    /**
+     * @description     Param for numberOfRecords
+     */
     public static final String NUMBER_OF_RECORDS_PARAM = 'numberOfRecords';
+    /**
+     * @description     Param for sobjectApiName
+     */
     public static final String SOBJECT_API_NAME_PARAM = 'sobjectApiName';
+    /**
+     * @description     Param for sobjectLabel
+     */
     public static final String SOBJECT_LABEL_PARAM = 'sobjectLabel';
+    /**
+     * @description     Param for sobjectLabelPlural
+     */
     public static final String SOBJECT_LABEL_PLURAL_PARAM = 'sobjectLabelPlural';
+    /**
+     * @description     Param for parentRelationshipApiName
+     */
     public static final String PARENT_RELATIONSHIP_API_NAME_PARAM = 'parentRelationshipApiName';
+    /**
+     * @description     Param for relatedFieldApiName
+     */
     public static final String RELATED_FIELD_API_NAME_PARAM = 'relatedFieldApiName';
+    /**
+     * @description     Param for sortedDirection
+     */
     public static final String SORTED_DIRECTION_PARAM = 'sortedDirection';
+    /**
+     * @description     Param for sortedBy
+     */
     public static final String SORTED_BY_PARAM = 'sortedBy';
+    /**
+     * @description     Param for childRecords
+     */
     public static final String CHILD_RECORDS_PARAM = 'childRecords';
+    /**
+     * @description     Param for records
+     */
     public static final String RECORDS_PARAM = 'records';
+    /**
+     * @description     Param for iconName
+     */
     public static final String ICON_NAME_PARAM = 'iconName';
+    /**
+     * @description     Param for fullView
+     */
     public static final String FULL_VIEW_PARAM = 'fullView';
+    /**
+     * @description     Param for superUser
+     */
     public static final String SUPER_USER_PARAM = 'superUser';
 
     /**
      * @description     Get and process data for the Related List LWC
+     * @param jsonData
+     * @return responseMap
      */
     @AuraEnabled
     public static String initData(String jsonData){
@@ -67,6 +114,9 @@ public with sharing class RelatedListController {
     
     /**
      * @description     Get custom History Records
+     * @param recordId
+     * @param numberOfRecords
+     * @return List of History Wrappers
      */
     private static List<HistoryWrapper> getCustomHistory(String recordId, Integer numberOfRecords){
         List<HistoryWrapper> wrappers = new List<HistoryWrapper>();
@@ -84,6 +134,10 @@ public with sharing class RelatedListController {
 
     /**
      * @description     Get standard History Records
+     * @param recordId
+     * @param objectDescribe
+     * @param numberOfRecords
+     * @return List of History Wrappers
      */
     private static List<HistoryWrapper> getStandardHistory(String recordId, Schema.DescribeSObjectResult objectDescribe, Integer numberOfRecords){
         List<HistoryWrapper> wrappers = new List<HistoryWrapper>();
@@ -117,6 +171,9 @@ public with sharing class RelatedListController {
 
     /**
      * @description     merge the 2 lists
+     * @param customrecords
+     * @param standardrecords
+     * @return List of History Wrappers
      */
     private static List<HistoryWrapper> mergeLists(List<HistoryWrapper> customrecords, List<HistoryWrapper> standardrecords){
         List<HistoryWrapper> wrappers = new List<HistoryWrapper>();
@@ -127,6 +184,9 @@ public with sharing class RelatedListController {
 
     /**
      * @description     adjust some of the wrapper fields depending on permissions and type of field
+     * @param wrappers
+     * @param objectDescribe
+     * @return List of History Wrappers
      */
     private static List<HistoryWrapper> scrubFields(List<HistoryWrapper> wrappers, Schema.DescribeSObjectResult objectDescribe){
         Boolean canViewEncryptedText = ![SELECT Id FROM PermissionSetAssignment WHERE PermissionSet.PermissionsViewEncryptedData = true].isEmpty();
@@ -153,6 +213,8 @@ public with sharing class RelatedListController {
 
     /**
      * @description     separate the 2 lists based on if they are child record history or not
+     * @param wrappers
+     * @return Map of List of History Wrappers
      */
     private static Map<String, List<HistoryWrapper>> splitLists(List<HistoryWrapper> wrappers){
         Map<String, List<HistoryWrapper>> historyMap = new Map<String, List<HistoryWrapper>>{'Child'=>new List<HistoryWrapper>(), 'Adult'=>new List<HistoryWrapper>()};
@@ -168,6 +230,9 @@ public with sharing class RelatedListController {
     
     /**
      * @description     Maps the HistoryWrapper instance depending on if it is a custom or standard record
+     * @param record
+     * @param customRecord
+     * @return HistoryWrapper
      */
     @TestVisible
     private static HistoryWrapper createWrapper(SObject record, Boolean customRecord){
@@ -216,6 +281,10 @@ public with sharing class RelatedListController {
         
     /**
      * @description     Determine the name of the parent relationship
+     * @param recordId
+     * @param childSobjectApiName
+     * @param relatedFieldApiName
+     * @return name 
      */
     @TestVisible
     private static String getParentRelationshipName(Id recordId, String childSobjectApiName, String relatedFieldApiName){
@@ -233,6 +302,8 @@ public with sharing class RelatedListController {
     
     /**
      * @description     gets the name of the icon depending on the object
+     * @param sobjectApiName
+     * @return iconName 
      */
     @AuraEnabled
     public static String getIconName(String sobjectApiName){
@@ -265,6 +336,10 @@ public with sharing class RelatedListController {
     
     /**
      * @description     gets the history record to edit
+     * @param recordId
+     * @param historyId
+     * @param isRelated
+     * @return history record 
      */
     @AuraEnabled
     public static Record_History__c getHistoryRecord(String recordId, String historyId, Boolean isRelated){
@@ -298,6 +373,7 @@ public with sharing class RelatedListController {
 
     /**
      * @description     saves the history record on edit or create
+     * @param historyString
      */
     @AuraEnabled
     public static void saveHistory(String historyString){
@@ -322,6 +398,8 @@ public with sharing class RelatedListController {
 
     /**
      * @description     gets fields for a given object based on the recordid
+     * @param recordId
+     * @return fieldMap
      */
     @AuraEnabled(cacheable=true)
     public static Map<String, String> getFields(String recordId){

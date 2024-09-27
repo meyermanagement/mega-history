@@ -5,10 +5,25 @@
  */
 public with sharing class MetadataWrapper {
     
+    /**
+     * @description mdName
+     */
     @AuraEnabled public String mdName;
+    /**
+     * @description mdType
+     */
     @AuraEnabled public String mdType;
+    /**
+     * @description mdObject
+     */
     @AuraEnabled public String mdObject;
+    /**
+     * @description mdOperation
+     */
     @AuraEnabled public String mdOperation;
+    /**
+     * @description mdObjectWrapper
+     */
     @AuraEnabled public TrackingWrapper mdObjectWrapper;
     
 }

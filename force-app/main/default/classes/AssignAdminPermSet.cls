@@ -7,6 +7,7 @@ public class AssignAdminPermSet implements InstallHandler {
 
     /**
      * @description runs the install
+     * @param context
      */
     public void onInstall(InstallContext context) {
         if(context.previousVersion() == null) {

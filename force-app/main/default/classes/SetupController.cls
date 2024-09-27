@@ -7,6 +7,7 @@ public with sharing class SetupController {
 
     /**
      * @description     Checks that the connection to the MetaData API will work
+     * @return connectionAvailable
      */
     @AuraEnabled(cacheable=true)
     public static Boolean checkMetadataAPIConnection() {
@@ -29,6 +30,7 @@ public with sharing class SetupController {
 
     /**
      * @description     Checks that other users have been assigned to the MEGA History permission sets
+     * @return permissions Assigned
      */
     @AuraEnabled(cacheable=true)
     public static Boolean checkPermissionAssignment() {
@@ -43,6 +45,7 @@ public with sharing class SetupController {
 
     /**
      * @description     Checks that tracking on objects has been configured
+     * @return Records created
      */
     @AuraEnabled(cacheable=true)
     public static Boolean checkRecordTracking() {
@@ -57,6 +60,7 @@ public with sharing class SetupController {
 
     /**
      * @description     Checks that the lightning web compnent has been embedded on any lightning record pages
+     * @return lwc embedded
      */
     @AuraEnabled(cacheable=true)
     public static Boolean checkViews() {
@@ -71,6 +75,7 @@ public with sharing class SetupController {
 
     /**
      * @description     get the session id from a VF Page
+     * @return session Id
      */
     @AuraEnabled(cacheable=true)
     public static String getSessionIdFromVFPage(){
@@ -91,6 +96,7 @@ public with sharing class SetupController {
 
     /**
      * @description     get the Org URL
+     * @return org url
      */
     @AuraEnabled(cacheable=true)
     public static String getOrgURL(){

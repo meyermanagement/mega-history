@@ -5,21 +5,69 @@
  */
 public with sharing class TrackingWrapper {
     
+    /**
+     * @description objectName
+     */
     @AuraEnabled public String objectName;
+    /**
+     * @description objectLabel
+     */
     @AuraEnabled public String objectLabel;
+    /**
+     * @description parentRef
+     */
     @AuraEnabled public String parentRef;
+    /**
+     * @description events
+     */
     @AuraEnabled public String events;
+    /**
+     * @description trackCreate
+     */
     @AuraEnabled public Boolean trackCreate = false;
+    /**
+     * @description trackDelete
+     */
     @AuraEnabled public Boolean trackDelete = false;
+    /**
+     * @description trackUndelete
+     */
     @AuraEnabled public Boolean trackUndelete = false;
+    /**
+     * @description fields
+     */
     @AuraEnabled public String fields;
+    /**
+     * @description additionalField1
+     */
     @AuraEnabled public String additionalField1;
+    /**
+     * @description additionalField2
+     */
     @AuraEnabled public String additionalField2;
+    /**
+     * @description mdtStatusClass
+     */
     @AuraEnabled public String mdtStatusClass;
+    /**
+     * @description mdtStatusLabel
+     */
     @AuraEnabled public String mdtStatusLabel;
+    /**
+     * @description trigStatusClass
+     */
     @AuraEnabled public String trigStatusClass;
+    /**
+     * @description trigStatusLabel
+     */
     @AuraEnabled public String trigStatusLabel;
+    /**
+     * @description fieldList
+     */
     @AuraEnabled public List<TrackingFieldDefinition> fieldList;
+    /**
+     * @description parentRefMap
+     */
     @AuraEnabled public Map<String, String> parentRefMap;
 
     /**
@@ -46,6 +94,7 @@ public with sharing class TrackingWrapper {
 
     /**
      * @description     constructor for an existing record for comparison
+     * @param original
      */
     public TrackingWrapper(TrackingWrapper original){
         this.objectName = original.objectName;

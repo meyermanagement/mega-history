@@ -7,6 +7,8 @@ public without sharing class CreateMetadata {
 
     /**
      * @description Updates and Deploys custom metadata
+     * @param wrappers
+     * @return jobId
      */
     public static String updateAndDeployMetadata(List<MetadataWrapper> wrappers) {
         MetadataWrapper wrapper = wrappers[0];

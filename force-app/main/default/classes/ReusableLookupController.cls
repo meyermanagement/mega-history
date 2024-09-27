@@ -7,6 +7,8 @@ public with sharing class ReusableLookupController {
 
     /**
      * @description     get records
+     * @param input
+     * @return List of ResultWrappers
      */
     @AuraEnabled(cacheable=true)
     public static List<ResultWrapper> fetchRecords(String input) {
@@ -48,19 +50,55 @@ public with sharing class ReusableLookupController {
         }
     }
 
+    /**
+     * @description Result Wrapper
+     */
     public class ResultWrapper{
+        /**
+         * @description Result mainField
+         */
         @AuraEnabled public String mainField{get;set;}
+        /**
+         * @description Result subField
+         */
         @AuraEnabled public String subField{get;set;}
+        /**
+         * @description Result id
+         */
         @AuraEnabled public String id{get;set;}
     }
 
+    /**
+     * @description Search Wrapper
+     */
     public class SearchWrapper {
+        /**
+         * @description objectApiName
+         */
         @AuraEnabled public String objectApiName{get;set;}
+        /**
+         * @description fieldApiName
+         */
         @AuraEnabled public String fieldApiName{get;set;}
+        /**
+         * @description otherFieldApiName
+         */
         @AuraEnabled public String otherFieldApiName{get;set;}
+        /**
+         * @description searchString
+         */
         @AuraEnabled public String searchString{get;set;}
+        /**
+         * @description selectedRecordId
+         */
         @AuraEnabled public String selectedRecordId{get;set;}
+        /**
+         * @description parentRecordId
+         */
         @AuraEnabled public String parentRecordId{get;set;}
+        /**
+         * @description parentFieldApiName
+         */
         @AuraEnabled public String parentFieldApiName{get;set;}
     }
 }

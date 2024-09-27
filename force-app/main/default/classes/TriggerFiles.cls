@@ -9,6 +9,9 @@ public with sharing class TriggerFiles {
 
     /**
      * @description     generates the package.xml file
+     * @param wrapp
+     * @param includeMembers
+     * @return file string
      */
     public static String getPackageXml(MetadataWrapper wrapp, Boolean includeMembers) {
         String triggerName = wrapp.mdName;
@@ -46,6 +49,8 @@ public with sharing class TriggerFiles {
     
       /**
      * @description     generates the destructivechanges.xml file
+     * @param wrapp
+     * @return file string
      */
     public static String getDestructiveChangesXml(MetadataWrapper wrapp) {
         String triggerName = wrapp.mdName;
@@ -73,6 +78,7 @@ public with sharing class TriggerFiles {
     
       /**
      * @description     generates the trigger test code xml file
+     * @return file string
      */
     public static String getTriggerTestCodeMetadata() {
         return '<?xml version="1.0" encoding="UTF-8"?>' +
@@ -86,6 +92,8 @@ public with sharing class TriggerFiles {
     
        /**
      * @description     generates the trigger test code file
+     * @param wrapp
+     * @return file string
      */
     public static String getTriggerTestCode(MetadataWrapper wrapp) {
         String triggerName = wrapp.mdName;
@@ -116,6 +124,7 @@ public with sharing class TriggerFiles {
     
        /**
      * @description     generates the trigger code xml file
+     * @return file string
      */
     public static String getTriggerCodeMetadata() {
         return '<?xml version="1.0" encoding="UTF-8"?>' +
@@ -130,6 +139,8 @@ public with sharing class TriggerFiles {
 
      /**
      * @description     generates the trigger code file
+     * @param wrapp
+     * @return file string
      */
     public static String getTriggerCode(MetadataWrapper wrapp) {
         // Namespace?

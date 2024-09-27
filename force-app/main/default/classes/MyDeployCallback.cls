@@ -4,6 +4,12 @@
  * @date            09/27/2024
  */
 public class MyDeployCallback implements Metadata.DeployCallback {
+
+    /**
+     * @description inserts generic dummy record
+     * @param result
+     * @param context
+     */
     public void handleResult(Metadata.DeployResult result,
                              Metadata.DeployCallbackContext context) {
         if (result.status == Metadata.DeployStatus.Succeeded) {

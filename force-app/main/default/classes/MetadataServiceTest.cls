@@ -7,8 +7,23 @@
 public class MetadataServiceTest
 {    
 
+    /**
+     * @description WebserviceMock implementation
+     */
 	@TestVisible private class WebServiceMockImpl implements WebServiceMock 
 	{
+        /**
+         * @description WebserviceMock implementation
+         * @param stub
+         * @param request
+         * @param response
+         * @param endpoint
+         * @param soapAction
+         * @param requestName
+         * @param responseNS
+         * @param responseName
+         * @param responseType
+         */
 		public void doInvoke(
 			Object stub, Object request, Map<String, Object> response,
 			String endpoint, String soapAction, String requestName,
@@ -48,6 +63,9 @@ public class MetadataServiceTest
 		}
 	}    
 		
+    /**
+     * @description test CRUD
+     */
 	@IsTest
 	private static void coverGeneratedCodeCRUDOperations()
 	{	
@@ -58,6 +76,9 @@ public class MetadataServiceTest
         Test.stopTest();
 	}
 	
+    /**
+     * @description test generate code files
+     */
 	@IsTest
     private static void coverGeneratedCodeFileBasedOperations1()
     {    	
@@ -77,6 +98,9 @@ public class MetadataServiceTest
         Test.stopTest();
     }
 
+    /**
+     * @description test generate code files
+     */
     @IsTest
     private static void coverGeneratedCodeFileBasedOperations2()
     {       
@@ -93,6 +117,9 @@ public class MetadataServiceTest
         Test.stopTest();
     }
         
+    /**
+     * @description test generate code files
+     */
 	@IsTest
     private static void coverGeneratedCodeTypes()
     {    	       
@@ -954,6 +981,9 @@ public class MetadataServiceTest
         Test.stopTest();
     }
 
+    /**
+     * @description test generate code files
+     */
     @IsTest
     private static void elfMissingGetRecordsTest() { // elf patch
         Test.startTest();
@@ -1119,6 +1149,9 @@ public class MetadataServiceTest
         Test.stopTest();
     }
 
+    /**
+     * @description test generate code files
+     */
     @IsTest
     private static void elfMissingGetResultTest() { // elf patch
         Test.startTest();
