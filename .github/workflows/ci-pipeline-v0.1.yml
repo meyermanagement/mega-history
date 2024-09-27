@@ -16,11 +16,6 @@ jobs:
           npm install @salesforce/cli --global
           sfdx plugins:install @salesforce/sfdx-scanner@latest
 
-      - name: Run SFDX Scanner - Report findings as comments
-        uses: mitchspano/sfdx-scan-pull-request@v0.1.16
-        with:
-          pmdconfig: "masterRuleset.xml"
-          report-mode: comments
-          target: "force-app"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: SFDX Scan Pull Request
+        uses: mitchspano/sfdx-scan-pull-request@v0.1.15
+            
