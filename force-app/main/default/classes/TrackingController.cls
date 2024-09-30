@@ -105,7 +105,7 @@ public with sharing class TrackingController {
         // for(Tracked_Field__mdt tf : [SELECT Tracked_Object__r.DeveloperName, DeveloperName, Field_API_Name__c FROM Tracked_Field__mdt ORDER BY Field_API_Name__c]){
         //     objectNameMap.get(tf.Tracked_Object__r.DeveloperName).add(tf);
         // }
-        Map<String, Schema.SObjectType> gd = Schema.getpublicDescribe(); 
+        Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe(); 
         for(Schema.SObjectType d : gd.values())
         {
             Schema.DescribeSObjectResult ds = d.getDescribe();

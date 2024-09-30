@@ -143,7 +143,6 @@ public without sharing class HistoryTrackingService {
         try {
             insert dummyRecord;
         } catch (Exception e) {
-            System.debug(e.getMessage());
             return;
             //throw e;
         }
