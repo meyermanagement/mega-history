@@ -20,6 +20,6 @@ public class HistoryTrackingServiceTest {
         HistoryTrackingService.track(accts, new Map<Id, SObject>(accts), 'AFTER_UPDATE');
         HistoryTrackingService.track(null, new Map<Id, SObject>(accts), 'AFTER_DELETE');
         HistoryTrackingService.testHandler(new Account());
-        System.assertEquals('Test', acc.Name);
+        System.assertEquals('Test', acc.Name, 'Test Name not set as expected');
     }
 }

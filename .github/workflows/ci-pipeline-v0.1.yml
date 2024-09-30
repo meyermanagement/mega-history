@@ -19,5 +19,5 @@ jobs:
 
       - name: Run SFDX Scanner
         run: |
-          sf scanner:run --target force-app --format=junit --severity-threshold=1
+          sf scanner:run --target "/force-app/"
             

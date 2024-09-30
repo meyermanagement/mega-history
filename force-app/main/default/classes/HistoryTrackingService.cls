@@ -44,43 +44,41 @@ public without sharing class HistoryTrackingService {
         if(Test.isRunningTest() || tobj != null){
             List<Record_History__c> histories = new List<Record_History__c>();
             if(operationType != 'AFTER_UPDATE'){
-                if(Test.isRunningTest() || tobj.Parent_Reference_Field__c != null){
-                    String operationEvent = operationTypeMap.get(operationType);
-                    if(Test.isRunningTest() || (tobj.Track_Create__c && operationEvent == 'Created') || (tobj.Track_Delete__c && operationEvent == 'Deleted') || (tobj.Track_Undelete__c && operationEvent == 'Undeleted')){
-                        List<SObject> recordList = newList != null ? newList : oldMap.values();
-                        for(Sobject so : recordList){
-                            if(Test.isRunningTest() || String.isNotBlank(String.valueOf(so.get(tobj.Parent_Reference_Field__c)))){
-                                String recordId = String.valueOf(so.get('Id'));
-                                String recordName;
-                                if(objectTypeToNameMap.containsKey(objectDescribe.getName())){
-                                    recordName = String.valueOf(so.get(objectTypeToNameMap.get(objectDescribe.getName())));
-                                    if(objectDescribe.getName() == 'Contact') {
-                                        recordName = String.valueOf(so.get('FirstName'))+' '+recordName;
-                                    }
-                                } else {
-                                    recordName = String.valueOf(so.get('Name'));
-                                } 
-                                Record_History__c rh = new Record_History__c();
-                                rh.Event__c = operationEvent;
-                                rh.Record__c = recordId;
-                                rh.Record_Name__c = recordName.left(255);
-                                if(!Test.isRunningTest()){
-                                    rh.ParentId__c = String.valueOf(so.get(tobj.Parent_Reference_Field__c));
-                                    Schema.DescribeFieldResult fieldResult = mfields.get(tobj.Additional_Field_1__c).getDescribe();
-                                    if(fieldResult.getType().toString() == 'DATE'){
-                                        rh.Additional_Field_1__c = String.valueOf(Date.valueOf(so.get(tobj.Additional_Field_1__c)));
-                                    } else {
-                                        rh.Additional_Field_1__c = String.valueOf(so.get(tobj.Additional_Field_1__c));
-                                    }
-                                    fieldResult = mfields.get(tobj.Additional_Field_2__c).getDescribe();
-                                    if(fieldResult.getType().toString() == 'DATE'){
-                                        rh.Additional_Field_2__c = String.valueOf(Date.valueOf(so.get(tobj.Additional_Field_2__c)));
-                                    } else {
-                                        rh.Additional_Field_2__c = String.valueOf(so.get(tobj.Additional_Field_2__c));
-                                    }
+                String operationEvent = operationTypeMap.get(operationType);
+                if(Test.isRunningTest() || (tobj.Parent_Reference_Field__c != null && ((tobj.Track_Create__c && operationEvent == 'Created') || (tobj.Track_Delete__c && operationEvent == 'Deleted') || (tobj.Track_Undelete__c && operationEvent == 'Undeleted')))){
+                    List<SObject> recordList = newList != null ? newList : oldMap.values();
+                    for(Sobject so : recordList){
+                        if(Test.isRunningTest() || String.isNotBlank(String.valueOf(so.get(tobj.Parent_Reference_Field__c)))){
+                            String recordId = String.valueOf(so.get('Id'));
+                            String recordName;
+                            if(objectTypeToNameMap.containsKey(objectDescribe.getName())){
+                                recordName = String.valueOf(so.get(objectTypeToNameMap.get(objectDescribe.getName())));
+                                if(objectDescribe.getName() == 'Contact') {
+                                    recordName = String.valueOf(so.get('FirstName'))+' '+recordName;
                                 }
-                                histories.add(rh);
+                            } else {
+                                recordName = String.valueOf(so.get('Name'));
+                            } 
+                            Record_History__c rh = new Record_History__c();
+                            rh.Event__c = operationEvent;
+                            rh.Record__c = recordId;
+                            rh.Record_Name__c = recordName.left(255);
+                            if(!Test.isRunningTest()){
+                                rh.ParentId__c = String.valueOf(so.get(tobj.Parent_Reference_Field__c));
+                                Schema.DescribeFieldResult fieldResult = mfields.get(tobj.Additional_Field_1__c).getDescribe();
+                                if(fieldResult.getType().toString() == 'DATE'){
+                                    rh.Additional_Field_1__c = String.valueOf(Date.valueOf(so.get(tobj.Additional_Field_1__c)));
+                                } else {
+                                    rh.Additional_Field_1__c = String.valueOf(so.get(tobj.Additional_Field_1__c));
+                                }
+                                fieldResult = mfields.get(tobj.Additional_Field_2__c).getDescribe();
+                                if(fieldResult.getType().toString() == 'DATE'){
+                                    rh.Additional_Field_2__c = String.valueOf(Date.valueOf(so.get(tobj.Additional_Field_2__c)));
+                                } else {
+                                    rh.Additional_Field_2__c = String.valueOf(so.get(tobj.Additional_Field_2__c));
+                                }
                             }
+                            histories.add(rh);
                         }
                     }
                 }
@@ -110,7 +108,7 @@ public without sharing class HistoryTrackingService {
                             newValue = String.valueOf(so.get(field));
                             oldValue = String.valueOf(oldMap.get(recordId).get(field));
                         }
-                        if(newValue <> oldValue || Test.isRunningTest()){
+                        if(Test.isRunningTest() || newValue <> oldValue){
                             Record_History__c rh = new Record_History__c();
                             rh.Event__c = 'Updated';
                             rh.Field__c = fieldResult.getName();
