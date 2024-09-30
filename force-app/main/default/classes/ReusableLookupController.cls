@@ -34,7 +34,7 @@ public with sharing class ReusableLookupController {
                     query += ' WHERE '+ filterCriteria;
                 }
                 List<ResultWrapper> returnWrapperList = new List<ResultWrapper>();
-                for(SObject s : Database.query(query)) {
+                for(SObject s : Database.query(String.escapeSingleQuotes(query))) {
                     ResultWrapper wrap = new ResultWrapper();
                     wrap.mainField = (String)s.get(inputWrapper.fieldApiName);
                     wrap.subField = (String)s.get(inputWrapper.otherFieldApiName);

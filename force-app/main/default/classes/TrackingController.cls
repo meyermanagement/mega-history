@@ -66,7 +66,7 @@ public with sharing class TrackingController {
                 wrapper.mdtStatusClass = 'slds-text-color_success slds-text-title_caps';
                 wrapperMap.put(to.DeveloperName, wrapper);
             }
-            for(ApexTrigger at : [SELECT Id, NamespacePrefix, name, Body, Status, TableEnumOrId FROM ApexTrigger WHERE Name LIKE 'mh%' AND Status = 'Active']){
+            for(ApexTrigger at : [SELECT Id, NamespacePrefix, name, Body, Status, TableEnumOrId FROM ApexTrigger WHERE Name LIKE 'mh%' AND Status = 'Active' WITH SECURITY_ENFORCED]){
                 if(wrapperMap.get(at.TableEnumOrId) != null){
                     TrackingWrapper wrapper = wrapperMap.get(at.TableEnumOrId);
                     wrapper.trigStatusLabel = 'Deployed';

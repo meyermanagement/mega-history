@@ -289,10 +289,10 @@ export default class Tracking extends LightningElement {
                     selected.push(f.fieldAPIName);
                 }
             }
-            for(var f in data.parentRefMap){
+            for(var p in data.parentRefMap){
                 parentItems.push({
-                    label: data.parentRefMap[f]+'('+f+')',
-                    value: f
+                    label: data.parentRefMap[p]+'('+p+')',
+                    value: p
                 });
             }
             this.options.push(...items);
@@ -357,24 +357,18 @@ export default class Tracking extends LightningElement {
     }
 
     handleDelete(){
-        if(this.selectedObject.trigStatusLabel == 'Not Deployed' && this.selectedObject.mdtStatusLabel == 'Not Deployed') {
-            let trackingList = [];
-            for(var tracking of this.trackingData){
-                if(tracking.objectName != this.selectedObject.objectName) trackingList.push(tracking);
-            }
-            this.trackingData = trackingList;
-        } else {
-            let trackingList = [];
-            for(var tracking of this.trackingData){
-                if(tracking.objectName != this.selectedObject.objectName) trackingList.push(tracking);
-            }
+        let trackingList = [];
+        for(var tracking of this.trackingData){
+            if(tracking.objectName != this.selectedObject.objectName) trackingList.push(tracking);
+        }
+        if(this.selectedObject.trigStatusLabel != 'Not Deployed' || this.selectedObject.mdtStatusLabel != 'Not Deployed') {
             this.selectedObject.mdtStatusLabel = 'Pending Removal';
             this.selectedObject.mdtStatusClass = 'slds-text-color_weak slds-text-title_caps';
             this.selectedObject.trigStatusLabel = 'Pending Removal';
             this.selectedObject.trigStatusClass = 'slds-text-color_weak slds-text-title_caps';
             trackingList.push(this.selectedObject);
-            this.trackingData = trackingList;
         }
+        this.trackingData = trackingList;
         this.handleClose();
     }
 
@@ -388,13 +382,13 @@ export default class Tracking extends LightningElement {
                 if(md.mdType == 'Object' && md.mdOperation == 'Add') hasNewObject = true;
             }
             if(hasNewObject){
-                for(var md of mdList){
-                    if(md.mdType == 'Object' && md.mdOperation == 'Add') md.mdDisabled = false;
-                    else md.mdDisabled = true;
+                for(var mdt of mdList){
+                    if(mdt.mdType == 'Object' && mdt.mdOperation == 'Add') mdt.mdDisabled = false;
+                    else mdt.mdDisabled = true;
                 }
             } else {
-                for(var md of mdList){
-                    md.mdDisabled = false;
+                for(var mdts of mdList){
+                    mdts.mdDisabled = false;
                 }
             }
             this.mdData = mdList;
@@ -498,7 +492,6 @@ export default class Tracking extends LightningElement {
     generateZIP(fileMap){
         var zip = new JSZip();
         for(var file in fileMap){
-            console.log('file>>'+file);
             zip.file(file, fileMap[file]);
         }
         return zip.generate();
@@ -554,10 +547,10 @@ export default class Tracking extends LightningElement {
         this.asyncId = undefined;
         var mdList = [];
         var hasNewObject = false;
-        for(var md of this.mdData){
-            if(row.mdName != md.mdName) {
-                mdList.push(md);
-                if(md.mdType == 'Object' && md.mdOperation == 'Add') hasNewObject = true;
+        for(var mdDate of this.mdData){
+            if(row.mdName != mdDate.mdName) {
+                mdList.push(mdDate);
+                if(mdDate.mdType == 'Object' && mdDate.mdOperation == 'Add') hasNewObject = true;
             }
         }
         if(hasNewObject){
@@ -566,8 +559,8 @@ export default class Tracking extends LightningElement {
                 else md.mdDisabled = true;
             }
         } else {
-            for(var md of mdList){
-                md.mdDisabled = false;
+            for(var mds of mdList){
+                mds.mdDisabled = false;
             }
         }
         this.mdData = mdList;
@@ -609,10 +602,10 @@ export default class Tracking extends LightningElement {
                     selected.push(f.fieldAPIName);
                 }
             }
-            for(var f in data.parentRefMap){
+            for(var p in data.parentRefMap){
                 parentItems.push({
-                    label: data.parentRefMap[f]+'('+f+')',
-                    value: f
+                    label: data.parentRefMap[p]+'('+p+')',
+                    value: p
                 });
             }
             this.options.push(...items);

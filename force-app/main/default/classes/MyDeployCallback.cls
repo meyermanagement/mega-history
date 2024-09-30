@@ -13,8 +13,10 @@ public class MyDeployCallback implements Metadata.DeployCallback {
     public void handleResult(Metadata.DeployResult result,
                              Metadata.DeployCallbackContext context) {
         if (result.status == Metadata.DeployStatus.Succeeded) {
+            System.debug(result.success);
             // Deployment was successful
         } else {
+            System.debug(result.errorMessage);
             // Deployment was not successful
         }
     }

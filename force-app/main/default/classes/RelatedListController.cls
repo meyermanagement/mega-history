@@ -102,7 +102,7 @@ public with sharing class RelatedListController {
             if(!initialization.initialized__c){
                 initialization.Name = 'Default Initialization';
                 initialization.initialized__c = true;
-                upsert initialization;
+                upsert as user initialization;
             }
             return JSON.serialize(responseMap);
         } catch (Exception e){
@@ -122,10 +122,10 @@ public with sharing class RelatedListController {
         String query = 'SELECT Id, Name, Additional_Field_1__c, Additional_Field_2__c, CreatedById, Created_By_DL__c, Created_By_Formula__c, Created_Date_DL__c,'+
                         'Created_Date_Formula__c, Event__c, Field__c, New_Value__c, New_Value_Extended__c, Old_Value__c, Old_Value_Extended__c,'+
                         'ParentId__c, Record__c, Record_Name__c FROM Record_History__c WHERE Record__c = :recordId'+
-                        ' OR (ParentId__c = :recordId AND Event__c != \'Updated\')'+
+                        ' OR ParentId__c = :recordId'+
                         ' ORDER BY Created_Date_Formula__c DESC'+
                         ' Limit '+numberOfRecords;
-        for(Sobject sobj : Database.query(query)){
+        for(Sobject sobj : Database.query(String.escapeSingleQuotes(query))){
             wrappers.add(createWrapper(sobj, true));
         }
         return wrappers;
@@ -388,7 +388,7 @@ public with sharing class RelatedListController {
             if(rh.Event__c != 'Updated' && String.isBlank(rh.Record_Name__c)) {
                 throw new RelatedListControllerException('Record Name is required');
             }
-            upsert rh;
+            upsert as user rh;
         } catch (Exception e) {
             System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());

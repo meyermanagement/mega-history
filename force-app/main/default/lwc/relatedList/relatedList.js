@@ -6,7 +6,7 @@ import {loadStyle} from 'lightning/platformResourceLoader';
 import relatedListResource from '@salesforce/resourceUrl/relatedListResource';
 import getHistoryRecord from '@salesforce/apex/RelatedListController.getHistoryRecord'; 
 import getFields from "@salesforce/apex/RelatedListController.getFields";
-import { IsConsoleNavigation, EnclosingTabId, openSubtab, openTab  } from "lightning/platformWorkspaceApi";
+import { IsConsoleNavigation, EnclosingTabId, openTab  } from "lightning/platformWorkspaceApi";
 
 export default class RelatedList extends NavigationMixin(LightningElement) {
     @wire(IsConsoleNavigation) isConsoleNavigation;
