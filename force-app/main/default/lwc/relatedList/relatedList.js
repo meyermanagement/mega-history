@@ -4,25 +4,32 @@ import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import RelatedListHelper from "./relatedListHelper";
 import {loadStyle} from 'lightning/platformResourceLoader';
 import relatedListResource from '@salesforce/resourceUrl/relatedListResource';
-import { IsConsoleNavigation, EnclosingTabId, openSubtab  } from "lightning/platformWorkspaceApi";
+import getHistoryRecord from '@salesforce/apex/RelatedListController.getHistoryRecord'; 
+import getFields from "@salesforce/apex/RelatedListController.getFields";
+import { IsConsoleNavigation, EnclosingTabId, openTab  } from "lightning/platformWorkspaceApi";
 
 export default class RelatedList extends NavigationMixin(LightningElement) {
     @wire(IsConsoleNavigation) isConsoleNavigation;
     @wire(EnclosingTabId) tabId;
-    @wire(CurrentPageReference)
-    currentPageRef;
+    @wire(CurrentPageReference) currentPageRef;
 
     @api recordId;
     @api numberOfRecords = 5;
+    @api mode;
     @track fullView;
     @track state = {};
     @track columns;
+    @track childColumns;
     @track sortBy = 'createdDate';
     @track sortDirection = 'desc';
     @track consolidatedView = false;
-    @track hasChildren = false;
     @track isSuperUser = false;
+    fields = [];
+    fieldSelected = '';
     rendered = false;
+    relatedRecord = false;
+    showNewEditPopUp = false;
+    historyRec;
     
     loading = false;
     helper = new RelatedListHelper();
@@ -41,12 +48,32 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
         }
     }
 
+    get isRelated(){
+        return true;
+    }
+
+    get isNotRelated(){
+        return false;
+    }
+
     get hasRecords() {
-        return this.state.records != undefined && this.state.records.length;
+        return this.hasAdults || this.hasChildren;
+    }
+
+    get hasAdults() {
+        return this.state.records != undefined && this.state.records.length > 0;
+    }
+
+    get hasChildren() {
+        return this.state.childRecords != undefined && this.state.childRecords.length > 0;
     }
 
     get showRelatedList() {
         return this.recordId != undefined;
+    }
+
+    get showTile() {
+        return this.mode == 'Tile';
     }
 
     get superUser() {
@@ -70,26 +97,17 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
                 }),
             );
         }
-        for(var rec of data.records){
-            if(rec.parentId == this.recordId) {
-                this.hasChildren = true;
-                rec.eventrec = rec.recordName;
-                rec.origAdd1 = rec.additionalField1;
-                rec.newAdd2 = rec.additionalField2;
-            } else {
-                rec.eventrec = rec.field;
-                rec.origAdd1 = rec.oldValue;
-                rec.newAdd2 = rec.newValue;
-            }
-        }
         this.state.records = data.records;
+        this.state.childRecords = data.childRecords;
         this.sortData('createdDate','desc');
+        this.sortChildData('createdDate','desc');
         this.sortBy = 'createdDate';
         this.sortDirection = 'desc';
         this.state.iconName = data.iconName;
         this.state.sobjectLabel = data.sobjectLabel;
         this.state.sobjectLabelPlural = data.sobjectLabelPlural;
         this.state.title = data.title;
+        this.state.childtitle = data.childtitle;
         this.state.parentRelationshipApiName = data.parentRelationshipApiName;
         
         this.createColumns();
@@ -98,10 +116,13 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
 
     createColumns() {
         let columns = [];
+        let childColumns = [];
         columns.push({
             label: 'Date',
+            title: 'createdDate',
             fieldName: 'createdDate',
             type: 'date',
+            initialWidth: 150,
             typeAttributes: {
                 day: 'numeric',
                 month: 'numeric',
@@ -111,50 +132,73 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
                 timeZoneName: 'short'
             }
         });
-        if(this.hasChildren){
-            columns.push({
-                label: 'Event',
-                fieldName: 'event',
-                type: 'text'
-            });
-            columns.push({
-                label: 'Record/Field',
-                fieldName: 'eventrec',
-                type: 'text'
-            });
-        } else {
-            columns.push({
-                label: 'Field',
-                fieldName: 'field',
-                type: 'text'
-            });
-        }
-        if(this.hasChildren){
-            columns.push({
-                label: 'Original Value/2nd Id',
-                fieldName: 'origAdd1',
-                type: 'text'
-            });
-            columns.push({
-                label: 'New Value/3rd Id',
-                fieldName: 'newAdd2',
-                type: 'text'
-            });
-        } else {
-            columns.push({
-                label: 'Original Value',
-                fieldName: 'origAdd1',
-                type: 'text'
-            });
-            columns.push({
-                label: 'New Value',
-                fieldName: 'newAdd2',
-                type: 'text'
-            });
-        }
+        columns.push({
+            label: 'Field',
+            fieldName: 'fieldLabel',
+            type: 'text'
+        });
         columns.push({
             label: 'User',
-            fieldName: 'createdByName',
+            fieldName: 'createdByURL',
+            type: 'url',
+            typeAttributes: {label: { fieldName: 'createdByName' }, 
+            target: '_self'}
+        });
+        columns.push({
+            label: 'Original Value',
+            fieldName: 'oldValue',
+            type: 'text'
+        });
+        columns.push({
+            label: 'New Value',
+            fieldName: 'newValue',
+            type: 'text'
+        });
+        childColumns.push({
+            label: 'Date',
+            title: 'createdDate',
+            fieldName: 'createdDate',
+            type: 'date',
+            initialWidth: 150,
+            typeAttributes: {
+                day: 'numeric',
+                month: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZoneName: 'short'
+            }
+        });
+        childColumns.push({
+            label: 'Object',
+            fieldName: 'objectLabel',
+            type: 'text'
+        });
+        childColumns.push({
+            label: 'Event',
+            fieldName: 'event',
+            type: 'text'
+        });
+        childColumns.push({
+            label: 'User',
+            fieldName: 'createdByURL',
+            type: 'url',
+            typeAttributes: {label: { fieldName: 'createdByName' }, 
+            target: '_self'}
+        });
+        childColumns.push({
+            label: 'Record',
+            fieldName: 'recordName',
+            type: 'text'
+        });
+        childColumns.push({
+            label: 'Field 1',
+            fieldName: 'additionalField1',
+            type: 'text'
+        });
+        childColumns.push({
+            label: 'Field 2',
+            fieldName: 'additionalField2',
             type: 'text'
         });
         if(this.isSuperUser == 'true'){
@@ -162,8 +206,13 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
                 type: 'action', 
                 typeAttributes: { rowActions: this.helper.initColumnsWithActions } 
             });
+            childColumns.push({ 
+                type: 'action', 
+                typeAttributes: { rowActions: this.helper.initColumnsWithActions } 
+            });
         }
         this.columns = columns;
+        this.childColumns = childColumns;
     }
 
     handleRowAction(event) {
@@ -171,66 +220,91 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
         const row = event.detail.row;
         switch (actionName) {
             case "delete":
-                this.handleDeleteRecord(row);
+                if(row.parentId == this.recordId) this.handleDeleteRelatedRecord(row);
+                else this.handleDeleteRecord(row);
                 break;
             case "edit":
-                this.handleEditRecord(row);
+                if(row.parentId == this.recordId) this.handleEditRelatedRecord(row);
+                else this.handleEditRecord(row);
                 break;
             default:
         }
     }
 
     handleGotoRelatedList() {
-        console.log(this.isConsoleNavigation);
-        console.log(this.tabId);
-        if(!this.isConsoleNavigation || !this.tabId){
-            this[NavigationMixin.Navigate]({
-                type: "standard__component",
-                attributes: {
-                    componentName: 'megahistory__relatedList'
-                },
-                state: {
-                    megahistory__fullView: 'true',
-                    megahistory__recordId: this.recordId
-                    
-                }
-            });
-        } else {
-            openSubtab(this.tabId, {
-                pageReference: {
-                  type: "standard__component",
-                  attributes: {
-                    componentName: "megahistory__relatedList",
-                  },
-                  state: {
-                    megahistory__fullView: 'true',
-                    megahistory__recordId: this.recordId
-                  },
-                },
-                icon: this.state.iconName,
-                label: this.state.title
-            });
+        try{
+            if(!this.isConsoleNavigation || !this.tabId){
+                this[NavigationMixin.Navigate]({
+                    type: "standard__component",
+                    attributes: {
+                        componentName: 'megahistory__relatedList'
+                    },
+                    state: {
+                        megahistory__fullView: 'true',
+                        megahistory__recordId: this.recordId
+                    }
+                });
+            } else {
+                openTab({
+                    pageReference: {
+                        type: "standard__component",
+                        attributes: {
+                            componentName: "megahistory__relatedList",
+                        },
+                        state: {
+                            megahistory__fullView: 'true',
+                            megahistory__recordId: this.recordId
+                        },
+                    },
+                    icon: this.state.iconName,
+                    label: this.state.title
+                });
+            }
+        } catch(error){
+            console.log(JSON.stringify(error));
         }
-        
     }
 
     handleCreateRecord() {
-        const newEditPopup = this.template.querySelector("c-related-list-new-edit-popup");
-        newEditPopup.recordId = null
-        newEditPopup.recordName = null        
-        newEditPopup.sobjectApiName = this.sobjectApiName;
-        newEditPopup.sobjectLabel = this.state.sobjectLabel;
-        newEditPopup.show();
+        this.relatedRecord = false;
+        this.getData();
+        this.showNewEditPopUp = true;
     }
 
     handleEditRecord(row) {
-        console.log('row>>'+JSON.stringify(row));
-        const newEditPopup = this.template.querySelector("c-related-list-new-edit-popup");
-        newEditPopup.recordId = row.historyId;
-        newEditPopup.recordName = row.event;
-        newEditPopup.sobjectApiName = this.sobjectApiName;
-        newEditPopup.sobjectLabel = this.state.sobjectLabel;
-        newEditPopup.show();
+        this.relatedRecord = false;
+        this.fieldSelected = row.field;
+        this.getData(row.historyId);
+        this.showNewEditPopUp = true;
+    }
+
+    handleCreateRelatedRecord() {
+        this.relatedRecord = true;
+        this.getData();
+        this.showNewEditPopUp = true;
+    }
+
+    handleEditRelatedRecord(row) {
+        this.relatedRecord = true;
+        this.getData(row.historyId);
+        this.showNewEditPopUp = true;
+    }
+
+    async getData(historyId) {
+        await getHistoryRecord({ recordId: this.recordId, historyId: historyId, isRelated: this.relatedRecord})
+        .then(response => {
+            this.historyRec = response;
+        })
+        .catch(error => {
+            console.log(JSON.stringify(error));
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: "An error has occurred. Please contact the system administrator for further assistance.",
+                    message: error.body.message,
+                    variant: "error",
+                }),
+            );
+        });
     }
 
     handleDeleteRecord(row) {
@@ -238,6 +312,16 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
         newEditPopup.recordId = row.historyId;
         newEditPopup.recordName = row.recordName;
         newEditPopup.sobjectLabel = this.state.sobjectLabel;
+        newEditPopup.relatedRecord = false;
+        newEditPopup.show();
+    }
+
+    handleDeleteRelatedRecord(row) {
+        const newEditPopup = this.template.querySelector("c-related-list-delete-popup");
+        newEditPopup.recordId = row.historyId;
+        newEditPopup.recordName = row.recordName;
+        newEditPopup.sobjectLabel = this.state.sobjectLabel;
+        newEditPopup.relatedRecord = true;
         newEditPopup.show();
     }
 
@@ -262,4 +346,50 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
         });
         this.state.records = parseData;
     }    
+
+    sortChildData(fieldname, direction) {
+        let parseData = JSON.parse(JSON.stringify(this.state.childRecords));
+        // Return the value stored in the field
+        let keyValue = (a) => {
+            return a[fieldname];
+        };
+        // cheking reverse direction
+        let isReverse = direction === 'asc' ? 1: -1;
+        // sorting data
+        parseData.sort((x, y) => {
+            x = keyValue(x) ? keyValue(x) : ''; // handling null values
+            y = keyValue(y) ? keyValue(y) : '';
+            // sorting values based on direction
+            return isReverse * ((x > y) - (y > x));
+        });
+        this.state.childRecords = parseData;
+    }    
+
+    handleCloseModal(){
+        this.showNewEditPopUp = false;
+    }
+
+    @wire(getFields, { recordId : '$recordId' })
+    getFields(result) {
+        const {data, error} = result;
+        if(data){
+            let fieldList = [];
+            for(let f in data){
+                fieldList.push({
+                    label: data[f], 
+                    value: f
+                })
+            }
+            this.fields = fieldList;
+        } else if (error) {
+            console.log(error.body.message);
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: "An error has occurred. Please contact the system administrator for further assistance.",
+                    message: error.body.message,
+                    variant: "error",
+                }),
+            );
+        }
+    }
 }

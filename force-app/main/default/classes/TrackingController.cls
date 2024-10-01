@@ -1,9 +1,18 @@
-global with sharing class TrackingController {
+/**
+ * @description     Controller for the Tracking LWC
+ * @author          Mark Meyer
+ * @date            09/27/2024
+ */
+public with sharing class TrackingController {
 
     public class TrackingException extends Exception {}
     
+    /**
+     * @description     get all tracking records
+     * @return List of TrackingWrapper
+     */
     @AuraEnabled(cacheable=true)
-    global static List<TrackingWrapper> getRecords() {
+    public static List<TrackingWrapper> getRecords() {
         try {
             Map<String, TrackingWrapper> wrapperMap = new Map<String, TrackingWrapper>();
             Map<String, List<Tracked_Field__mdt>> objectNameMap = new Map<String, List<Tracked_Field__mdt>>();
@@ -16,11 +25,9 @@ global with sharing class TrackingController {
             }
             Map<String, Schema.DescribeSobjectResult> describeMap = new Map<String, Schema.DescribeSObjectResult>();
             for(Schema.DescribeSobjectResult res : Schema.describeSObjects(new List<String>(objectNameMap.keySet()))) {
-                System.debug(res.getName());
                 describeMap.put(res.getName(), res);
             }
             for(Tracked_Object__mdt to : trackedObjects){
-                System.debug(to);
                 TrackingWrapper wrapper = new TrackingWrapper();
                 wrapper.objectName = to.DeveloperName;
                 wrapper.parentRef = to.Parent_Reference_Field__c;
@@ -59,7 +66,7 @@ global with sharing class TrackingController {
                 wrapper.mdtStatusClass = 'slds-text-color_success slds-text-title_caps';
                 wrapperMap.put(to.DeveloperName, wrapper);
             }
-            for(ApexTrigger at : [SELECT Id, NamespacePrefix, name, Body, Status, TableEnumOrId FROM ApexTrigger WHERE Name LIKE 'mh%' AND Status = 'Active']){
+            for(ApexTrigger at : [SELECT Id, NamespacePrefix, name, Body, Status, TableEnumOrId FROM ApexTrigger WHERE Name LIKE 'mh%' AND Status = 'Active' WITH SECURITY_ENFORCED]){
                 if(wrapperMap.get(at.TableEnumOrId) != null){
                     TrackingWrapper wrapper = wrapperMap.get(at.TableEnumOrId);
                     wrapper.trigStatusLabel = 'Deployed';
@@ -83,8 +90,12 @@ global with sharing class TrackingController {
         }
     }
 
+    /**
+     * @description     get available objects
+     * @return List of TrackingWrapper
+     */
     @AuraEnabled(cacheable=true)
-    global static List<TrackingWrapper> getObjects(){
+    public static List<TrackingWrapper> getObjects(){
         Map<String, TrackingWrapper> wrapperMap = new Map<String, TrackingWrapper>();
         Map<String, List<Tracked_Field__mdt>> objectNameMap = new Map<String, List<Tracked_Field__mdt>>();
         List<Tracked_Object__mdt> trackedObjects = [SELECT Id, MasterLabel, DeveloperName, Additional_Field_1__c, Additional_Field_2__c, Parent_Reference_Field__c, Track_Create__c, Track_Delete__c, Track_Undelete__c FROM Tracked_Object__mdt ORDER BY MasterLabel];
@@ -102,8 +113,6 @@ global with sharing class TrackingController {
                 String sobjStruct = JSON.serialize(ds);
                 DescribeSobjectResultJSON sobjProps = (DescribeSobjectResultJSON)JSON.deserialize(sobjStruct, DescribeSobjectResultJSON.class);
                 if(sobjProps.triggerable){
-                    System.debug(sobjProps);
-                    System.debug(ds.fields.getMap());
                     Boolean updateableFields = false;
                     Map<String,Schema.SObjectField> mfields = ds.fields.getMap();
                     for(Schema.SObjectField soField : mfields.values()){
@@ -130,13 +139,21 @@ global with sharing class TrackingController {
         return results;
     }
 
+    /**
+     * @description     wrapper class for finding triggerable objects
+     */
     public class DescribeSobjectResultJSON { 
         public String name {get;set;}
         public Boolean triggerable {get;set;}
     }
 
+    /**
+     * @description     get Tracking coniguration for given object
+     * @param objectName
+     * @return TrackingWrapper
+     */
     @AuraEnabled(cacheable=true)
-    global static TrackingWrapper getObjectSelectedDetails(String objectName){
+    public static TrackingWrapper getObjectSelectedDetails(String objectName){
         try {
             TrackingWrapper wrapper = new TrackingWrapper();
             wrapper.objectName = objectName;
@@ -144,7 +161,6 @@ global with sharing class TrackingController {
             wrapper.mdtStatusClass = 'slds-text-color_error slds-text-title_caps';
             wrapper.trigStatusLabel = 'Not Deployed';
             wrapper.trigStatusClass = 'slds-text-color_error slds-text-title_caps';
-            System.debug(objectName);
             Schema.DescribeSobjectResult res = Schema.describeSObjects(new List<String>{objectName})[0];
             //List<Schema.ChildRelationship> childRels = res.getChildRelationships();
             Map<String,Schema.SObjectField> mfields = res.fields.getMap();
@@ -182,12 +198,15 @@ global with sharing class TrackingController {
         }
     }
 
+    /**
+     * @description     get field coniguration for given tracking wrapper
+     * @param wrapperString
+     * @return TrackingWrapper
+     */
     @AuraEnabled(cacheable=true)
-    global static TrackingWrapper getObjectDetails(String wrapperString){
+    public static TrackingWrapper getObjectDetails(String wrapperString){
         try {
-            System.debug(wrapperString);
             TrackingWrapper wrapper = (TrackingWrapper)JSON.deserialize(wrapperString, TrackingWrapper.class);
-            System.debug(wrapper.parentRef);
             Schema.DescribeSobjectResult res = Schema.describeSObjects(new List<String>{wrapper.objectName})[0];
             //List<Schema.ChildRelationship> childRels = res.getChildRelationships();
             Map<String,Schema.SObjectField> mfields = res.fields.getMap();
@@ -229,12 +248,16 @@ global with sharing class TrackingController {
         }
     }
 
+    /**
+     * @description     create Tracking Wrapper from inputs
+     * @param wrapperString
+     * @param trackingData
+     * @param fields
+     * @return List of TrackingWrapper
+     */
     @AuraEnabled
-    global static List<TrackingWrapper> submitMetaData(String wrapperString, String trackingData, List<String> fields){
+    public static List<TrackingWrapper> submitMetaData(String wrapperString, String trackingData, List<String> fields){
         try {
-            System.debug(wrapperString);
-            System.debug(trackingData);
-            System.debug(fields);
             TrackingWrapper wrapper = (TrackingWrapper)JSON.deserialize(wrapperString, TrackingWrapper.class);
             TrackingWrapper orignal = new TrackingWrapper(wrapper);
             List<Tracked_Object__mdt> toList = [SELECT Id, MasterLabel, DeveloperName, Additional_Field_1__c, Additional_Field_2__c, Parent_Reference_Field__c, Track_Create__c, Track_Delete__c, Track_Undelete__c FROM Tracked_Object__mdt WHERE DeveloperName = :wrapper.objectName ORDER BY MasterLabel LIMIT 1];
@@ -259,7 +282,6 @@ global with sharing class TrackingController {
                     }
                 }
             }
-            System.debug(wrapper);
             String concatEvents = '';
             if(wrapper.trackCreate) {
                 concatEvents = concatEvents += 'Create, ';
@@ -281,7 +303,6 @@ global with sharing class TrackingController {
             concatFields = concatFields.removeEnd(', ');
             wrapper.fields = concatFields;
 
-            System.debug(compareWrapper(wrapper, orignal));
             if(compareWrapper(wrapper, orignal)){
                 wrapper.mdtStatusLabel = 'Not Deployed';
                 wrapper.mdtStatusClass = 'slds-text-color_error slds-text-title_caps';
@@ -306,29 +327,51 @@ global with sharing class TrackingController {
         }
     }
 
+    /**
+     * @description     compare Metadata Wrappers
+     * @param wrapper
+     * @param original
+     * @return matches
+     */
     private static Boolean compareWrapper(TrackingWrapper wrapper, TrackingWrapper original){
-        System.debug(wrapper);
-        System.debug(original);
-        if(wrapper.parentRef != original.parentRef) return true;
-        if(wrapper.events != original.events) return true;
-        if(wrapper.fields != original.fields) return true;
-        if(wrapper.additionalField1 != original.additionalField1) return true;
-        if(wrapper.additionalField2 != original.additionalField2) return true;
-        if(wrapper.trackCreate != original.trackCreate) return true;
-        if(wrapper.trackDelete != original.trackDelete) return true;
-        if(wrapper.trackUndelete != original.trackUndelete) return true;
+        if(wrapper.parentRef != original.parentRef) {
+            return true;
+        }
+        if(wrapper.events != original.events) {
+            return true;
+        }
+        if(wrapper.fields != original.fields) {
+            return true;
+        }
+        if(wrapper.additionalField1 != original.additionalField1) {
+            return true;
+        }
+        if(wrapper.additionalField2 != original.additionalField2) {
+            return true;
+        }
+        if(wrapper.trackCreate != original.trackCreate) {
+            return true;
+        }
+        if(wrapper.trackDelete != original.trackDelete) {
+            return true;
+        }
+        if(wrapper.trackUndelete != original.trackUndelete) {
+            return true;
+        }
         return false;
     }
 
+    /**
+     * @description     create Metadata Wrappers from inputs
+     * @param trackingData
+     * @return List of Metadata Wrappers
+     */
     @AuraEnabled
-    global static List<MetadataWrapper> generateMetadata(String trackingData){
+    public static List<MetadataWrapper> generateMetadata(String trackingData){
         try {
-            System.debug(trackingData);
             List<MetadataWrapper> mdWrapperList = new List<MetadataWrapper>();
             List<TrackingWrapper> wrapperList = (List<TrackingWrapper>)JSON.deserialize(trackingData, List<TrackingWrapper>.class);
             for(TrackingWrapper wrapp : wrapperList){
-                System.debug(wrapp.objectName);
-                System.debug(wrapp.mdtStatusLabel);
                 if(wrapp.mdtStatusLabel != 'Deployed'){
                     MetadataWrapper md = new MetadataWrapper();
                     md.mdName = wrapp.objectName;
@@ -336,7 +379,6 @@ global with sharing class TrackingController {
                     md.mdObject = wrapp.objectName;
                     md.mdObjectWrapper = wrapp;
                     Tracked_Object__mdt to = Tracked_Object__mdt.getInstance(wrapp.objectName);
-                    System.debug(to);
                     if(to != null){
                         TrackingWrapper orignal = new TrackingWrapper(wrapp);
                         orignal.parentRef = to.Parent_Reference_Field__c;
@@ -345,19 +387,15 @@ global with sharing class TrackingController {
                         orignal.trackCreate = to.Track_Create__c;
                         orignal.trackDelete = to.Track_Delete__c;
                         orignal.trackUndelete = to.Track_Undelete__c;
-                        System.debug(compareWrapper(wrapp, orignal));
                         if(compareWrapper(wrapp, orignal)) {
                             md.mdOperation = 'Change';
-                            System.debug(md);
                             mdWrapperList.add(md);
                         } else if (wrapp.mdtStatusLabel == 'Pending Removal'){
                             md.mdOperation = 'Remove';
-                            System.debug(md);
                             mdWrapperList.add(md);
                         }
                     } else if(wrapp.mdtStatusLabel != 'Pending Removal') {
                         md.mdOperation = 'Add';
-                        System.debug(md);
                         mdWrapperList.add(md);
                     }
                     for(TrackingFieldDefinition tfd : wrapp.fieldList){
@@ -367,7 +405,6 @@ global with sharing class TrackingController {
                             mdf.mdType = 'Field';
                             mdf.mdObject = wrapp.objectName;
                             mdf.mdOperation = tfd.operation;
-                            System.debug(mdf);
                             mdWrapperList.add(mdf);
                         }
                     }
@@ -378,11 +415,9 @@ global with sharing class TrackingController {
                     md.mdType = 'Trigger';
                     md.mdObject = wrapp.objectName;
                     md.mdOperation = wrapp.trigStatusLabel == 'Pending Removal' ? 'Remove' : 'Add';
-                    System.debug(md);
                     mdWrapperList.add(md);
                 }
             }
-            System.debug(mdWrapperList);
             return mdWrapperList;
         } catch (Exception e) {
             System.debug(e.getMessage());
@@ -390,10 +425,14 @@ global with sharing class TrackingController {
         }
     }
 
+    /**
+     * @description     deploy custom metadata records
+     * @param wrappers
+     * @return deployment id
+     */
     @AuraEnabled
-    global static String handleCustomMetadata(String wrappers){
+    public static String handleCustomMetadata(String wrappers){
         try {
-            System.debug(wrappers);
             Map<String, String> metaDataMap = new Map<String, String>();
             List<MetadataWrapper> wrapperList = (List<MetadataWrapper>)JSON.deserialize(wrappers, List<MetadataWrapper>.class);
             List<MetadataWrapper> metadataToDelete = new List<MetadataWrapper>();
@@ -412,9 +451,15 @@ global with sharing class TrackingController {
                     }
                 }
             }
-            if(!metadataObjectsToDeploy.isEmpty()) return CreateMetadata.updateAndDeployMetadata(metadataObjectsToDeploy);
-            if(!metadataFieldsToDeploy.isEmpty()) return CreateMetadata.updateAndDeployMetadata(metadataFieldsToDeploy);
-            if(!metadataToDelete.isEmpty()) return deleteMetadata(metadataToDelete);
+            if(!metadataObjectsToDeploy.isEmpty()) {
+                return CreateMetadata.updateAndDeployMetadata(metadataObjectsToDeploy);
+            }
+            if(!metadataFieldsToDeploy.isEmpty()) {
+                return CreateMetadata.updateAndDeployMetadata(metadataFieldsToDeploy);
+            }
+            if(!metadataToDelete.isEmpty()) {
+                return deleteMetadata(metadataToDelete);
+            }
             return null;
         } catch (Exception e) {
             System.debug(e.getMessage());
@@ -422,6 +467,11 @@ global with sharing class TrackingController {
         }
     }
     
+    /**
+     * @description     deploy custom metadata
+     * @param wrappers
+     * @return deployment response
+     */
     @TestVisible
     private static String deleteMetadata(List<MetadataWrapper> wrappers){
         List<String> recordsToDelete = new List<String>();
@@ -459,8 +509,13 @@ global with sharing class TrackingController {
         return null;
     }
 
+    /**
+     * @description     generate the trigger files to be deployed
+     * @param wrappers
+     * @return map of file name to metadata
+     */
     @AuraEnabled
-    global static Map<String, String> generateTriggerFiles(String wrappers){
+    public static Map<String, String> generateTriggerFiles(String wrappers){
         try {
             Map<String, String> metaDataMap = new Map<String, String>();
             List<MetadataWrapper> wrapperList = (List<MetadataWrapper>)JSON.deserialize(wrappers, List<MetadataWrapper>.class);
@@ -488,8 +543,14 @@ global with sharing class TrackingController {
         }
     }
 
+    /**
+     * @description     deploy trigger using zip file
+     * @param zipFile
+     * @param testName
+     * @return deployment id
+     */
     @AuraEnabled
-    global static String deployTriggers(String zipFile, String testName){
+    public static String deployTriggers(String zipFile, String testName){
         try {
             MetadataService.MetadataPort service = createService();
             MetadataService.DeployOptions deployOptions = new MetadataService.DeployOptions();
@@ -511,13 +572,16 @@ global with sharing class TrackingController {
         }
     }
 
+    /**
+     * @description     check deployment status
+     * @param asyncId
+     * @return isComplete
+     */
     @AuraEnabled
-    global static Boolean checkAsyncRequest(String asyncId){
+    public static Boolean checkAsyncRequest(String asyncId){
         try {
             MetadataService.MetadataPort service = createService();
             MetadataService.DeployResult deployResult = Test.isRunningTest() ? new MetadataService.DeployResult() : service.checkDeployStatus(asyncId, true);
-            System.debug(deployResult.done);
-            System.debug(deployResult.details);
             if (deployResult.details != null && deployResult.details.componentFailures != null){
                 for (MetadataService.DeployMessage deployMessage : deployResult.details.componentFailures){
                     if (deployMessage.problem != null){
@@ -562,6 +626,10 @@ global with sharing class TrackingController {
         }
     }
 
+    /**
+     * @description     create the metadata service using the session id from vf page
+     * @return metadataport
+     */
     private static MetadataService.MetadataPort createService() {
         MetadataService.MetadataPort service = new MetadataService.MetadataPort();
         service.SessionHeader = new MetadataService.SessionHeader_element();

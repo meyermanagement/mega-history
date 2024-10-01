@@ -1,8 +1,17 @@
+/**
+ * @description     Class to handle custom metadata deployements
+ * @author          Mark Meyer
+ * @date            09/27/2024
+ */
 public without sharing class CreateMetadata {
 
+    /**
+     * @description Updates and Deploys custom metadata
+     * @param wrappers
+     * @return jobId
+     */
     public static String updateAndDeployMetadata(List<MetadataWrapper> wrappers) {
         MetadataWrapper wrapper = wrappers[0];
-        System.debug(wrapper);
         
         Metadata.CustomMetadata customMetadata =  new Metadata.CustomMetadata();
         if(wrapper.mdType == 'Object'){
@@ -35,9 +44,9 @@ public without sharing class CreateMetadata {
             customMetadata.values.add(customField);
         } else {
             String metadataRecordName = wrapper.mdObject+'_'+wrapper.mdName.replaceAll('_', '');
+            metadataRecordName = metadataRecordName.left(40);
             customMetadata.fullName = 'megahistory__Tracked_Field__mdt.'+metadataRecordName;
-            customMetadata.label = wrapper.mdObject+'_'+wrapper.mdName;
-            System.debug(String.valueOf(Tracked_Object__mdt.getInstance(wrapper.mdObject).Id));
+            customMetadata.label = metadataRecordName;
             Metadata.CustomMetadataValue customField = new Metadata.CustomMetadataValue();
             customField.field = 'megahistory__Field_API_Name__c';
             customField.value = wrapper.mdName;
@@ -53,7 +62,6 @@ public without sharing class CreateMetadata {
     
         MyDeployCallback callback = new MyDeployCallback();
         Id jobId = Test.isRunningTest() ? null : Metadata.Operations.enqueueDeployment(mdContainer, callback);
-        System.debug(jobId);
         return jobId;
         // Setup custom metadata to be created in the subscriber org.
     } 

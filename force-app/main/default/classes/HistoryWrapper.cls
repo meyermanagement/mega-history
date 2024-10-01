@@ -1,22 +1,89 @@
-global with sharing class HistoryWrapper {
+/**
+ * @description     wrapper for history records
+ * @author          Mark Meyer
+ * @date            09/27/2024
+ */
+public with sharing class HistoryWrapper {
     
-    @AuraEnabled global String historyId;
-    @AuraEnabled global String objectAPIName;
-    @AuraEnabled global String objectLabel;
-    @AuraEnabled global String recordId;
-    @AuraEnabled global String recordName;
-    @AuraEnabled global String parentId;
-    @AuraEnabled global String event;
-    @AuraEnabled global String field;
-    @AuraEnabled global String oldValue;
-    @AuraEnabled global String oldValueFull;
-    @AuraEnabled global String newValue;
-    @AuraEnabled global String newValueFull;
-    @AuraEnabled global String additionalField1;
-    @AuraEnabled global String additionalField2;
-    @AuraEnabled global DateTime createdDate;
-    @AuraEnabled global String createdByName;
-    @AuraEnabled global String createdById;
-    @AuraEnabled global Boolean isCustom = false;
+    /**
+     * @description historyId
+     */
+    @AuraEnabled public String historyId;
+    /**
+     * @description objectAPIName
+     */
+    @AuraEnabled public String objectAPIName;
+    /**
+     * @description objectLabel
+     */
+    @AuraEnabled public String objectLabel;
+    /**
+     * @description recordId
+     */
+    @AuraEnabled public String recordId;
+    /**
+     * @description recordName
+     */
+    @AuraEnabled public String recordName;
+    /**
+     * @description parentId
+     */
+    @AuraEnabled public String parentId;
+    /**
+     * @description event
+     */
+    @AuraEnabled public String event;
+    /**
+     * @description fieldLabel
+     */
+    @AuraEnabled public String fieldLabel;
+    /**
+     * @description field
+     */
+    @AuraEnabled public String field;
+    /**
+     * @description oldValue
+     */
+    @AuraEnabled public String oldValue;
+    /**
+     * @description oldValueFull
+     */
+    @AuraEnabled public String oldValueFull;
+    /**
+     * @description newValue
+     */
+    @AuraEnabled public String newValue;
+    /**
+     * @description newValueFull
+     */
+    @AuraEnabled public String newValueFull;
+    /**
+     * @description additionalField1
+     */
+    @AuraEnabled public String additionalField1;
+    /**
+     * @description additionalField2
+     */
+    @AuraEnabled public String additionalField2;
+    /**
+     * @description createdDate
+     */
+    @AuraEnabled public DateTime createdDate;
+    /**
+     * @description createdByName
+     */
+    @AuraEnabled public String createdByName;
+    /**
+     * @description createdById
+     */
+    @AuraEnabled public String createdById;
+    /**
+     * @description createdByURL
+     */
+    @AuraEnabled public String createdByURL;
+    /**
+     * @description isCustom
+     */
+    @AuraEnabled public Boolean isCustom = false;
 
 }

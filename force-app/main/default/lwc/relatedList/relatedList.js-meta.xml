@@ -7,4 +7,10 @@
         <target>lightning__RecordPage</target>
         <target>lightning__UrlAddressable</target>
     </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__RecordPage">
+            <property label="Display Mode" name="mode" type="String" default="List" description="Please select a display mode for your related list.  Valid values are 'List' or 'Tile'.  'List' is the default value."/>
+            <property label="Number of Records to Display" name="numberOfRecords" type="Integer" default="5" description="Please select how many records you want to display initially.  All records are available when you click 'View All'. '5' is the default value."/>
+        </targetConfig>
+    </targetConfigs>
 </LightningComponentBundle>

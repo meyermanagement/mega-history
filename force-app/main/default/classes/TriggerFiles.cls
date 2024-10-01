@@ -1,7 +1,18 @@
+/**
+ * @description     Class containing metadata file configuration for Triggers
+ * @author          Mark Meyer
+ * @date            09/27/2024
+ */
 public with sharing class TriggerFiles {
 
     private static String componentApiVersion = '61.0';
 
+    /**
+     * @description     generates the package.xml file
+     * @param wrapp
+     * @param includeMembers
+     * @return file string
+     */
     public static String getPackageXml(MetadataWrapper wrapp, Boolean includeMembers) {
         String triggerName = wrapp.mdName;
         String className = wrapp.mdName.removeEnd('Trigger');
@@ -36,6 +47,11 @@ public with sharing class TriggerFiles {
           }
       }
     
+      /**
+     * @description     generates the destructivechanges.xml file
+     * @param wrapp
+     * @return file string
+     */
     public static String getDestructiveChangesXml(MetadataWrapper wrapp) {
         String triggerName = wrapp.mdName;
         String className = wrapp.mdName.removeEnd('Trigger');
@@ -60,6 +76,10 @@ public with sharing class TriggerFiles {
           '</Package>';
       }
     
+      /**
+     * @description     generates the trigger test code xml file
+     * @return file string
+     */
     public static String getTriggerTestCodeMetadata() {
         return '<?xml version="1.0" encoding="UTF-8"?>' +
           '<ApexClass xmlns="http://soap.sforce.com/2006/04/metadata">' +
@@ -70,6 +90,11 @@ public with sharing class TriggerFiles {
           '</ApexClass>';
       }
     
+       /**
+     * @description     generates the trigger test code file
+     * @param wrapp
+     * @return file string
+     */
     public static String getTriggerTestCode(MetadataWrapper wrapp) {
         String triggerName = wrapp.mdName;
         String className = wrapp.mdName.removeEnd('Trigger');
@@ -97,6 +122,10 @@ public with sharing class TriggerFiles {
         '}';
       }
     
+       /**
+     * @description     generates the trigger code xml file
+     * @return file string
+     */
     public static String getTriggerCodeMetadata() {
         return '<?xml version="1.0" encoding="UTF-8"?>' +
         '<ApexTrigger xmlns="http://soap.sforce.com/2006/04/metadata">' +
@@ -107,6 +136,12 @@ public with sharing class TriggerFiles {
         '</ApexTrigger>';
     }
     
+
+     /**
+     * @description     generates the trigger code file
+     * @param wrapp
+     * @return file string
+     */
     public static String getTriggerCode(MetadataWrapper wrapp) {
         // Namespace?
         // Deploy generated code
