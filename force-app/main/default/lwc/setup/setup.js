@@ -204,7 +204,7 @@ export default class Setup extends NavigationMixin(LightningElement) {
         this[NavigationMixin.Navigate]({
             type: "standard__navItemPage",
             attributes: {
-            apiName: "megahistory__Tracking",
+            apiName: "megatools__Tracking",
             },
         });
     }
@@ -214,7 +214,7 @@ export default class Setup extends NavigationMixin(LightningElement) {
         this[NavigationMixin.Navigate]({
             type: "standard__navItemPage",
             attributes: {
-            apiName: "megahistory__Views",
+            apiName: "megatools__Views",
             },
         });
     }

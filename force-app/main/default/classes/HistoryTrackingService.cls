@@ -3,7 +3,7 @@
  * @author          Mark Meyer
  * @date            09/27/2024
  */
-public without sharing class HistoryTrackingService {
+global without sharing class HistoryTrackingService {
     
     /**
      * @description map of Trigger context enum to history record event type
@@ -20,7 +20,7 @@ public without sharing class HistoryTrackingService {
      * @param oldMap
      * @param operationType
      */
-    public static void track(List<Sobject> newList, Map<Id, sObject> oldMap, String operationType){
+    global static void track(List<Sobject> newList, Map<Id, sObject> oldMap, String operationType){
         if(operationType == 'BEFORE_INSERT') {
             return;
         }

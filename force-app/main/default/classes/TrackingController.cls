@@ -480,18 +480,18 @@ public with sharing class TrackingController {
             String metadataTypeName;
             String metadataRecordName;
             if(wrapper.mdType == 'Object'){
-                metadataTypeName = 'megahistory__Tracked_Object__mdt';
+                metadataTypeName = 'megatools__Tracked_Object__mdt';
                 metadataRecordName =  wrapper.mdObject;
                 objectNames.add(metadataRecordName);
             } else {
-                metadataTypeName = 'megahistory__Tracked_Field__mdt';
+                metadataTypeName = 'megatools__Tracked_Field__mdt';
                 metadataRecordName = wrapper.mdObject+'_'+wrapper.mdName.replaceAll('_', '');
             }
             recordsToDelete.add(metadataTypeName+'.'+metadataRecordName);
         }
         if(!objectNames.isEmpty()){
             for(Tracked_Field__mdt tf : [SELECT Tracked_Object__r.DeveloperName, DeveloperName, Field_API_Name__c FROM Tracked_Field__mdt WHERE Tracked_Object__r.DeveloperName IN :objectNames ORDER BY Field_API_Name__c]){
-                String metadataTypeName = 'megahistory__Tracked_Field__mdt';
+                String metadataTypeName = 'megatools__Tracked_Field__mdt';
                 String metadataRecordName = tf.DeveloperName;
                 recordsToDelete.add(metadataTypeName+'.'+metadataRecordName);
             }

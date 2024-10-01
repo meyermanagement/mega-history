@@ -36,8 +36,8 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
 
     renderedCallback() {
         loadStyle(this, relatedListResource + '/relatedList.css');
-        this.fullView = this.currentPageRef.state.megahistory__fullView == 'true' ? true : false;
-        if(this.recordId == undefined) this.recordId = this.currentPageRef.state.megahistory__recordId;
+        this.fullView = this.currentPageRef.state.megatools__fullView == 'true' ? true : false;
+        if(this.recordId == undefined) this.recordId = this.currentPageRef.state.megatools__recordId;
         this.state.recordId = this.recordId;
         this.state.fullView = this.fullView;
         this.state.numberOfRecords = this.numberOfRecords;
@@ -237,11 +237,11 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
                 this[NavigationMixin.Navigate]({
                     type: "standard__component",
                     attributes: {
-                        componentName: 'megahistory__relatedList'
+                        componentName: 'megatools__relatedList'
                     },
                     state: {
-                        megahistory__fullView: 'true',
-                        megahistory__recordId: this.recordId
+                        megatools__fullView: 'true',
+                        megatools__recordId: this.recordId
                     }
                 });
             } else {
@@ -249,11 +249,11 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
                     pageReference: {
                         type: "standard__component",
                         attributes: {
-                            componentName: "megahistory__relatedList",
+                            componentName: "megatools__relatedList",
                         },
                         state: {
-                            megahistory__fullView: 'true',
-                            megahistory__recordId: this.recordId
+                            megatools__fullView: 'true',
+                            megatools__recordId: this.recordId
                         },
                     },
                     icon: this.state.iconName,

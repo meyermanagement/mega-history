@@ -1,32 +1,18 @@
 {
   "packageDirectories": [
     {
-      "versionName": "ver 0.4",
-      "versionNumber": "0.4.0.NEXT",
+      "versionName": "ver 0.1",
+      "versionNumber": "0.1.0.NEXT",
       "path": "force-app",
-      "default": true,
       "package": "MEGA History",
-      "versionDescription": "",
-      "postInstallUrl": "https://jetsetandboogie.com/mega-history-installation/",
-      "releaseNotesUrl": "https://jetsetandboogie.com/mega-history-user-guide/",
-      "postInstallScript": "AssignAdminPermSet",
-      "ancestorVersion": "HIGHEST"
+      "versionDescription": ""
     }
   ],
   "name": "mega-history",
-  "namespace": "megahistory",
+  "namespace": "megatools",
   "sfdcLoginUrl": "https://login.salesforce.com",
   "sourceApiVersion": "61.0",
   "packageAliases": {
-    "MEGA History": "0Hobn00000029gjCAA",
-    "MEGA History@0.1.0-1": "04tbn000000m5ztAAA",
-    "MEGA History@0.1.0-2": "04tbn000000m6KrAAI",
-    "MEGA History@0.1.0-3": "04tbn000000m6kfAAA",
-    "MEGA History@0.1.0-4": "04tbn000000m75dAAA",
-    "MEGA History@0.1.0-5": "04tbn000000m77FAAQ",
-    "MEGA History@0.2.0-1": "04tbn000000m7DhAAI",
-    "MEGA History@0.3.0-1": "04tbn000000nPYLAA2",
-    "MEGA History@0.4.0-1": "04tbn000000nU4zAAE",
-    "MEGA History@0.4.0-2": "04tbn000000nUOLAA2"
+    "MEGA History": "0Hobn0000002BPBCA2"
   }
 }
