@@ -85,7 +85,6 @@ public with sharing class TrackingController {
             }
             return wrapperMap.values();
         } catch (Exception e) {
-            System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -179,7 +178,7 @@ public with sharing class TrackingController {
                         tfd.standardTracked = standardTrackedFields.contains(tfd.fieldAPIName);
                         resultDefinitions.put(tfd.fieldAPIName, tfd);
                     }
-                    if(fieldResult.getRelationshipName() != null){
+                    if(fieldResult.getRelationshipName() != null && fieldResult.getName() != 'RecordTypeId'){
                         wrapper.parentRefMap.put(fieldResult.getName(), fieldResult.getLabel());
                     }
                 }
@@ -193,7 +192,6 @@ public with sharing class TrackingController {
             wrapper.fieldList = results;
             return wrapper;
         } catch (Exception e) {
-            System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -243,7 +241,6 @@ public with sharing class TrackingController {
             wrapper.fieldList = results;
             return wrapper;
         } catch (Exception e) {
-            System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -322,7 +319,6 @@ public with sharing class TrackingController {
             }
             return results;
         } catch (Exception e) {
-            System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -420,7 +416,6 @@ public with sharing class TrackingController {
             }
             return mdWrapperList;
         } catch (Exception e) {
-            System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -462,7 +457,6 @@ public with sharing class TrackingController {
             }
             return null;
         } catch (Exception e) {
-            System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -538,7 +532,6 @@ public with sharing class TrackingController {
             }
             return metaDataMap;
         } catch (Exception e) {
-            System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -567,7 +560,6 @@ public with sharing class TrackingController {
             MetadataService.AsyncResult result = Test.isRunningTest() ? new MetadataService.AsyncResult() : service.deploy(zipFile, DeployOptions);
             return result.id;
         } catch (Exception e) {
-            System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -621,7 +613,6 @@ public with sharing class TrackingController {
             }
             return deployResult.done;
         } catch (Exception e) {
-            System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }

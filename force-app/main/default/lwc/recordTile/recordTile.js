@@ -6,8 +6,6 @@ export default class RecordTile extends LightningElement {
     @api relatedRecord
     
     handleOnselect(event) {
-        console.log(JSON.stringify(event.detail));
-        console.log(JSON.stringify(event.detail.value));
         const selectedEvent = new CustomEvent('select', {
             detail: {
                 action: {

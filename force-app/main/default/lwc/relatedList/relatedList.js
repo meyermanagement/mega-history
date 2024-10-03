@@ -5,7 +5,7 @@ import RelatedListHelper from "./relatedListHelper";
 import {loadStyle} from 'lightning/platformResourceLoader';
 import relatedListResource from '@salesforce/resourceUrl/relatedListResource';
 import getHistoryRecord from '@salesforce/apex/RelatedListController.getHistoryRecord'; 
-import getFields from "@salesforce/apex/RelatedListController.getFields";
+import getAvailableFields from "@salesforce/apex/RelatedListController.getFields";
 import { IsConsoleNavigation, EnclosingTabId, openTab  } from "lightning/platformWorkspaceApi";
 
 export default class RelatedList extends NavigationMixin(LightningElement) {
@@ -20,15 +20,20 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
     @track state = {};
     @track columns;
     @track childColumns;
-    @track sortBy = 'createdDate';
-    @track sortDirection = 'desc';
     @track consolidatedView = false;
     @track isSuperUser = false;
+    @track isCustomOnly = false;
+    @track isStandardDisabled = false;
     fields = [];
     fieldSelected = '';
     rendered = false;
     relatedRecord = false;
     showNewEditPopUp = false;
+    showViewPopUp = false;
+    showRelated = false;
+    showOptions = false;
+    optionsLabel = 'Show';
+    optionsVariant = 'brand';
     historyRec;
     
     loading = false;
@@ -68,6 +73,10 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
         return this.state.childRecords != undefined && this.state.childRecords.length > 0;
     }
 
+    get hasNoChildren() {
+        return this.state.childRecords == undefined || this.state.childRecords.length == 0;
+    }
+
     get showRelatedList() {
         return this.recordId != undefined;
     }
@@ -80,14 +89,46 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
         return this.isSuperUser == 'true';
     }
 
+    get customOnly() {
+        return this.isCustomOnly == 'true';
+    }
+
+    get standardDisabled() {
+        return this.isStandardDisabled == 'true';
+    }
+
+    handleCustomOnly(event) {
+        if(event.detail.checked) this.isCustomOnly = 'true';
+        else this.isCustomOnly = 'false';
+        this.init();
+    }
+
+    handleShowRelated(event) {
+        this.showRelated = event.detail.checked;
+    }
+
+    handleShowOptions(){
+        if(this.showOptions === false){
+            this.optionsLabel = 'Hide';
+            this.optionsVariant = 'neutral';
+            this.showOptions = true;
+        } else {
+            this.optionsLabel = 'Show';
+            this.optionsVariant = 'brand';
+            this.showOptions = false;
+        }
+    }
+
     async init() {
         this.loading = true;
         if (! (this.recordId)) {
             this.state.records = [];
             return;
         }
-        const data = await this.helper.fetchData(this.state);
+        const data = await this.helper.fetchData(this.state, this.isCustomOnly);
         this.isSuperUser = data.superUser;
+        this.isStandardDisabled = data.standardDisabled;
+        if(this.standardDisabled) this.isCustomOnly = 'true';
         if(data.body != undefined){
             this.dispatchEvent(
                 new ShowToastEvent({
@@ -98,11 +139,7 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
             );
         }
         this.state.records = data.records;
-        this.state.childRecords = data.childRecords;
-        this.sortData('createdDate','desc');
-        this.sortChildData('createdDate','desc');
-        this.sortBy = 'createdDate';
-        this.sortDirection = 'desc';
+        this.state.childRecords = data.childRecords;        
         this.state.iconName = data.iconName;
         this.state.sobjectLabel = data.sobjectLabel;
         this.state.sobjectLabelPlural = data.sobjectLabelPlural;
@@ -192,23 +229,28 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
             type: 'text'
         });
         childColumns.push({
-            label: 'Field 1',
-            fieldName: 'additionalField1',
+            label: 'Field',
+            fieldName: 'fieldLabel',
             type: 'text'
         });
         childColumns.push({
-            label: 'Field 2',
-            fieldName: 'additionalField2',
+            label: 'New Value',
+            fieldName: 'newValue',
             type: 'text'
         });
         if(this.isSuperUser == 'true'){
             columns.push({ 
                 type: 'action', 
-                typeAttributes: { rowActions: this.helper.initColumnsWithActions } 
+                typeAttributes: { rowActions: this.helper.initColumnsWithSuperActions } 
             });
             childColumns.push({ 
                 type: 'action', 
-                typeAttributes: { rowActions: this.helper.initColumnsWithActions } 
+                typeAttributes: { rowActions: this.helper.initRelatedColumnsWithSuperActions } 
+            });
+        } else {
+            childColumns.push({ 
+                type: 'action', 
+                typeAttributes: { rowActions: this.helper.initRelatedColumnsWithActions } 
             });
         }
         this.columns = columns;
@@ -220,12 +262,15 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
         const row = event.detail.row;
         switch (actionName) {
             case "delete":
-                if(row.parentId == this.recordId) this.handleDeleteRelatedRecord(row);
+                if(row.parentId.includes(this.recordId)) this.handleDeleteRelatedRecord(row);
                 else this.handleDeleteRecord(row);
                 break;
             case "edit":
-                if(row.parentId == this.recordId) this.handleEditRelatedRecord(row);
+                if(row.parentId.includes(this.recordId)) this.handleEditRelatedRecord(row);
                 else this.handleEditRecord(row);
+                break;
+            case "view":
+                this.handleViewRelatedRecord(row);
                 break;
             default:
         }
@@ -267,6 +312,7 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
 
     handleCreateRecord() {
         this.relatedRecord = false;
+        this.fieldSelected = '';
         this.getData();
         this.showNewEditPopUp = true;
     }
@@ -280,23 +326,32 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
 
     handleCreateRelatedRecord() {
         this.relatedRecord = true;
+        this.fieldSelected = '';
         this.getData();
         this.showNewEditPopUp = true;
     }
 
     handleEditRelatedRecord(row) {
         this.relatedRecord = true;
+        this.fieldSelected = row.field;
         this.getData(row.historyId);
         this.showNewEditPopUp = true;
     }
 
-    async getData(historyId) {
-        await getHistoryRecord({ recordId: this.recordId, historyId: historyId, isRelated: this.relatedRecord})
+    handleViewRelatedRecord(row) {
+        this.relatedRecord = true;
+        this.getData(row.historyId);
+        this.showViewPopUp = true;
+    }
+
+    getData(historyId) {
+        getHistoryRecord({ recordId: this.recordId, historyId: historyId, isRelated: this.relatedRecord})
         .then(response => {
             this.historyRec = response;
+            if(response.megatools__Record__c != undefined) this.getFields(response.megatools__Record__c);
         })
         .catch(error => {
-            console.log(JSON.stringify(error));
+            console.log('getHistoryRecord'+JSON.stringify(error));
             this.dispatchEvent(
                 new ShowToastEvent({
                     title: "An error has occurred. Please contact the system administrator for further assistance.",
@@ -329,60 +384,27 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
         this.init();
     }
 
-    sortData(fieldname, direction) {
-        let parseData = JSON.parse(JSON.stringify(this.state.records));
-        // Return the value stored in the field
-        let keyValue = (a) => {
-            return a[fieldname];
-        };
-        // cheking reverse direction
-        let isReverse = direction === 'asc' ? 1: -1;
-        // sorting data
-        parseData.sort((x, y) => {
-            x = keyValue(x) ? keyValue(x) : ''; // handling null values
-            y = keyValue(y) ? keyValue(y) : '';
-            // sorting values based on direction
-            return isReverse * ((x > y) - (y > x));
-        });
-        this.state.records = parseData;
-    }    
-
-    sortChildData(fieldname, direction) {
-        let parseData = JSON.parse(JSON.stringify(this.state.childRecords));
-        // Return the value stored in the field
-        let keyValue = (a) => {
-            return a[fieldname];
-        };
-        // cheking reverse direction
-        let isReverse = direction === 'asc' ? 1: -1;
-        // sorting data
-        parseData.sort((x, y) => {
-            x = keyValue(x) ? keyValue(x) : ''; // handling null values
-            y = keyValue(y) ? keyValue(y) : '';
-            // sorting values based on direction
-            return isReverse * ((x > y) - (y > x));
-        });
-        this.state.childRecords = parseData;
-    }    
+    
 
     handleCloseModal(){
         this.showNewEditPopUp = false;
+        this.showViewPopUp = false;
     }
 
-    @wire(getFields, { recordId : '$recordId' })
-    getFields(result) {
-        const {data, error} = result;
-        if(data){
+    getFields(recordId) {
+        getAvailableFields({ recordId: recordId})
+        .then(response => {
             let fieldList = [];
-            for(let f in data){
+            for(let f in response){
                 fieldList.push({
-                    label: data[f], 
+                    label: response[f], 
                     value: f
                 })
             }
             this.fields = fieldList;
-        } else if (error) {
-            console.log(error.body.message);
+        })
+        .catch(error => {
+            console.log('getFieildsError'+JSON.stringify(error));
             this.dispatchEvent(
                 new ShowToastEvent({
                     title: "An error has occurred. Please contact the system administrator for further assistance.",
@@ -390,6 +412,6 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
                     variant: "error",
                 }),
             );
-        }
+        });
     }
 }

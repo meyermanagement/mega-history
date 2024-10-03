@@ -18,6 +18,10 @@ export default class RelatedListNewEditPopup extends LightningElement {
         return this.historyRec.megatools__Created_Date_DL__c == undefined;
     }
 
+    get updatedRecord(){
+        return (this.historyRec != undefined && this.historyRec.megatools__Event__c == 'Updated') || !this.relatedRecord;
+    }
+
     get eventOptions() {
         return [
             { label: 'Created', value: 'Created' },
@@ -103,7 +107,6 @@ export default class RelatedListNewEditPopup extends LightningElement {
     }
 
     handleValueSelectedOnUser(event){
-        console.log('handleValueSelectedOnUser>>'+JSON.stringify(event.detail));
         let historyRecord = {...this.historyRec};
         if(event.detail.id) historyRecord.megatools__Created_By_DL__c = event.detail.id;
         else historyRecord.megatools__Created_By_DL__c = undefined;
@@ -127,12 +130,17 @@ export default class RelatedListNewEditPopup extends LightningElement {
     }
 
     handleSave(){
-        console.log('handleSave>>'+JSON.stringify(this.historyRec));
+
         let histRecId = this.template.querySelector('.historyRecName');
+        let historyField = this.template.querySelector('.historyField');
         if(this.relatedRecord == true && this.historyRec.megatools__Record_Name__c == undefined){
             histRecId.setCustomValidity("Field is required.");
+        } else if(this.updatedRecord && this.historyRec.megatools__Field__c == undefined){
+            historyField.setCustomValidity("Field is required.");
+            historyField.reportValidity();
         } else {
             if(histRecId) histRecId.setCustomValidity("");
+            if(historyField) historyField.setCustomValidity("");
             saveHistory({ historyString : JSON.stringify(this.historyRec) })
             .then(() => {
                 let message = `${(this.relatedRecord ? "Related "+this.sobjectLabel : this.sobjectLabel)} was ${(this.isNew ? "created" : "saved")}.`

@@ -12,7 +12,7 @@ global without sharing class HistoryTrackingService {
     /**
      * @description map of fields to use for 
      */
-    static Map<String, String> objectTypeToNameMap = new Map<String, String>{'Contact'=>'LastName', 'Case'=>'CaseNumber', 'Contract'=>'ContractNumber'};
+    static Map<String, String> objectTypeToNameMap = new Map<String, String>{'Contact'=>'LastName', 'Case'=>'CaseNumber', 'Contract'=>'ContractNumber', 'Task'=>'Subject', 'Event'=>'Subject'};
 
     /**
      * @description handles mapping of the object to create the history record
@@ -54,7 +54,7 @@ global without sharing class HistoryTrackingService {
                             if(objectTypeToNameMap.containsKey(objectDescribe.getName())){
                                 recordName = String.valueOf(so.get(objectTypeToNameMap.get(objectDescribe.getName())));
                                 if(objectDescribe.getName() == 'Contact') {
-                                    recordName = String.valueOf(so.get('FirstName'))+' '+recordName;
+                                    recordName = recordName+', '+String.valueOf(so.get('FirstName'));
                                 }
                             } else {
                                 recordName = String.valueOf(so.get('Name'));
@@ -64,7 +64,13 @@ global without sharing class HistoryTrackingService {
                             rh.Record__c = recordId;
                             rh.Record_Name__c = recordName.left(255);
                             if(!Test.isRunningTest()){
-                                rh.ParentId__c = String.valueOf(so.get(tobj.Parent_Reference_Field__c));
+                                String concatParents = '';
+                                List<String> parentRefs = tobj.Parent_Reference_Field__c.split(',');
+                                for(String parentRef : parentRefs) {
+                                    concatParents = concatParents+String.valueOf(so.get(parentRef)) +',';
+                                }
+                                concatParents = concatParents.removeEnd(',');
+                                rh.ParentId__c = concatParents;
                                 Schema.DescribeFieldResult fieldResult = mfields.get(tobj.Additional_Field_1__c).getDescribe();
                                 if(fieldResult.getType().toString() == 'DATE'){
                                     rh.Additional_Field_1__c = String.valueOf(Date.valueOf(so.get(tobj.Additional_Field_1__c)));
@@ -109,7 +115,18 @@ global without sharing class HistoryTrackingService {
                             oldValue = String.valueOf(oldMap.get(recordId).get(field));
                         }
                         if(Test.isRunningTest() || newValue <> oldValue){
+                            String recordName;
+                            if(objectTypeToNameMap.containsKey(objectDescribe.getName())){
+                                recordName = String.valueOf(so.get(objectTypeToNameMap.get(objectDescribe.getName())));
+                                if(objectDescribe.getName() == 'Contact') {
+                                    recordName = recordName+', '+String.valueOf(so.get('FirstName'));
+                                }
+                            } else {
+                                recordName = String.valueOf(so.get('Name'));
+                            } 
                             Record_History__c rh = new Record_History__c();
+                            rh.Record__c = recordId;
+                            rh.Record_Name__c = recordName.left(255);
                             rh.Event__c = 'Updated';
                             rh.Field__c = fieldResult.getName();
                             rh.New_Value__c = newValue != null ? newValue.left(255) : null;
@@ -118,9 +135,14 @@ global without sharing class HistoryTrackingService {
                                 rh.New_Value_Extended__c = newValue;
                                 rh.Old_Value_Extended__c = oldValue;
                             }
-                            rh.Record__c = recordId;
                             if(tobj != null && String.isNotBlank(tobj.Parent_Reference_Field__c)) {
-                                rh.ParentId__c = String.valueOf(so.get(tobj.Parent_Reference_Field__c));
+                                String concatParents = '';
+                                List<String> parentRefs = tobj.Parent_Reference_Field__c.split(',');
+                                for(String parentRef : parentRefs) {
+                                    concatParents = concatParents+String.valueOf(so.get(parentRef)) +',';
+                                }
+                                concatParents = concatParents.removeEnd(',');
+                                rh.ParentId__c = concatParents;
                             }
                             histories.add(rh);
                         }

@@ -4,12 +4,12 @@ import initDataMethod from "@salesforce/apex/RelatedListController.initData";
 
 export default class RelatedListHelper {
 
-    fetchData(state) {
+    fetchData(state, isCustomOnly) {
         let jsonData = Object.assign({}, state);
         
         jsonData.numberOfRecords = state.numberOfRecords + 1;
         jsonData = JSON.stringify(jsonData);
-        return initDataMethod({ jsonData })
+        return initDataMethod({ jsonData, isCustomOnly})
             .then(response => {
                 const data = JSON.parse(response);
                 return this.processData(data, state);
@@ -21,15 +21,17 @@ export default class RelatedListHelper {
     }
 
     processData(data, state){
-        const records = data.records;
-        const childRecords = data.childRecords;
-        console.log('numberOfRecords>>'+state.numberOfRecords);
+        console.log(data.records)
+        const records = this.sortData('createdDate','desc', data.records);
+        const childRecords = this.sortData('createdDate','desc', data.childRecords);
+        data.records = records;
+        data.childRecords = childRecords;
         //this.generateLinks(records);
         if(state.fullView){
                data.title = `${data.sobjectLabelPlural} (${records.length})`
                data.childtitle = `Related ${data.sobjectLabelPlural} (${childRecords.length})`
+               
         } else {
-            console.log('records.length>>'+records.length);
             if (records.length > state.numberOfRecords) {
                 data.records = records.slice(0, state.numberOfRecords);
                 data.title = `${data.sobjectLabelPlural} (${state.numberOfRecords}+)`;
@@ -46,10 +48,60 @@ export default class RelatedListHelper {
         return data;
     }
 
+    sortData(fieldname, direction, records) {
+        console.log('recordSize>>'+records.length);
+        let parseData = JSON.parse(JSON.stringify(records));
+        // Return the value stored in the field
+        let keyValue = (a) => {
+            console.log(a[fieldname]);
+            return a[fieldname];
+        };
+        // cheking reverse direction
+        let isReverse = direction === 'asc' ? 1: -1;
+        // sorting data
+        parseData.sort((x, y) => {
+            x = keyValue(x) ? keyValue(x) : ''; // handling null values
+            y = keyValue(y) ? keyValue(y) : '';
+            // sorting values based on direction
+            return isReverse * ((x > y) - (y > x));
+        });
+        console.log(JSON.stringify(parseData));
+        return parseData;
+    }    
 
-    initColumnsWithActions(row, doneCallback) {
+    initRelatedColumnsWithActions(row, doneCallback) {
         const actions = [];
         if (row.isCustom) {
+            actions.push({
+                'label': 'View Details',
+                'name': 'view'
+            });
+        }
+        doneCallback(actions);
+    }
+
+    initColumnsWithSuperActions(row, doneCallback) {
+        const actions = [];
+        if (row.isCustom) {
+            actions.push({
+                'label': 'Edit',
+                'name': 'edit'
+            });
+            actions.push({
+                'label': 'Delete',
+                'name': 'delete'
+            });
+        }
+        doneCallback(actions);
+    }
+
+    initRelatedColumnsWithSuperActions(row, doneCallback) {
+        const actions = [];
+        if (row.isCustom) {
+            actions.push({
+                'label': 'View Details',
+                'name': 'view'
+            });
             actions.push({
                 'label': 'Edit',
                 'name': 'edit'

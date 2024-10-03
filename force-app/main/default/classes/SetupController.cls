@@ -22,7 +22,6 @@ public with sharing class SetupController {
             service.listMetadata(queries, 58);
             //return true;
         } catch (Exception e) {
-            System.debug(e.getMessage());
             return true;
         }
         return false;
@@ -38,7 +37,6 @@ public with sharing class SetupController {
             List<PermissionSetAssignment> assignments = [SELECT Id FROM PermissionSetAssignment WHERE PermissionSet.Name = 'Mega_History_User' AND AssigneeId != :UserInfo.getUserId()];
             return assignments.isEmpty();
         } catch (Exception e) {
-            System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -53,7 +51,6 @@ public with sharing class SetupController {
             List<Tracked_Object__mdt> records = [SELECT Id FROM Tracked_Object__mdt LIMIT 1];
             return records.isEmpty();
         } catch (Exception e) {
-            System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -68,7 +65,6 @@ public with sharing class SetupController {
             Initialization__c initialization = Initialization__c.getInstance();
             return !initialization.initialized__c;
         } catch (Exception e) {
-            System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -89,7 +85,6 @@ public with sharing class SetupController {
                 return null;
             }
         } catch (Exception e) {
-            System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -103,7 +98,6 @@ public with sharing class SetupController {
         try {
             return URL.getOrgDomainUrl().toExternalForm();
         } catch (Exception e) {
-            System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }

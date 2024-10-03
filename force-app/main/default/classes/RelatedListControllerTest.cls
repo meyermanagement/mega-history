@@ -25,7 +25,6 @@ public class RelatedListControllerTest {
         String jsonData = RelatedListController.initData(JSON.serialize(requestMap));
         Map<String, Object> responseMap = (Map<String, Object>)JSON.deserializeUntyped(jsonData);
         List<Object> records = (List<Object>)responseMap.get(RelatedListController.RECORDS_PARAM);
-        //System.assert(!records.isEmpty());
         String iconName = (String)responseMap.get(RelatedListController.ICON_NAME_PARAM);
         System.assert(String.isNotBlank(iconName));
 

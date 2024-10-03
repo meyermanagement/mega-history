@@ -17,60 +17,7 @@
                         </div>
                     </div>
                 </template>
-                <template lwc:elseif={relatedRecord}>
-                    <lightning-select
-                        name="Operation Event"
-                        label="What kind of database operation?"
-                        value={eventValue}
-                        options={eventOptions}
-                        onchange={handleEventChange}
-                        ></lightning-select>
-                    <lightning-input
-                        type="text" label="Record Id"  field-level-help="Not required, but useful as an external identifier for data warehouses and detailed reporting."
-                        value={historyRec.megatools__Record__c} class="historyRecId slds-p-top_x-small"
-                        onchange={handleRecordIdChange}></lightning-input>
-                    <lightning-input
-                        type="text" label="Record Name" 
-                        value={historyRec.megatools__Record_Name__c} class="historyRecName slds-p-top_x-small"
-                        onchange={handleRecordNameChange} required></lightning-input>
-                    <lightning-input
-                        type="text" label="Additional Field Identifier" class="slds-p-top_x-small"
-                        value={historyRec.megatools__Additional_Field_1__c}
-                        onchange={handleAddId1Change}></lightning-input>
-                    <lightning-input
-                        type="text" label="Additional Field Identifier" class="slds-p-top_x-small"
-                        value={historyRec.megatools__Additional_Field_2__c}
-                        onchange={handleAddId2Change}></lightning-input>
-                    <div class="slds-section slds-is-open slds-p-top_medium">
-                        <h3 class="slds-section__title slds-theme_shade">
-                            <span class="slds-truncate slds-p-horizontal_small" title="Section Title">System Overrides</span>
-                        </h3>
-                        <div class="slds-section__content slds-p-horizontal_x-small">
-                            <p>The fields below override the system generated value.</p>
-                            <p>If you want to keep the system generated values, leave these blank.</p>
-                        </div>
-                    </div>
-                    <div class="slds-p-top_x-small">
-                        <c-reusable-lookup label="Custom Created By" selected-icon-name="standard:user" object-label="User"
-                            object-api-name="User" field-api-name="Name" other-field-api-name="Username"
-                            onvalueselected={handleValueSelectedOnUser} selected-record-id={historyRec.megatools__Created_By_DL__c} selected-record-name={historyRec.megatools__Created_By_Formula__c}>
-                        </c-reusable-lookup>
-                    </div>
-                    <lightning-layout>
-                        <lightning-layout-item size="8">
-                            <lightning-input
-                                type="datetime-local" label="Custom Created Date"
-                                value={historyRec.megatools__Created_Date_DL__c} class="slds-p-top_small"
-                                onchange={handleCreatedDateChange}></lightning-input>
-                        </lightning-layout-item>
-                        <lightning-layout-item size="4">
-                            <div class="clearBtn">
-                                <lightning-button variant="neutral" label="Clear" title="Clear" onclick={handleClearCreatedDate} ></lightning-button>
-                            </div>
-                        </lightning-layout-item>
-                    </lightning-layout>
-                </template>
-                <template lwc:else>
+                <template lwc:elseif={updatedRecord}>
                     <lightning-select
                         name="Field"
                         label="Select a field"
@@ -78,6 +25,7 @@
                         value={fieldValue}
                         options={fieldOptions}
                         onchange={handleFieldChange}
+                        class="historyField"
                         ></lightning-select>
                     <lightning-input
                         type="text" label="Original Value" class="slds-p-top_x-small"
@@ -97,7 +45,7 @@
                         onchange={handleNewValueExtndedChange}></lightning-input-rich-text>
                     <div class="slds-section slds-is-open slds-p-top_medium">
                         <h3 class="slds-section__title slds-theme_shade">
-                            <span class="slds-truncate slds-p-horizontal_small" title="Section Title">System Overrides</span>
+                            <span class="slds-truncate slds-p-horizontal_small" title="System Overrides">System Overrides</span>
                         </h3>
                         <div class="slds-section__content slds-p-horizontal_x-small">
                             <p>The fields below override the system generated value.</p>
@@ -120,6 +68,60 @@
                         <lightning-layout-item size="4">
                             <div class="clearBtn">
                                 <lightning-button variant="neutral" label="Clear" title="Clear" onclick={handleClearCreatedDate} disabled={clearDisabled}></lightning-button>
+                            </div>
+                        </lightning-layout-item>
+                    </lightning-layout>
+                </template>
+                <template lwc:else>
+                    <lightning-select
+                        name="Event"
+                        label="What kind of record event?"
+                        value={eventValue}
+                        options={eventOptions}
+                        onchange={handleEventChange}
+                        field-level-help="To create an Updated related history event, create the new history record directly on the record in which the update occurred."
+                        ></lightning-select>
+                    <lightning-input
+                        type="text" label="Record Id"  field-level-help="Not required, but useful as an external identifier for data warehouses and detailed reporting."
+                        value={historyRec.megatools__Record__c} class="historyRecId slds-p-top_x-small"
+                        onchange={handleRecordIdChange}></lightning-input>
+                    <lightning-input
+                        type="text" label="Record Name" 
+                        value={historyRec.megatools__Record_Name__c} class="historyRecName slds-p-top_x-small"
+                        onchange={handleRecordNameChange} required></lightning-input>
+                    <lightning-input
+                        type="text" label="Additional Field Identifier" class="slds-p-top_x-small"
+                        value={historyRec.megatools__Additional_Field_1__c}
+                        onchange={handleAddId1Change}></lightning-input>
+                    <lightning-input
+                        type="text" label="Additional Field Identifier" class="slds-p-top_x-small"
+                        value={historyRec.megatools__Additional_Field_2__c}
+                        onchange={handleAddId2Change}></lightning-input>
+                    <div class="slds-section slds-is-open slds-p-top_medium">
+                        <h3 class="slds-section__title slds-theme_shade">
+                            <span class="slds-truncate slds-p-horizontal_small" title="System Overrides">System Overrides</span>
+                        </h3>
+                        <div class="slds-section__content slds-p-horizontal_x-small">
+                            <p>The fields below override the system generated value.</p>
+                            <p>If you want to keep the system generated values, leave these blank.</p>
+                        </div>
+                    </div>
+                    <div class="slds-p-top_x-small">
+                        <c-reusable-lookup label="Custom Created By" selected-icon-name="standard:user" object-label="User"
+                            object-api-name="User" field-api-name="Name" other-field-api-name="Username"
+                            onvalueselected={handleValueSelectedOnUser} selected-record-id={historyRec.megatools__Created_By_DL__c} selected-record-name={historyRec.megatools__Created_By_Formula__c}>
+                        </c-reusable-lookup>
+                    </div>
+                    <lightning-layout>
+                        <lightning-layout-item size="8">
+                            <lightning-input
+                                type="datetime-local" label="Custom Created Date"
+                                value={historyRec.megatools__Created_Date_DL__c} class="slds-p-top_small"
+                                onchange={handleCreatedDateChange}></lightning-input>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="4">
+                            <div class="clearBtn">
+                                <lightning-button variant="neutral" label="Clear" title="Clear" onclick={handleClearCreatedDate} ></lightning-button>
                             </div>
                         </lightning-layout-item>
                     </lightning-layout>
