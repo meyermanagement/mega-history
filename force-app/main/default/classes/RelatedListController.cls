@@ -174,7 +174,7 @@ public without sharing class RelatedListController {
                                 HistoryWrapper wrapp = createWrapper(hist, 'Histories');
                                 wrapp.objectAPIName = childApiName;
                                 wrapp.objectLabel = childObjectDescribe.getLabel();
-                                wrapp.recordName = String.valueOf(sobj.get('Name'));
+                                wrapp.recordName = HistoryTrackingService.objectTypeToNameMap.get(childApiName) != null ? String.valueOf(sobj.get(HistoryTrackingService.objectTypeToNameMap.get(childApiName))) : String.valueOf(sobj.get('Name'));
                                 wrapp.recordId = String.valueOf(sobj.get('Id'));
                                 wrappers.add(wrapp);
                             }
@@ -269,10 +269,10 @@ public without sharing class RelatedListController {
                     Schema.DescribeFieldResult fieldResult = mfields.get(wrapp.field).getDescribe();
                     if(fieldResult.getType() == Schema.DisplayType.ENCRYPTEDSTRING && !canViewEncryptedText){
                         String mask ='*';
-                        wrapp.oldValue = mask.repeat(wrapp.oldValue.length());
-                        wrapp.oldValueFull = mask.repeat(wrapp.oldValueFull.length());
-                        wrapp.newValue = mask.repeat(wrapp.newValue.length());
-                        wrapp.newValueFull = mask.repeat(wrapp.newValueFull.length());
+                        wrapp.oldValue = wrapp.oldValue == null ? null : mask.repeat(wrapp.oldValue.length());
+                        wrapp.oldValueFull = wrapp.oldValueFull == null ? null : mask.repeat(wrapp.oldValueFull.length());
+                        wrapp.newValue = wrapp.newValue == null ? null : mask.repeat(wrapp.newValue.length());
+                        wrapp.newValueFull = wrapp.newValueFull == null ? null : mask.repeat(wrapp.newValueFull.length());
                     }
                     wrapp.fieldLabel = fieldResult.getLabel();
                 } else {
@@ -488,7 +488,6 @@ public without sharing class RelatedListController {
                 break;
             }
         }
-        System.debug(iconName);
         if(iconName == null){
             iconName = 'standard:entity';
         }

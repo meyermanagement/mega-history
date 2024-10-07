@@ -160,7 +160,7 @@ global without sharing class HistoryTrackingService {
      * @description inserts generic dummy record
      * @param dummyRecord
      */
-    public static void testHandler(Sobject dummyRecord) {
+    global static void testHandler(Sobject dummyRecord) {
         try {
             insert dummyRecord;
         } catch (Exception e) {
