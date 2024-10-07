@@ -22,16 +22,13 @@ public with sharing class TrackingController {
             for(Tracked_Object__mdt to : trackedObjects){
                 objectNameMap.put(to.MasterLabel, new List<Tracked_Field__mdt>());
             }
-            System.debug(objectNameMap);
             for(Tracked_Field__mdt tf : [SELECT Tracked_Object__r.MasterLabel, Tracked_Object__r.DeveloperName, DeveloperName, Field_API_Name__c FROM Tracked_Field__mdt ORDER BY Field_API_Name__c]){
-                System.debug(tf.Tracked_Object__r.MasterLabel);
                 objectNameMap.get(tf.Tracked_Object__r.MasterLabel).add(tf);
             }
             Map<String, Schema.DescribeSobjectResult> describeMap = new Map<String, Schema.DescribeSObjectResult>();
             for(Schema.DescribeSobjectResult res : Schema.describeSObjects(new List<String>(objectNameMap.keySet()))) {
                 describeMap.put(res.getName(), res);
             }
-            System.debug(describeMap.keySet());
             for(Tracked_Object__mdt to : trackedObjects){
                 TrackingWrapper wrapper = new TrackingWrapper();
                 wrapper.objectName = to.MasterLabel;
@@ -440,7 +437,6 @@ public with sharing class TrackingController {
             List<MetadataWrapper> metadataFieldsToDeploy = new List<MetadataWrapper>();
             List<MetadataWrapper> metadataObjectsToDeploy = new List<MetadataWrapper>();
             for(MetadataWrapper wrapper : wrapperList){
-                System.debug(wrapper);
                 if(wrapper.mdType != 'Trigger'){
                     if(wrapper.mdOperation != 'Remove'){
                         if(wrapper.mdType == 'Object'){
@@ -581,7 +577,6 @@ public with sharing class TrackingController {
         try {
             MetadataService.MetadataPort service = createService();
             MetadataService.DeployResult deployResult = Test.isRunningTest() ? new MetadataService.DeployResult() : service.checkDeployStatus(asyncId, true);
-            System.debug(deployResult);
             if (deployResult.details != null && deployResult.details.componentFailures != null){
                 for (MetadataService.DeployMessage deployMessage : deployResult.details.componentFailures){
                     if (deployMessage.problem != null){

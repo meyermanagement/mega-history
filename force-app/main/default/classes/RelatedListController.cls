@@ -263,11 +263,8 @@ public without sharing class RelatedListController {
         Boolean canViewEncryptedText = ![SELECT Id FROM PermissionSetAssignment WHERE PermissionSet.PermissionsViewEncryptedData = true].isEmpty();
         Set<String> childAPINames = new Set<String>();
         for(HistoryWrapper wrapp : wrappers){
-            System.debug(wrapp);
             if(wrapp.event == 'Updated' && wrapp.field != 'Created.'){
                 if(wrapp.field != 'RecordType'){
-                    System.debug(wrapp.objectAPIName);
-                    System.debug(wrapp.field);
                     Map<String,Schema.SObjectField> mfields = objectDescribeMap.get(wrapp.objectAPIName).fields.getMap();
                     Schema.DescribeFieldResult fieldResult = mfields.get(wrapp.field).getDescribe();
                     if(fieldResult.getType() == Schema.DisplayType.ENCRYPTEDSTRING && !canViewEncryptedText){
@@ -320,7 +317,6 @@ public without sharing class RelatedListController {
      */
     @TestVisible
     private static HistoryWrapper createWrapper(SObject record, String objectName){
-        System.debug(record);
         HistoryWrapper wrapper = new HistoryWrapper();
         wrapper.historyId = String.valueOf(record.get('Id'));
         if(objectName == 'Record_History__c'){
@@ -346,7 +342,6 @@ public without sharing class RelatedListController {
             wrapper.createdByURL = '/one/one.app?#/sObject/'+String.valueOf(record.get('CreatedById'))+'/view';
             wrapper.isCustom = true;
         } else if(objectName == 'ActivityFieldHistory'){
-            System.debug(String.valueOf(record.get('FieldName')));
             wrapper.event = 'Updated';
             if(!Test.isRunningTest()) {
                 if(String.valueOf(record.get('FieldName')) == 'created'){
@@ -453,8 +448,6 @@ public without sharing class RelatedListController {
                 query += childReferenceField+' = :recordId';
             }
         }
-
-        System.debug(query);
         return query;
     }
         

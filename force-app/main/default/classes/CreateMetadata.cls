@@ -53,7 +53,6 @@ public without sharing class CreateMetadata {
             customMetadata.values.add(customField);
             customField = new Metadata.CustomMetadataValue();
             customField.field = 'megatools__Tracked_Object__c';
-            System.debug(wrapper.mdObject);
             customField.value = String.valueOf(Tracked_Object__mdt.getInstance(wrapper.mdObject.replaceAll('_', '')).DeveloperName);
             customMetadata.values.add(customField);
         }
