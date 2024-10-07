@@ -13,6 +13,8 @@
   "sfdcLoginUrl": "https://login.salesforce.com",
   "sourceApiVersion": "61.0",
   "packageAliases": {
-    "MEGA History": "0Hobn0000002BPBCA2"
+    "MEGA History": "0Hobn0000002BPBCA2",
+    "MEGA History@0.1.0-1": "04tbn000000ncKHAAY",
+    "MEGA History@0.1.0-2": "04tbn000000ncXBAAY"
   }
 }

@@ -32,16 +32,6 @@ public class MetadataService {
      /**
      * @description     MetadataService classes
      */
-    public class readMetadataResponse_element {
-        public MetadataService.ReadResult result;
-        private String[] result_type_info = new String[]{'result','http://soap.sforce.com/2006/04/metadata',null,'1','1','false'};
-        private String[] apex_schema_type_info = new String[]{'http://soap.sforce.com/2006/04/metadata','true','false'};
-        private String[] field_order_type_info = new String[]{'result'};
-    }
-
-     /**
-     * @description     MetadataService classes
-     */
     public class UpsertResult {
         public Boolean created;
         public MetadataService.Error[] errors;
@@ -1117,18 +1107,6 @@ public class MetadataService {
     /**
      * @description     MetadataService classes
      */
-    public class readMetadata_element {
-        public String type_x;
-        public String[] fullNames;
-        private String[] type_x_type_info = new String[]{'type','http://soap.sforce.com/2006/04/metadata',null,'1','1','false'};
-        private String[] fullNames_type_info = new String[]{'fullNames','http://soap.sforce.com/2006/04/metadata',null,'0','-1','false'};
-        private String[] apex_schema_type_info = new String[]{'http://soap.sforce.com/2006/04/metadata','true','false'};
-        private String[] field_order_type_info = new String[]{'type_x','fullNames'};
-    }
-
-    /**
-     * @description     MetadataService classes
-     */
     public class CallOptions_element {
         public String client;
         private String[] client_type_info = new String[]{'client','http://soap.sforce.com/2006/04/metadata',null,'1','1','false'};
@@ -1438,32 +1416,6 @@ public class MetadataService {
             );
             response_x = response_map_x.get('response_x');
             return response_x.result;
-        }
-
-        /**
-         * @description     MetadataService MetadataPort methods
-         */
-        public MetadataService.IReadResult readMetadata(String type_x,String[] fullNames) {
-            MetadataService.readMetadata_element request_x = new MetadataService.readMetadata_element();
-            request_x.type_x = type_x;
-            request_x.fullNames = fullNames;
-            MetadataService.IReadResponseElement response_x;
-            Map<String, MetadataService.IReadResponseElement> response_map_x = new Map<String, MetadataService.IReadResponseElement>();
-            response_map_x.put('response_x', response_x);
-            WebServiceCallout.invoke(
-              this,
-              request_x,
-              response_map_x,
-              new String[]{endpoint_x,
-              '',
-              'http://soap.sforce.com/2006/04/metadata',
-              'readMetadata',
-              'http://soap.sforce.com/2006/04/metadata',
-              'readMetadataResponse',
-              'MetadataService.read' + type_x + 'Response_element'}
-            );
-            response_x = response_map_x.get('response_x');
-            return response_x.getResult();
         }
 
         /**

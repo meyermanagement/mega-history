@@ -341,24 +341,6 @@ public without sharing class RelatedListController {
             wrapper.createdByName = String.valueOf(record.get('Created_By_Formula__c'));
             wrapper.createdByURL = '/one/one.app?#/sObject/'+String.valueOf(record.get('CreatedById'))+'/view';
             wrapper.isCustom = true;
-        } else if(objectName == 'ActivityFieldHistory'){
-            wrapper.event = 'Updated';
-            if(!Test.isRunningTest()) {
-                if(String.valueOf(record.get('FieldName')) == 'created'){
-                    wrapper.field = 'Created.';
-                    wrapper.fieldLabel = 'Created.';
-                } else {
-                    wrapper.field = String.valueOf(record.get('FieldName')).substringAfter('.');
-                }
-                wrapper.oldValue = String.valueOf(record.get('OldValueText'));
-                wrapper.oldValueFull = String.valueOf(record.get('OldValueText'));
-                wrapper.newValue = String.valueOf(record.get('NewValueText'));
-                wrapper.newValueFull = String.valueOf(record.get('NewValueText'));
-                wrapper.createdByName = String.valueOf(record.getSobject('CreatedBy').get('Name'));
-                wrapper.createdByURL = '/one/one.app?#/sObject/'+String.valueOf(record.get('CreatedById'))+'/view';
-            }
-            wrapper.createdDate = DateTime.valueOf(record.get('CreatedDate'));
-            wrapper.createdById = String.valueOf(record.get('CreatedById'));
         } else {
             wrapper.event = 'Updated';
             if(!Test.isRunningTest()) {
@@ -505,6 +487,10 @@ public without sharing class RelatedListController {
                 iconName = 'custom:' + ir.getUrl().substringBetween('custom/','.svg').substringBefore('_');
                 break;
             }
+        }
+        System.debug(iconName);
+        if(iconName == null){
+            iconName = 'standard:entity';
         }
         return iconName;
     } 
