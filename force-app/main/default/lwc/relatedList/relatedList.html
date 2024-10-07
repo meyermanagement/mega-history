@@ -28,7 +28,7 @@
                 <div class="slds-grid slds-wrap slds-theme_shade">
                     <template lwc:if={showTile}>
                         <div class="slds-col slds-size_12-of-12">
-                            <header class="slds-media slds-media_center slds-has-flexi-truncate slds-p-top_small slds-p-horizontal_x-large">
+                            <header class="slds-media slds-media_center slds-has-flexi-truncate slds-p-top_small slds-p-horizontal_small">
                                 <div class="slds-media__figure">
                                     <lightning-icon icon-name="utility:multi_select_checkbox" size="small"></lightning-icon>
                                 </div>
@@ -39,7 +39,7 @@
                                 </div>
                             </header>
                         </div>
-                        <div class="slds-col slds-size_12-of-12 slds-p-top_small slds-p-bottom_small" align="center">
+                        <div class="slds-col slds-size_12-of-12 slds-p-top_small slds-p-bottom_small slds-p-horizontal_small" >
                             <lightning-button-group>
                                 <lightning-button label="Download CSV" icon-name="utility:download" variant="neutral" disabled></lightning-button>
                                 <lightning-button label="Show Timeline" icon-name="utility:graph" variant="brand" disabled></lightning-button>
@@ -48,7 +48,7 @@
                     </template>
                     <template lwc:else>
                         <div class="slds-col slds-size_6-of-12">
-                            <header class="slds-media slds-media_center slds-has-flexi-truncate slds-p-top_small slds-p-horizontal_medium">
+                            <header class="slds-media slds-media_center slds-has-flexi-truncate slds-p-top_small slds-p-horizontal_small">
                                 <div class="slds-media__figure">
                                     <lightning-icon icon-name="utility:multi_select_checkbox" size="small"></lightning-icon>
                                 </div>
@@ -67,13 +67,18 @@
                         </div>
                     </template>
                 </div>
-                <lightning-layout multiple-rows="true" class="slds-p-horizontal_xx-large slds-p-bottom_small">
+                <lightning-layout multiple-rows="true" class="slds-p-horizontal_small slds-p-bottom_small">
+                    <lightning-layout-item size="12">
+                        <lightning-input type="checkbox" label="Hide Standard History" checked={customOnly} onchange={handleCustomOnly}></lightning-input>
+                    </lightning-layout-item>
                     <lightning-layout-item size="12">
                         <lightning-input type="checkbox" label="Show Related History" checked={showRelated} disabled={hasNoChildren} onchange={handleShowRelated}></lightning-input>
                     </lightning-layout-item>
-                    <lightning-layout-item size="12">
-                        <lightning-input type="checkbox" label="Hide Standard History" checked={customOnly} disabled={standardDisabled} onchange={handleCustomOnly}></lightning-input>
-                    </lightning-layout-item>
+                    <template lwc:if={showRelated}>
+                        <lightning-layout-item size="12" class="slds-p-left_large">
+                            <lightning-input type="checkbox" label="Group Related Records" checked={groupRelated} disabled="true" onchange={handleGroupRelated}></lightning-input>
+                        </lightning-layout-item>
+                    </template>
                 </lightning-layout>
             </div>
         </template>
@@ -107,6 +112,13 @@
                         </div>
                     </div>
                 </div>
+                <template lwc:if={hasParentNotAllowed}>
+                    <div class="slds-grid slds-theme_shade">
+                        <div class="slds-p-horizontal_small slds-p-bottom_x-small">
+                            <p style="color: red;">{parentNotAllowed}</p>
+                        </div>
+                    </div>
+                </template>
                 
                 <template lwc:if={loading}>
                     <div align="center">
@@ -176,6 +188,22 @@
                             </template>
                         </header>
                     </div>
+                    <div class="slds-grid slds-wrap slds-theme_shade slds-p-bottom_xx-small">
+                        <div class="slds-col slds-p-horizontal_small">
+                            <lightning-select
+                                name="objects"
+                                label="Available Objects"
+                                value={objectSelected}
+                                options={childrenObjects}
+                                onchange={handleObjectSelected}
+                                ></lightning-select>
+                        </div>
+                        <template lwc:if={hasChildrenNotAllowed}>
+                            <div class="slds-col slds-p-top_x-small slds-p-horizontal_medium">
+                                <p style="color: red;">{childrenNotAllowed}</p>
+                            </div>
+                        </template>
+                    </div>
                     <template lwc:if={loading}>
                         <div align="center">
                             <div class="spinnerHolder">
@@ -186,7 +214,7 @@
                     <template lwc:else>
                         <template lwc:if={showTile}>
                             <lightning-layout multiple-rows="true">
-                                <template for:each={state.childRecords} for:item="rec">
+                                <template for:each={state.filteredChildRecords} for:item="rec">
                                     <lightning-layout-item size="12" key={rec.historyId}>
                                         <c-record-tile onselect={handleRowAction} record={rec} related-record={isRelated}></c-record-tile>
                                     </lightning-layout-item>
@@ -198,7 +226,7 @@
                                 <lightning-datatable class="related-list"
                                                     onrowaction={handleRowAction}
                                                     columns={childColumns}
-                                                    data={state.childRecords}
+                                                    data={state.filteredChildRecords}
                                                     key-field="historyId"
                                                     hide-checkbox-column="true"
                                                     resize-column-disabled="true"

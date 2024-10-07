@@ -23,7 +23,6 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
     @track consolidatedView = false;
     @track isSuperUser = false;
     @track isCustomOnly = false;
-    @track isStandardDisabled = false;
     fields = [];
     fieldSelected = '';
     rendered = false;
@@ -31,10 +30,12 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
     showNewEditPopUp = false;
     showViewPopUp = false;
     showRelated = false;
+    groupRelated = false;
     showOptions = false;
     optionsLabel = 'Show';
     optionsVariant = 'brand';
     historyRec;
+    objectSelected = 'All';
     
     loading = false;
     helper = new RelatedListHelper();
@@ -77,6 +78,65 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
         return this.state.childRecords == undefined || this.state.childRecords.length == 0;
     }
 
+    get hasParentNotAllowed(){
+        return this.parentNotAllowed != undefined;
+    }
+
+    get parentNotAllowed() {
+        let notAllowedMessage;
+        if(this.state.disabledRecords != undefined && this.state.disabledRecords.length > 0){
+            let includesParentDisabled = false;
+            for(let rec of this.state.disabledRecords){
+                if(rec.parentId != 'NOTALLOWED') includesParentDisabled = true;
+            }
+            if(includesParentDisabled) notAllowedMessage = 'NOTE: This object does not support displaying standard history combined with custom history.';
+        }
+        return notAllowedMessage;
+    }
+
+    get hasChildrenNotAllowed(){
+        return this.childrenNotAllowed != undefined;
+    }
+
+    get childrenNotAllowed() {
+        let notAllowedMessage;
+        if(this.state.disabledRecords != undefined && this.state.disabledRecords.length > 0){
+            let objectsNotAllowed = [];
+            for(let rec of this.state.disabledRecords){
+                if(rec.parentId == 'NOTALLOWED') objectsNotAllowed.push(rec.objectLabel+'('+rec.objectAPIName+')');
+            }
+            if(objectsNotAllowed.length > 0) {
+                notAllowedMessage = 'NOTE: The following objects do not support displaying standard history combined with custom history: ';
+                for(let obj of objectsNotAllowed){
+                    notAllowedMessage += obj+'/';
+                }
+                notAllowedMessage = notAllowedMessage.slice(0, -1)
+            }
+        }
+        return notAllowedMessage;
+    }
+
+    get childrenObjects() {
+        let uniqueList = [];
+        let objectList = [];
+        objectList.push({
+            label: 'All',
+            value: 'All'
+        });
+        if(this.state.childRecords != undefined && this.state.childRecords.length > 0){
+            for(let rec of this.state.childRecords){
+                if(!uniqueList.includes(rec.objectAPIName)) {
+                    objectList.push({
+                        label: rec.objectLabel+'('+rec.objectAPIName+')',
+                        value: rec.objectAPIName
+                    });
+                    uniqueList.push(rec.objectAPIName);
+                }
+            }
+        }
+        return objectList;
+    }
+
     get showRelatedList() {
         return this.recordId != undefined;
     }
@@ -92,10 +152,7 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
     get customOnly() {
         return this.isCustomOnly == 'true';
     }
-
-    get standardDisabled() {
-        return this.isStandardDisabled == 'true';
-    }
+    
 
     handleCustomOnly(event) {
         if(event.detail.checked) this.isCustomOnly = 'true';
@@ -105,6 +162,10 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
 
     handleShowRelated(event) {
         this.showRelated = event.detail.checked;
+    }
+
+    handleGroupRelated(event) {
+        this.groupRelated = event.detail.checked;
     }
 
     handleShowOptions(){
@@ -119,6 +180,11 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
         }
     }
 
+    handleObjectSelected(event) {
+        this.objectSelected = event.detail.value;
+        this.filterRelatedList();
+    }
+
     async init() {
         this.loading = true;
         if (! (this.recordId)) {
@@ -127,8 +193,6 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
         }
         const data = await this.helper.fetchData(this.state, this.isCustomOnly);
         this.isSuperUser = data.superUser;
-        this.isStandardDisabled = data.standardDisabled;
-        if(this.standardDisabled) this.isCustomOnly = 'true';
         if(data.body != undefined){
             this.dispatchEvent(
                 new ShowToastEvent({
@@ -139,7 +203,10 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
             );
         }
         this.state.records = data.records;
-        this.state.childRecords = data.childRecords;        
+        this.state.childRecords = data.childRecords; 
+        this.state.filteredChildRecords = data.filteredChildRecords;
+        this.objectSelected = 'All';
+        this.state.disabledRecords = data.disabledRecords;           
         this.state.iconName = data.iconName;
         this.state.sobjectLabel = data.sobjectLabel;
         this.state.sobjectLabelPlural = data.sobjectLabelPlural;
@@ -413,5 +480,33 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
                 }),
             );
         });
+    }
+
+    filterRelatedList(){
+        this.loading = true;
+        let filteredList = [];
+        if(this.state.childRecords != undefined && this.state.childRecords.length > 0){
+            if(this.objectSelected == 'All'){
+                filteredList = this.state.childRecords;
+            } else {
+                for(let rec of this.state.childRecords){
+                    if(rec.objectAPIName == this.objectSelected) {
+                        filteredList.push(rec);
+                    }
+                }
+            }
+        }
+        if(this.fullView){
+            this.state.childtitle = `Related ${this.state.sobjectLabelPlural} (${filteredList.length})`
+        } else {
+            if (filteredList.length > this.state.numberOfRecords) {
+                filteredList = filteredList.slice(0, this.state.numberOfRecords);
+                this.state.childtitle = `Related ${this.state.sobjectLabelPlural} (${this.state.numberOfRecords}+)`;
+            } else {
+                this.state.childtitle = `Related ${this.state.sobjectLabelPlural} (${Math.min(this.state.numberOfRecords, filteredList.length)})`;
+            }  
+        }
+        this.state.filteredChildRecords = this.helper.sortData('createdDate','desc', filteredList);
+        this.loading = false;
     }
 }

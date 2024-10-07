@@ -133,9 +133,12 @@ export default class RelatedListNewEditPopup extends LightningElement {
 
         let histRecId = this.template.querySelector('.historyRecName');
         let historyField = this.template.querySelector('.historyField');
+        console.log('this.historyRec.megatools__Record_Name__c>>'+this.historyRec.megatools__Record_Name__c);
         if(this.relatedRecord == true && this.historyRec.megatools__Record_Name__c == undefined){
+            console.log('test1>>');
             histRecId.setCustomValidity("Field is required.");
         } else if(this.updatedRecord && this.historyRec.megatools__Field__c == undefined){
+            console.log('test12>>');
             historyField.setCustomValidity("Field is required.");
             historyField.reportValidity();
         } else {

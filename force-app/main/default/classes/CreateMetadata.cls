@@ -16,7 +16,7 @@ public without sharing class CreateMetadata {
         Metadata.CustomMetadata customMetadata =  new Metadata.CustomMetadata();
         if(wrapper.mdType == 'Object'){
             TrackingWrapper tw = wrapper.mdObjectWrapper;
-            customMetadata.fullName = 'megatools__Tracked_Object__mdt.'+wrapper.mdObject;
+            customMetadata.fullName = 'megatools__Tracked_Object__mdt.'+wrapper.mdObject.replaceAll('_','');
             customMetadata.label = wrapper.mdObject;
             Metadata.CustomMetadataValue customField = new Metadata.CustomMetadataValue();
             customField.field = 'megatools__Additional_Field_1__c';
@@ -43,17 +43,18 @@ public without sharing class CreateMetadata {
             customField.value = tw.trackUndelete;
             customMetadata.values.add(customField);
         } else {
-            String metadataRecordName = wrapper.mdObject+'_'+wrapper.mdName.replaceAll('_', '');
+            String metadataRecordName = wrapper.mdObject.replaceAll('_', '')+'_'+wrapper.mdName.replaceAll('_', '');
             metadataRecordName = metadataRecordName.left(40);
             customMetadata.fullName = 'megatools__Tracked_Field__mdt.'+metadataRecordName;
-            customMetadata.label = metadataRecordName;
+            customMetadata.label = wrapper.mdName;
             Metadata.CustomMetadataValue customField = new Metadata.CustomMetadataValue();
             customField.field = 'megatools__Field_API_Name__c';
             customField.value = wrapper.mdName;
             customMetadata.values.add(customField);
             customField = new Metadata.CustomMetadataValue();
             customField.field = 'megatools__Tracked_Object__c';
-            customField.value = String.valueOf(Tracked_Object__mdt.getInstance(wrapper.mdObject).DeveloperName);
+            System.debug(wrapper.mdObject);
+            customField.value = String.valueOf(Tracked_Object__mdt.getInstance(wrapper.mdObject.replaceAll('_', '')).DeveloperName);
             customMetadata.values.add(customField);
         }
     

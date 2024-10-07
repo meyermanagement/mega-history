@@ -21,11 +21,11 @@ export default class RelatedListHelper {
     }
 
     processData(data, state){
-        console.log(data.records)
         const records = this.sortData('createdDate','desc', data.records);
         const childRecords = this.sortData('createdDate','desc', data.childRecords);
         data.records = records;
         data.childRecords = childRecords;
+        data.filteredChildRecords = childRecords;
         //this.generateLinks(records);
         if(state.fullView){
                data.title = `${data.sobjectLabelPlural} (${records.length})`
@@ -39,7 +39,7 @@ export default class RelatedListHelper {
                 data.title = `${data.sobjectLabelPlural} (${Math.min(state.numberOfRecords, records.length)})`;
             }  
             if (childRecords.length > state.numberOfRecords) {
-                data.childRecords = childRecords.slice(0, state.numberOfRecords);
+                data.filteredChildRecords = childRecords.slice(0, state.numberOfRecords);
                 data.childtitle = `Related ${data.sobjectLabelPlural} (${state.numberOfRecords}+)`;
             } else {
                 data.childtitle = `Related ${data.sobjectLabelPlural} (${Math.min(state.numberOfRecords, childRecords.length)})`;
@@ -49,7 +49,6 @@ export default class RelatedListHelper {
     }
 
     sortData(fieldname, direction, records) {
-        console.log('recordSize>>'+records.length);
         let parseData = JSON.parse(JSON.stringify(records));
         // Return the value stored in the field
         let keyValue = (a) => {
@@ -65,7 +64,6 @@ export default class RelatedListHelper {
             // sorting values based on direction
             return isReverse * ((x > y) - (y > x));
         });
-        console.log(JSON.stringify(parseData));
         return parseData;
     }    
 
@@ -102,10 +100,12 @@ export default class RelatedListHelper {
                 'label': 'View Details',
                 'name': 'view'
             });
-            actions.push({
-                'label': 'Edit',
-                'name': 'edit'
-            });
+            if(row.event != 'Updated'){
+                actions.push({
+                    'label': 'Edit',
+                    'name': 'edit'
+                });
+            }
             actions.push({
                 'label': 'Delete',
                 'name': 'delete'

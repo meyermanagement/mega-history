@@ -6,6 +6,8 @@
 public with sharing class TrackingController {
 
     public class TrackingException extends Exception {}
+
+    static Set<String> systemRelationships = new Set<String>{'RecordTypeId', 'CreatedById','LastModifiedById','OwnerId'};
     
     /**
      * @description     get all tracking records
@@ -18,18 +20,21 @@ public with sharing class TrackingController {
             Map<String, List<Tracked_Field__mdt>> objectNameMap = new Map<String, List<Tracked_Field__mdt>>();
             List<Tracked_Object__mdt> trackedObjects = [SELECT Id, MasterLabel, DeveloperName, Additional_Field_1__c, Additional_Field_2__c, Parent_Reference_Field__c, Track_Create__c, Track_Delete__c, Track_Undelete__c FROM Tracked_Object__mdt ORDER BY MasterLabel];
             for(Tracked_Object__mdt to : trackedObjects){
-                objectNameMap.put(to.DeveloperName, new List<Tracked_Field__mdt>());
+                objectNameMap.put(to.MasterLabel, new List<Tracked_Field__mdt>());
             }
-            for(Tracked_Field__mdt tf : [SELECT Tracked_Object__r.DeveloperName, DeveloperName, Field_API_Name__c FROM Tracked_Field__mdt ORDER BY Field_API_Name__c]){
-                objectNameMap.get(tf.Tracked_Object__r.DeveloperName).add(tf);
+            System.debug(objectNameMap);
+            for(Tracked_Field__mdt tf : [SELECT Tracked_Object__r.MasterLabel, Tracked_Object__r.DeveloperName, DeveloperName, Field_API_Name__c FROM Tracked_Field__mdt ORDER BY Field_API_Name__c]){
+                System.debug(tf.Tracked_Object__r.MasterLabel);
+                objectNameMap.get(tf.Tracked_Object__r.MasterLabel).add(tf);
             }
             Map<String, Schema.DescribeSobjectResult> describeMap = new Map<String, Schema.DescribeSObjectResult>();
             for(Schema.DescribeSobjectResult res : Schema.describeSObjects(new List<String>(objectNameMap.keySet()))) {
                 describeMap.put(res.getName(), res);
             }
+            System.debug(describeMap.keySet());
             for(Tracked_Object__mdt to : trackedObjects){
                 TrackingWrapper wrapper = new TrackingWrapper();
-                wrapper.objectName = to.DeveloperName;
+                wrapper.objectName = to.MasterLabel;
                 wrapper.parentRef = to.Parent_Reference_Field__c;
                 wrapper.additionalField1 = to.Additional_Field_1__c;
                 wrapper.additionalField2 = to.Additional_Field_2__c;
@@ -50,10 +55,10 @@ public with sharing class TrackingController {
                 wrapper.events = concatEvents;
                 String concatFields = '';
                 wrapper.fieldList = new List<TrackingFieldDefinition>();
-                for(Tracked_Field__mdt field: objectNameMap.get(to.DeveloperName)){
+                for(Tracked_Field__mdt field: objectNameMap.get(to.MasterLabel)){
                     concatFields = concatFields += field.Field_API_Name__c+', ';
                     TrackingFieldDefinition fd = new TrackingFieldDefinition();
-                    fd.fieldLabel = describeMap.get(to.DeveloperName).fields.getMap().get(field.Field_API_Name__c).getDescribe().getLabel();
+                    fd.fieldLabel = describeMap.get(to.MasterLabel).fields.getMap().get(field.Field_API_Name__c).getDescribe().getLabel();
                     fd.fieldAPIName = field.Field_API_Name__c;
                     fd.customTracked = true;
                     wrapper.fieldList.add(fd);
@@ -64,7 +69,7 @@ public with sharing class TrackingController {
                 wrapper.trigStatusClass = 'slds-text-color_error slds-text-title_caps';
                 wrapper.mdtStatusLabel = 'Deployed';
                 wrapper.mdtStatusClass = 'slds-text-color_success slds-text-title_caps';
-                wrapperMap.put(to.DeveloperName, wrapper);
+                wrapperMap.put(to.MasterLabel, wrapper);
             }
             for(ApexTrigger at : [SELECT Id, NamespacePrefix, name, Body, Status, TableEnumOrId FROM ApexTrigger WHERE Name LIKE 'mh%' AND Status = 'Active' WITH SECURITY_ENFORCED]){
                 if(wrapperMap.get(at.TableEnumOrId) != null){
@@ -85,6 +90,7 @@ public with sharing class TrackingController {
             }
             return wrapperMap.values();
         } catch (Exception e) {
+            System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -178,9 +184,9 @@ public with sharing class TrackingController {
                         tfd.standardTracked = standardTrackedFields.contains(tfd.fieldAPIName);
                         resultDefinitions.put(tfd.fieldAPIName, tfd);
                     }
-                    if(fieldResult.getRelationshipName() != null && fieldResult.getName() != 'RecordTypeId'){
-                        wrapper.parentRefMap.put(fieldResult.getName(), fieldResult.getLabel());
-                    }
+                }
+                if(fieldResult.getRelationshipName() != null && !systemRelationships.contains(fieldResult.getName())){
+                    wrapper.parentRefMap.put(fieldResult.getName(), fieldResult.getLabel());
                 }
             }
             List<String> orderedList = new List<String>(resultDefinitions.keySet());
@@ -374,7 +380,7 @@ public with sharing class TrackingController {
                     md.mdType = 'Object';
                     md.mdObject = wrapp.objectName;
                     md.mdObjectWrapper = wrapp;
-                    Tracked_Object__mdt to = Tracked_Object__mdt.getInstance(wrapp.objectName);
+                    Tracked_Object__mdt to = Tracked_Object__mdt.getInstance(wrapp.objectName.replaceAll('_',''));
                     if(to != null){
                         TrackingWrapper orignal = new TrackingWrapper(wrapp);
                         orignal.parentRef = to.Parent_Reference_Field__c;
@@ -407,7 +413,7 @@ public with sharing class TrackingController {
                 }
                 if(wrapp.trigStatusLabel != 'Deployed'){
                     MetadataWrapper md = new MetadataWrapper();
-                    md.mdName = 'mh'+wrapp.objectName+'Trigger';
+                    md.mdName = 'mh'+wrapp.objectName.replaceAll('_','')+'Trigger';
                     md.mdType = 'Trigger';
                     md.mdObject = wrapp.objectName;
                     md.mdOperation = wrapp.trigStatusLabel == 'Pending Removal' ? 'Remove' : 'Add';
@@ -434,6 +440,7 @@ public with sharing class TrackingController {
             List<MetadataWrapper> metadataFieldsToDeploy = new List<MetadataWrapper>();
             List<MetadataWrapper> metadataObjectsToDeploy = new List<MetadataWrapper>();
             for(MetadataWrapper wrapper : wrapperList){
+                System.debug(wrapper);
                 if(wrapper.mdType != 'Trigger'){
                     if(wrapper.mdOperation != 'Remove'){
                         if(wrapper.mdType == 'Object'){
@@ -475,11 +482,11 @@ public with sharing class TrackingController {
             String metadataRecordName;
             if(wrapper.mdType == 'Object'){
                 metadataTypeName = 'megatools__Tracked_Object__mdt';
-                metadataRecordName =  wrapper.mdObject;
+                metadataRecordName =  wrapper.mdObject.replaceAll('_', '');
                 objectNames.add(metadataRecordName);
             } else {
                 metadataTypeName = 'megatools__Tracked_Field__mdt';
-                metadataRecordName = wrapper.mdObject+'_'+wrapper.mdName.replaceAll('_', '');
+                metadataRecordName = wrapper.mdObject.replaceAll('_', '')+'_'+wrapper.mdName.replaceAll('_', '');
             }
             recordsToDelete.add(metadataTypeName+'.'+metadataRecordName);
         }
@@ -574,6 +581,7 @@ public with sharing class TrackingController {
         try {
             MetadataService.MetadataPort service = createService();
             MetadataService.DeployResult deployResult = Test.isRunningTest() ? new MetadataService.DeployResult() : service.checkDeployStatus(asyncId, true);
+            System.debug(deployResult);
             if (deployResult.details != null && deployResult.details.componentFailures != null){
                 for (MetadataService.DeployMessage deployMessage : deployResult.details.componentFailures){
                     if (deployMessage.problem != null){

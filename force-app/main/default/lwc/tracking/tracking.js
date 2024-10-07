@@ -540,6 +540,7 @@ export default class Tracking extends LightningElement {
                         variant: "error",
                     }),
                 );
+                clearInterval(this.interval);
                 this.modalLoading = false;
             }); 
         } else {

@@ -12,7 +12,7 @@ global without sharing class HistoryTrackingService {
     /**
      * @description map of fields to use for 
      */
-    static Map<String, String> objectTypeToNameMap = new Map<String, String>{'Contact'=>'LastName', 'Case'=>'CaseNumber', 'Contract'=>'ContractNumber', 'Task'=>'Subject', 'Event'=>'Subject'};
+    public static Map<String, String> objectTypeToNameMap = new Map<String, String>{'Contact'=>'LastName', 'Case'=>'CaseNumber', 'Contract'=>'ContractNumber', 'Task'=>'Subject', 'Event'=>'Subject'};
 
     /**
      * @description handles mapping of the object to create the history record
@@ -40,7 +40,7 @@ global without sharing class HistoryTrackingService {
         Schema.DescribeSObjectResult objectDescribe = objectType.getDescribe();
         Map<String,Schema.SObjectField> mfields = objectDescribe.fields.getMap();
         
-        Tracked_Object__mdt tobj = Tracked_Object__mdt.getInstance(objectDescribe.getName());
+        Tracked_Object__mdt tobj = Tracked_Object__mdt.getInstance(objectDescribe.getName().replaceAll('_',''));
         if(Test.isRunningTest() || tobj != null){
             List<Record_History__c> histories = new List<Record_History__c>();
             if(operationType != 'AFTER_UPDATE'){
@@ -48,7 +48,7 @@ global without sharing class HistoryTrackingService {
                 if(Test.isRunningTest() || (tobj.Parent_Reference_Field__c != null && ((tobj.Track_Create__c && operationEvent == 'Created') || (tobj.Track_Delete__c && operationEvent == 'Deleted') || (tobj.Track_Undelete__c && operationEvent == 'Undeleted')))){
                     List<SObject> recordList = newList != null ? newList : oldMap.values();
                     for(Sobject so : recordList){
-                        if(Test.isRunningTest() || String.isNotBlank(String.valueOf(so.get(tobj.Parent_Reference_Field__c)))){
+                        if(Test.isRunningTest() || String.isNotBlank(tobj.Parent_Reference_Field__c)){
                             String recordId = String.valueOf(so.get('Id'));
                             String recordName;
                             if(objectTypeToNameMap.containsKey(objectDescribe.getName())){
@@ -67,8 +67,9 @@ global without sharing class HistoryTrackingService {
                                 String concatParents = '';
                                 List<String> parentRefs = tobj.Parent_Reference_Field__c.split(',');
                                 for(String parentRef : parentRefs) {
-                                    concatParents = concatParents+String.valueOf(so.get(parentRef)) +',';
+                                    if(so.get(parentRef) != null) concatParents = concatParents+String.valueOf(so.get(parentRef)) +',';
                                 }
+                                if(String.isBlank(concatParents)) break;
                                 concatParents = concatParents.removeEnd(',');
                                 rh.ParentId__c = concatParents;
                                 Schema.DescribeFieldResult fieldResult = mfields.get(tobj.Additional_Field_1__c).getDescribe();
