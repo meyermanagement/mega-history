@@ -23,49 +23,27 @@
             </c-related-list-view-popup>
         </template>
 
-        <template lwc:if={showOptions}>
+        <template lwc:if={displayOptions}>
             <div class="slds-box slds-theme_shade my-box">
                 <div class="slds-grid slds-wrap slds-theme_shade">
-                    <template lwc:if={showTile}>
-                        <div class="slds-col slds-size_12-of-12">
-                            <header class="slds-media slds-media_center slds-has-flexi-truncate slds-p-top_small slds-p-horizontal_small">
-                                <div class="slds-media__figure">
-                                    <lightning-icon icon-name="utility:multi_select_checkbox" size="small"></lightning-icon>
-                                </div>
-                                <div class="slds-media__body">
-                                    <h2 class="slds-card__header-title">
-                                        Record History Options
-                                    </h2>
-                                </div>
-                            </header>
-                        </div>
-                        <div class="slds-col slds-size_12-of-12 slds-p-top_small slds-p-bottom_small slds-p-horizontal_small" >
-                            <lightning-button-group>
-                                <lightning-button label="Download CSV" icon-name="utility:download" variant="neutral" disabled></lightning-button>
-                                <lightning-button label="Show Timeline" icon-name="utility:graph" variant="brand" disabled></lightning-button>
-                            </lightning-button-group>
-                        </div>
-                    </template>
-                    <template lwc:else>
-                        <div class="slds-col slds-size_6-of-12">
-                            <header class="slds-media slds-media_center slds-has-flexi-truncate slds-p-top_small slds-p-horizontal_small">
-                                <div class="slds-media__figure">
-                                    <lightning-icon icon-name="utility:multi_select_checkbox" size="small"></lightning-icon>
-                                </div>
-                                <div class="slds-media__body">
-                                    <h2 class="slds-card__header-title">
-                                        Record History Options
-                                    </h2>
-                                </div>
-                            </header>
-                        </div>
-                        <div class="slds-col slds-size_6-of-12 slds-p-top_x-small slds-p-right_x-small" align="right">
-                            <lightning-button-group>
-                                <lightning-button label="Download CSV" icon-name="utility:download" variant="neutral" disabled></lightning-button>
-                                <lightning-button label="Show Timeline" icon-name="utility:graph" variant="brand" disabled></lightning-button>
-                            </lightning-button-group>
-                        </div>
-                    </template>
+                    <div class="slds-col slds-size_6-of-12">
+                        <header class="slds-media slds-media_center slds-has-flexi-truncate slds-p-top_small slds-p-horizontal_small">
+                            <div class="slds-media__figure">
+                                <lightning-icon icon-name="utility:multi_select_checkbox" size="small"></lightning-icon>
+                            </div>
+                            <div class="slds-media__body">
+                                <h2 class="slds-card__header-title">
+                                    Record History Options
+                                </h2>
+                            </div>
+                        </header>
+                    </div>
+                    <div class="slds-col slds-size_6-of-12 slds-p-top_small slds-p-right_small" align="right">
+                        <lightning-button-group>
+                            <lightning-button label="Download" icon-name="utility:download" variant="neutral" onclick={exportHistoryData}></lightning-button>
+                            <!-- <lightning-button label="Show Timeline" icon-name="utility:graph" variant="brand" disabled></lightning-button> -->
+                        </lightning-button-group>
+                    </div>
                 </div>
                 <lightning-layout multiple-rows="true" class="slds-p-horizontal_small slds-p-bottom_small">
                     <lightning-layout-item size="12">
@@ -76,7 +54,7 @@
                     </lightning-layout-item>
                     <template lwc:if={showRelated}>
                         <lightning-layout-item size="12" class="slds-p-left_large">
-                            <lightning-input type="checkbox" label="Group Related Records" checked={groupRelated} disabled="true" onchange={handleGroupRelated}></lightning-input>
+                            <lightning-input type="checkbox" label="Group Related Records" checked={groupRelated} disabled={showTile} onchange={handleGroupRelated} field-level-help="This option is not available in Tile view."></lightning-input>
                         </lightning-layout-item>
                     </template>
                 </lightning-layout>
@@ -87,7 +65,7 @@
             <div class="slds-box slds-theme_shade my-box">
                 <div class="slds-grid slds-theme_shade">
                     <div class="slds-col">
-                        <header class="slds-media slds-media_center slds-has-flexi-truncate slds-p-vertical_x-small slds-p-horizontal_small">
+                        <header class="slds-media slds-media_center slds-has-flexi-truncate slds-p-vertical_small slds-p-horizontal_small">
                             <div class="slds-media__figure">
                                 <lightning-icon icon-name={state.iconName} size="small"></lightning-icon>
                             </div>
@@ -99,15 +77,17 @@
                         </header>
                     </div>
                     <div class="slds-grid" align="right">
-                        <div class="slds-col slds-p-top_x-small">
+                        <div class="slds-col slds-p-top_small">
                             <lightning-button-icon icon-name="utility:refresh" variant="border-filled" alternative-text="Refresh"  title="Refresh" onclick={handleRefreshData}></lightning-button-icon>
                         </div>
-                        <div class="slds-col slds-p-around_x-small">
+                        <div class="slds-col slds-p-around_small">
                             <lightning-button-group>
                                 <template lwc:if={superUser}>
                                     <lightning-button label="New" onclick={handleCreateRecord}></lightning-button>
                                 </template>
-                                <lightning-button label={optionsLabel} variant={optionsVariant} icon-name="utility:multi_select_checkbox" onclick={handleShowOptions}></lightning-button>
+                                <template lwc:if={optionsAvailable}>
+                                    <lightning-button label={optionsLabel} variant={optionsVariant} icon-name="utility:multi_select_checkbox" onclick={handleShowOptions}></lightning-button>
+                                </template>
                             </lightning-button-group>
                         </div>
                     </div>
@@ -173,7 +153,7 @@
             <div class="slds-p-top_small">
                 <div class="slds-box slds-theme_shade my-box">
                     <div class="slds-grid slds-theme_shade">
-                        <header class="slds-media slds-media_center slds-has-flexi-truncate slds-p-vertical_x-small slds-p-horizontal_small">
+                        <header class="slds-media slds-media_center slds-has-flexi-truncate slds-p-vertical_small slds-p-horizontal_small">
                             <div class="slds-media__figure">
                                 <lightning-icon icon-name={state.iconName} size="small"></lightning-icon>
                             </div>
@@ -220,6 +200,15 @@
                                     </lightning-layout-item>
                                 </template>
                             </lightning-layout>
+                        </template>
+                        <template lwc:elseif={groupRelated}>
+                            <lightning-tree-grid
+                                columns={gridColumns}
+                                data={state.filteredGroupedRecords}
+                                expanded-rows={gridExpandedRows}
+                                key-field="historyId"
+                                hide-checkbox-column="true"
+                            ></lightning-tree-grid>
                         </template>
                         <template lwc:else>
                             <div style="width: auto;">

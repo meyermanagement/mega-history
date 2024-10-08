@@ -50,15 +50,7 @@ global without sharing class HistoryTrackingService {
                     for(Sobject so : recordList){
                         if(Test.isRunningTest() || String.isNotBlank(tobj.Parent_Reference_Field__c)){
                             String recordId = String.valueOf(so.get('Id'));
-                            String recordName;
-                            if(objectTypeToNameMap.containsKey(objectDescribe.getName())){
-                                recordName = String.valueOf(so.get(objectTypeToNameMap.get(objectDescribe.getName())));
-                                if(objectDescribe.getName() == 'Contact') {
-                                    recordName = recordName+', '+String.valueOf(so.get('FirstName'));
-                                }
-                            } else {
-                                recordName = String.valueOf(so.get('Name'));
-                            } 
+                            String recordName = objectDescribe.getName() == 'Contact' ? String.valueOf(so.get(getRecordNameField(objectDescribe.getName())))+', '+String.valueOf(so.get('FirstName')) : String.valueOf(so.get(getRecordNameField(objectDescribe.getName())));
                             Record_History__c rh = new Record_History__c();
                             rh.Event__c = operationEvent;
                             rh.Record__c = recordId;
@@ -116,15 +108,7 @@ global without sharing class HistoryTrackingService {
                             oldValue = String.valueOf(oldMap.get(recordId).get(field));
                         }
                         if(Test.isRunningTest() || newValue <> oldValue){
-                            String recordName;
-                            if(objectTypeToNameMap.containsKey(objectDescribe.getName())){
-                                recordName = String.valueOf(so.get(objectTypeToNameMap.get(objectDescribe.getName())));
-                                if(objectDescribe.getName() == 'Contact') {
-                                    recordName = recordName+', '+String.valueOf(so.get('FirstName'));
-                                }
-                            } else {
-                                recordName = String.valueOf(so.get('Name'));
-                            } 
+                            String recordName = objectDescribe.getName() == 'Contact' ? String.valueOf(so.get(getRecordNameField(objectDescribe.getName())))+', '+String.valueOf(so.get('FirstName')) : String.valueOf(so.get(getRecordNameField(objectDescribe.getName())));
                             Record_History__c rh = new Record_History__c();
                             rh.Record__c = recordId;
                             rh.Record_Name__c = recordName.left(255);
@@ -154,6 +138,22 @@ global without sharing class HistoryTrackingService {
                 insert histories;
             }
         }
+    }
+
+    public static String getRecordNameField(String objectAPIName){
+        String recordName;
+        if(objectTypeToNameMap.keySet().contains(objectAPIName)){
+            recordName = objectTypeToNameMap.get(objectAPIName);
+        } else {
+            Schema.DescribeSobjectResult res = Schema.describeSObjects(new List<String>{objectAPIName})[0];
+            Map<String,Schema.SObjectField> mfields = res.fields.getMap();
+            if(mfields.get('Name') != null){
+                recordName = 'Name';
+            } else {
+                recordName = 'Id';
+            }
+        }
+        return recordName;
     }
 
     /**

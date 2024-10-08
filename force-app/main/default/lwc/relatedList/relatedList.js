@@ -16,10 +16,14 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
     @api recordId;
     @api numberOfRecords = 5;
     @api mode;
+    @api showOptions = false;
+    @track fullViewOptions = false;
     @track fullView;
     @track state = {};
     @track columns;
     @track childColumns;
+    @track gridColumns;
+    gridExpandedRows = [];
     @track consolidatedView = false;
     @track isSuperUser = false;
     @track isCustomOnly = false;
@@ -31,7 +35,7 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
     showViewPopUp = false;
     showRelated = false;
     groupRelated = false;
-    showOptions = false;
+    displayOptions = false;
     optionsLabel = 'Show';
     optionsVariant = 'brand';
     historyRec;
@@ -43,6 +47,7 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
     renderedCallback() {
         loadStyle(this, relatedListResource + '/relatedList.css');
         this.fullView = this.currentPageRef.state.megatools__fullView == 'true' ? true : false;
+        this.fullViewOptions = this.currentPageRef.state.megatools__showOptions;
         if(this.recordId == undefined) this.recordId = this.currentPageRef.state.megatools__recordId;
         this.state.recordId = this.recordId;
         this.state.fullView = this.fullView;
@@ -52,6 +57,10 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
             this.rendered = true;
             this.init();
         }
+    }
+
+    get optionsAvailable(){
+        return this.showOptions == true || this.fullViewOptions == true || this.showOptions == 'true' || this.fullViewOptions == 'true';
     }
 
     get isRelated(){
@@ -118,6 +127,7 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
 
     get childrenObjects() {
         let uniqueList = [];
+        let labelList = [];
         let objectList = [];
         objectList.push({
             label: 'All',
@@ -131,9 +141,11 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
                         value: rec.objectAPIName
                     });
                     uniqueList.push(rec.objectAPIName);
+                    labelList.push(rec.objectLabel);
                 }
             }
         }
+        this.gridExpandedRows = labelList;
         return objectList;
     }
 
@@ -166,17 +178,27 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
 
     handleGroupRelated(event) {
         this.groupRelated = event.detail.checked;
+        if(this.groupRelated){
+            this.state.childtitle = `Related ${this.state.sobjectLabelPlural} (${this.state.childRecords.length})`
+        } else {
+            if (this.state.filteredChildRecords.length > this.numberOfRecords) {
+                this.state.childtitle = `Related ${this.state.sobjectLabelPlural} (${this.state.numberOfRecords}+)`;
+            } else {
+                this.state.childtitle = `Related ${this.state.sobjectLabelPlural} (${Math.min(this.state.numberOfRecords, this.state.filteredChildRecords.length)})`;
+            }  
+        }
+        this.filterRelatedList();
     }
 
     handleShowOptions(){
-        if(this.showOptions === false){
+        if(this.displayOptions === false){
             this.optionsLabel = 'Hide';
             this.optionsVariant = 'neutral';
-            this.showOptions = true;
+            this.displayOptions = true;
         } else {
             this.optionsLabel = 'Show';
             this.optionsVariant = 'brand';
-            this.showOptions = false;
+            this.displayOptions = false;
         }
     }
 
@@ -205,6 +227,7 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
         this.state.records = data.records;
         this.state.childRecords = data.childRecords; 
         this.state.filteredChildRecords = data.filteredChildRecords;
+        this.state.filteredGroupedRecords = this.helper.groupRecords(this.state.childRecords);
         this.objectSelected = 'All';
         this.state.disabledRecords = data.disabledRecords;           
         this.state.iconName = data.iconName;
@@ -221,6 +244,7 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
     createColumns() {
         let columns = [];
         let childColumns = [];
+        let gridColumns = [];
         columns.push({
             label: 'Date',
             title: 'createdDate',
@@ -292,8 +316,10 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
         });
         childColumns.push({
             label: 'Record',
-            fieldName: 'recordName',
-            type: 'text'
+            fieldName: 'recordURL',
+            type: 'url',
+            typeAttributes: {label: { fieldName: 'recordName' }, 
+            target: '_self'}
         });
         childColumns.push({
             label: 'Field',
@@ -301,6 +327,55 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
             type: 'text'
         });
         childColumns.push({
+            label: 'New Value',
+            fieldName: 'newValue',
+            type: 'text'
+        });
+        gridColumns.push({
+            label: 'Object',
+            fieldName: 'objectLabel',
+            type: 'text'
+        });
+        gridColumns.push({
+            label: 'Record',
+            fieldName: 'recordURL',
+            type: 'url',
+            typeAttributes: {label: { fieldName: 'recordName' }, 
+            target: '_self'}
+        });
+        gridColumns.push({
+            label: 'Event',
+            fieldName: 'event',
+            type: 'text'
+        });
+        gridColumns.push({
+            label: 'Date',
+            title: 'createdDate',
+            fieldName: 'createdDate',
+            type: 'date',
+            initialWidth: 150,
+            typeAttributes: {
+                day: 'numeric',
+                month: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZoneName: 'short'
+            }
+        });
+        gridColumns.push({
+            label: 'User',
+            fieldName: 'createdByURL',
+            type: 'url',
+            typeAttributes: {label: { fieldName: 'createdByName' }, 
+            target: '_self'}
+        });
+        gridColumns.push({
+            label: 'Field',
+            fieldName: 'fieldLabel',
+            type: 'text'
+        });
+        gridColumns.push({
             label: 'New Value',
             fieldName: 'newValue',
             type: 'text'
@@ -314,14 +389,23 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
                 type: 'action', 
                 typeAttributes: { rowActions: this.helper.initRelatedColumnsWithSuperActions } 
             });
+            gridColumns.push({
+                type: 'action', 
+                typeAttributes: { rowActions: this.helper.initRelatedColumnsWithSuperActions } 
+            });
         } else {
             childColumns.push({ 
+                type: 'action', 
+                typeAttributes: { rowActions: this.helper.initRelatedColumnsWithActions } 
+            });
+            gridColumns.push({
                 type: 'action', 
                 typeAttributes: { rowActions: this.helper.initRelatedColumnsWithActions } 
             });
         }
         this.columns = columns;
         this.childColumns = childColumns;
+        this.gridColumns = gridColumns;
     }
 
     handleRowAction(event) {
@@ -353,7 +437,8 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
                     },
                     state: {
                         megatools__fullView: 'true',
-                        megatools__recordId: this.recordId
+                        megatools__recordId: this.recordId,
+                        megatools__showOptions: this.showOptions
                     }
                 });
             } else {
@@ -365,7 +450,8 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
                         },
                         state: {
                             megatools__fullView: 'true',
-                            megatools__recordId: this.recordId
+                            megatools__recordId: this.recordId,
+                            megatools__showOptions: this.showOptions
                         },
                     },
                     icon: this.state.iconName,
@@ -496,7 +582,7 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
                 }
             }
         }
-        if(this.fullView){
+        if(this.fullView || this.groupRelated){
             this.state.childtitle = `Related ${this.state.sobjectLabelPlural} (${filteredList.length})`
         } else {
             if (filteredList.length > this.state.numberOfRecords) {
@@ -507,6 +593,49 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
             }  
         }
         this.state.filteredChildRecords = this.helper.sortData('createdDate','desc', filteredList);
+        this.state.filteredGroupedRecords = this.helper.groupRecords(this.state.filteredChildRecords);
         this.loading = false;
+    }
+
+    exportHistoryData(){
+        // Prepare a html table
+        let doc = '';
+        this.columns.forEach(element => {            
+            if(element.label != undefined) doc +=  element.label +','           
+        });
+        doc += '\n';
+        // Add the data rows
+        this.state.records.forEach(record => {
+            doc += record.createdDate+','; 
+            doc += record.fieldLabel+','; 
+            doc += record.createdByName+','; 
+            doc += record.oldValue != undefined ? record.oldValue+',' : ',';
+            doc += record.newValue != undefined ? record.newValue+',' : ',';
+            doc += '\n';
+        });
+        doc += '\n\n';
+
+        this.childColumns.forEach(element => {            
+            if(element.label != undefined) doc +=  element.label +','           
+        });
+        doc += '\n';
+        this.state.childRecords.forEach(record => {
+            doc += record.createdDate+','; 
+            doc += record.objectLabel+','; 
+            doc += record.event+','; 
+            doc += record.createdByName+','; 
+            doc += record.recordName+','; 
+            doc += record.fieldLabel != undefined ? record.fieldLabel+',' : ',';
+            doc += record.newValue != undefined ? record.newValue+',' : ',';
+            doc += '\n';
+        });
+        var element = 'data:application/csv,' + encodeURIComponent(doc);
+        let downloadElement = document.createElement('a');
+        downloadElement.href = element;
+        downloadElement.target = '_self';
+        // use .csv as extension on below line if you want to export data as csv
+        downloadElement.download = this.state.sobjectLabelPlural+'.csv';
+        document.body.appendChild(downloadElement);
+        downloadElement.click();
     }
 }

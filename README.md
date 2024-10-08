@@ -6,12 +6,14 @@ A History Tracking app for advanced history trackingn out of the box history tra
 
 **Enhanced history tracking on objects.**:
 * Track as many fields as desired, beyond Salesforce limits
+* Track objects that you can't normally track
+* Prioritize & highlight certain fields
+* See complete start to end timeline of child records
 
 **View history of child records on parents**:
-* CRUD History: See when child records were created, deleted, and undeleted on parent and/or grand-parent records
+* CRUD History: See when child records were created, deleted, and undeleted on multiple parent records
 * See Field History of child records on parent records
-* (future enhancements) control visibility based on FLS of current user
-* (future enhancements) create different views based on profiles and/or record types
+* Create different views based on profiles and/or record types
 
 **Import history from external systems**:
 * Flexible Import of data allows you to show your record history even when migrating data from one system into Salesforce
@@ -19,8 +21,8 @@ A History Tracking app for advanced history trackingn out of the box history tra
 * Custom created date and created by field for historical data load to merge data with standard history
 
 **Enhanced control/adjustment of history**:
-* Create and Delete events to import history/rectify data
-* Cannot be used to modify existing standarad history but can supplement it
+* Create, Edit, and Delete events to import history/rectify data
+* Supplement standarad history
 
 **Seemless consolidation of custom field history with standard history tracking**:
 * See custom history tracked records along with standard history tracked records
