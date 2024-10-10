@@ -67,45 +67,31 @@ export default class RelatedListHelper {
     }    
 
     groupRecords(records) {
-        let parseData = JSON.parse(JSON.stringify(records));
-        let mapping = Object.fromEntries(
-            parseData.map( row => [
-                row.objectLabel, undefined
-            ]
-        ));
-        for(let objectLabel in mapping){
-            let recordIds = mapping[objectLabel] == undefined ? {} : mapping[objectLabel];
-            for(let rec of parseData){
-                if(rec.objectLabel == objectLabel){
-                    if(recordIds[rec.recordId] == undefined){
-                        recordIds[rec.recordId] = [];
-                        recordIds[rec.recordId].push(rec);
-                    } else {
-                        recordIds[rec.recordId].push(rec);
+        let results = [];
+        if(records != undefined){
+            let parseData = JSON.parse(JSON.stringify(records));
+            let mapping = Object.fromEntries(
+                parseData.map( row => [
+                    row.objectLabel, undefined
+                ]
+            ));
+            for(let objectLabel in mapping){
+                let recordIds = mapping[objectLabel] == undefined ? {} : mapping[objectLabel];
+                for(let rec of parseData){
+                    if(rec.objectLabel == objectLabel){
+                        if(recordIds[rec.recordId] == undefined){
+                            recordIds[rec.recordId] = [];
+                            recordIds[rec.recordId].push(rec);
+                        } else {
+                            recordIds[rec.recordId].push(rec);
+                        }
                     }
                 }
+                mapping[objectLabel] = recordIds;
             }
-            mapping[objectLabel] = recordIds;
-        }
 
-        let results = [];
-        for(let objectLabel in mapping){
-            let topLevel = {
-                historyId: objectLabel,
-                objectLabel: objectLabel,
-                recordName: null,
-                recordURL: null,
-                event: null,
-                createdDate: null,
-                createdByURL: null,
-                createdByName: null,
-                fieldLabel: null,
-                newValue: null
-            }
-            let midMap = mapping[objectLabel];
-            let midChildren = [];
-            for(let recordId in midMap){
-                midChildren.push({
+            for(let objectLabel in mapping){
+                let topLevel = {
                     historyId: objectLabel,
                     objectLabel: objectLabel,
                     recordName: null,
@@ -115,12 +101,28 @@ export default class RelatedListHelper {
                     createdByURL: null,
                     createdByName: null,
                     fieldLabel: null,
-                    newValue: null,
-                    _children: midMap[recordId]
-                });
+                    newValue: null
+                }
+                let midMap = mapping[objectLabel];
+                let midChildren = [];
+                for(let recordId in midMap){
+                    midChildren.push({
+                        historyId: objectLabel,
+                        objectLabel: objectLabel,
+                        recordName: null,
+                        recordURL: null,
+                        event: null,
+                        createdDate: null,
+                        createdByURL: null,
+                        createdByName: null,
+                        fieldLabel: null,
+                        newValue: null,
+                        _children: midMap[recordId]
+                    });
+                }
+                topLevel._children = midChildren;
+                results.push(topLevel);
             }
-            topLevel._children = midChildren;
-            results.push(topLevel);
         }
         return results;
     }   

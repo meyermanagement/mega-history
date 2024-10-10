@@ -43,12 +43,16 @@ global without sharing class HistoryTrackingService {
         Tracked_Object__mdt tobj = Tracked_Object__mdt.getInstance(objectDescribe.getName().replaceAll('_',''));
         if(Test.isRunningTest() || tobj != null){
             List<Record_History__c> histories = new List<Record_History__c>();
+            Map<String, Map<String, String>> recordIdToParentRefMap = new Map<String, Map<String, String>>();
             if(operationType != 'AFTER_UPDATE'){
                 String operationEvent = operationTypeMap.get(operationType);
                 if(Test.isRunningTest() || (tobj.Parent_Reference_Field__c != null && ((tobj.Track_Create__c && operationEvent == 'Created') || (tobj.Track_Delete__c && operationEvent == 'Deleted') || (tobj.Track_Undelete__c && operationEvent == 'Undeleted')))){
                     List<SObject> recordList = newList != null ? newList : oldMap.values();
                     for(Sobject so : recordList){
+                        System.debug(so);
+                        System.debug(tobj.Parent_Reference_Field__c);
                         if(Test.isRunningTest() || String.isNotBlank(tobj.Parent_Reference_Field__c)){
+                            System.debug(String.valueOf(so.get('Id')));
                             String recordId = String.valueOf(so.get('Id'));
                             String recordName = objectDescribe.getName() == 'Contact' ? String.valueOf(so.get(getRecordNameField(objectDescribe.getName())))+', '+String.valueOf(so.get('FirstName')) : String.valueOf(so.get(getRecordNameField(objectDescribe.getName())));
                             Record_History__c rh = new Record_History__c();
@@ -77,6 +81,7 @@ global without sharing class HistoryTrackingService {
                                     rh.Additional_Field_2__c = String.valueOf(so.get(tobj.Additional_Field_2__c));
                                 }
                             }
+                            System.debug(rh);
                             histories.add(rh);
                         }
                     }
@@ -132,14 +137,36 @@ global without sharing class HistoryTrackingService {
                             histories.add(rh);
                         }
                     }
+                    if(tobj != null && String.isNotBlank(tobj.Parent_Reference_Field__c)) {
+                        List<String> parentRefs = tobj.Parent_Reference_Field__c.split(',');
+                        for(String parentRef : parentRefs) {
+                            System.debug(parentRef);
+                            System.debug(String.valueOf(so.get(parentRef)));
+                            System.debug(String.valueOf(oldMap.get(String.valueOf(so.get('Id'))).get(parentRef)));
+                            if(String.valueOf(so.get(parentRef)) != String.valueOf(oldMap.get(String.valueOf(so.get('Id'))).get(parentRef))){
+                                if(recordIdToParentRefMap.get(String.valueOf(so.get('Id'))) == null) {
+                                    recordIdToParentRefMap.put(String.valueOf(so.get('Id')), new Map<String, String>());
+                                }
+                                recordIdToParentRefMap.get(String.valueOf(so.get('Id'))).put(String.valueOf(oldMap.get(String.valueOf(so.get('Id'))).get(parentRef)), String.valueOf(so.get(parentRef)));
+                            }
+                        }
+                    }
                 }
             }
             if(!histories.isEmpty()) {
                 insert histories;
             }
+            if(!recordIdToParentRefMap.isEmpty()){
+                System.enqueueJob(new ReassingHistoryQueueable(recordIdToParentRefMap));
+            }
         }
     }
 
+    /**
+     * @description dynamically gets the records Name field
+     * @param objectAPIName
+     * @return name field
+     */
     public static String getRecordNameField(String objectAPIName){
         String recordName;
         if(objectTypeToNameMap.keySet().contains(objectAPIName)){
