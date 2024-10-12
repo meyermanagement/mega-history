@@ -54,7 +54,12 @@
                     </lightning-layout-item>
                     <template lwc:if={showRelated}>
                         <lightning-layout-item size="12" class="slds-p-left_large">
-                            <lightning-input type="checkbox" label="Group Related Records" checked={groupRelated} disabled={showTile} onchange={handleGroupRelated} field-level-help="This option is not available in Tile view."></lightning-input>
+                            <template lwc:if={showTile}>
+                                <lightning-input type="checkbox" label="Group Related Records" checked={groupRelated} disabled={showTile} onchange={handleGroupRelated} field-level-help="This option is not available in Tile view."></lightning-input>
+                            </template>
+                            <template lwc:else>
+                                <lightning-input type="checkbox" label="Group Related Records" checked={groupRelated} disabled={showTile} onchange={handleGroupRelated}></lightning-input>
+                            </template>
                         </lightning-layout-item>
                     </template>
                 </lightning-layout>
@@ -207,6 +212,7 @@
                                 data={state.filteredGroupedRecords}
                                 expanded-rows={gridExpandedRows}
                                 key-field="historyId"
+                                onrowaction={handleRowAction}
                                 hide-checkbox-column="true"
                             ></lightning-tree-grid>
                         </template>

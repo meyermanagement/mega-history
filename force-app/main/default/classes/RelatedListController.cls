@@ -267,7 +267,7 @@ public without sharing class RelatedListController {
         List<HistoryWrapper> results = new List<HistoryWrapper>();
         for(HistoryWrapper wrapp : wrappers){
             if(wrapp.event == 'Updated' && wrapp.field != 'Created.'){
-                if(wrapp.field != 'RecordType'){
+                if(wrapp.field != 'RecordType' && wrapp.field != 'RecordTypeId'){
                     Map<String,Schema.SObjectField> mfields = objectDescribeMap.get(wrapp.objectAPIName).fields.getMap();
                     Schema.DescribeFieldResult fieldResult = mfields.get(wrapp.field).getDescribe();
                     if(fieldResult.isAccessible()){
@@ -291,6 +291,13 @@ public without sharing class RelatedListController {
         }
         return results;
     }  
+
+    /**
+     * @description     adjust some of the wrapper fields depending on permissions and type of field
+     * @param wrappers
+     * @param objectDescribe
+     * @return List of History Wrappers
+     */
 
     /**
      * @description     separate the 2 lists based on if they are child record history or not
@@ -364,6 +371,8 @@ public without sharing class RelatedListController {
                     wrapper.field = 'AccountId';
                 } else if(String.valueOf(record.get('Field')) == 'Contact') {
                     wrapper.field = 'ContactId';
+                } else if(String.valueOf(record.get('Field')) == 'RecordType') {
+                    wrapper.field = 'RecordTypeId';
                 } else {
                     wrapper.field = String.valueOf(record.get('Field'));
                 }
@@ -527,7 +536,21 @@ public without sharing class RelatedListController {
             List<Record_History__c> histList = [SELECT Id, Name, Additional_Field_1__c, Additional_Field_2__c, CreatedById, Created_By_DL__c, Created_By_DL__r.Name, Created_By_Formula__c, Created_Date_DL__c,Created_Date_Formula__c, Event__c, Field__c, New_Value__c, New_Value_Extended__c, Old_Value__c, Old_Value_Extended__c,ParentId__c, Record__c, Record_Name__c FROM Record_History__c WHERE Id = :historyId];
             Record_History__c histRec;
             if(!histList.isEmpty()){
+                Boolean canViewEncryptedText = ![SELECT Id FROM PermissionSetAssignment WHERE PermissionSet.PermissionsViewEncryptedData = true].isEmpty();
                 histRec = histList[0];
+                if(histRec.Event__c == 'Updated' && histRec.Field__c != 'Created.' && histRec.Field__c != 'RecordType' && histRec.Field__c != 'RecordTypeId'){
+                    Schema.sObjectType objectType = Id.valueOf(histRec.Record__c).getSObjectType();
+                    Schema.DescribeSObjectResult objectDescribe = objectType.getDescribe();
+                    Map<String,Schema.SObjectField> mfields = objectDescribe.fields.getMap();
+                    Schema.DescribeFieldResult fieldResult = mfields.get(histRec.Field__c).getDescribe();
+                    if(fieldResult.getType() == Schema.DisplayType.ENCRYPTEDSTRING && !canViewEncryptedText){
+                        String mask ='*';
+                        histRec.Old_Value__c = histRec.Old_Value__c == null ? null : mask.repeat(histRec.Old_Value__c.length());
+                        histRec.Old_Value_Extended__c = histRec.Old_Value_Extended__c == null ? null : mask.repeat(histRec.Old_Value_Extended__c.length());
+                        histRec.New_Value__c = histRec.New_Value__c == null ? null : mask.repeat(histRec.New_Value__c.length());
+                        histRec.New_Value_Extended__c = histRec.New_Value_Extended__c == null ? null : mask.repeat(histRec.New_Value_Extended__c.length());
+                    }
+                }
             } else {
                 histRec = new Record_History__c();
                 if(isRelated){

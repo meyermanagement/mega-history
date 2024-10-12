@@ -107,7 +107,7 @@ export default class RelatedListHelper {
                 let midChildren = [];
                 for(let recordId in midMap){
                     midChildren.push({
-                        historyId: objectLabel,
+                        historyId: objectLabel+recordId,
                         objectLabel: objectLabel,
                         recordName: null,
                         recordURL: null,

@@ -112,7 +112,7 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
         if(this.state.disabledRecords != undefined && this.state.disabledRecords.length > 0){
             let objectsNotAllowed = [];
             for(let rec of this.state.disabledRecords){
-                if(rec.parentId == 'NOTALLOWED') objectsNotAllowed.push(rec.objectLabel+'('+rec.objectAPIName+')');
+                if(rec.parentId == 'NOTALLOWED' && !objectsNotAllowed.includes(rec.objectLabel+'('+rec.objectAPIName+')')) objectsNotAllowed.push(rec.objectLabel+'('+rec.objectAPIName+')');
             }
             if(objectsNotAllowed.length > 0) {
                 notAllowedMessage = 'NOTE: The following objects do not support displaying standard history combined with custom history: ';
@@ -143,6 +143,7 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
                     uniqueList.push(rec.objectAPIName);
                     labelList.push(rec.objectLabel);
                 }
+                labelList.push(rec.objectLabel+rec.recordId);
             }
         }
         this.gridExpandedRows = labelList;
@@ -542,6 +543,7 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
     handleCloseModal(){
         this.showNewEditPopUp = false;
         this.showViewPopUp = false;
+        this.historyRec = undefined;
     }
 
     getFields(recordId) {
