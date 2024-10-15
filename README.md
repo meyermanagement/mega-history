@@ -6,7 +6,7 @@ A History Tracking app for advanced history trackingn out of the box history tra
 
 **Enhanced history tracking on objects.**:
 * Track as many fields as desired, beyond Salesforce limits
-* Track objects that you can't normally track
+* Track objects that you can't normally track, ie. AccountTeamMember, CampaignMember, OpportunityContactRole, etc...
 * Prioritize & highlight certain fields
 * See complete start to end timeline of child records
 

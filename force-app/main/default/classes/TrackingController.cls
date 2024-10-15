@@ -7,7 +7,7 @@ public with sharing class TrackingController {
 
     public class TrackingException extends Exception {}
 
-    static Set<String> systemRelationships = new Set<String>{'RecordTypeId', 'CreatedById','LastModifiedById','OwnerId'};
+    static Set<String> systemRelationships = new Set<String>{'CampaignMemberRecordTypeId','RecordTypeId', 'CreatedById','LastModifiedById','OwnerId'};
     
     /**
      * @description     get all tracking records

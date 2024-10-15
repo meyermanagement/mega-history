@@ -65,17 +65,21 @@ global without sharing class HistoryTrackingService {
                                 if(String.isBlank(concatParents)) break;
                                 concatParents = concatParents.removeEnd(',');
                                 rh.ParentId__c = concatParents;
-                                Schema.DescribeFieldResult fieldResult = mfields.get(tobj.Additional_Field_1__c).getDescribe();
-                                if(fieldResult.getType().toString() == 'DATE'){
-                                    rh.Additional_Field_1__c = String.valueOf(Date.valueOf(so.get(tobj.Additional_Field_1__c)));
-                                } else {
-                                    rh.Additional_Field_1__c = String.valueOf(so.get(tobj.Additional_Field_1__c));
+                                if(String.isNotBlank(tobj.Additional_Field_1__c)){
+                                    Schema.DescribeFieldResult fieldResult = mfields.get(tobj.Additional_Field_1__c).getDescribe();
+                                    if(fieldResult.getType().toString() == 'DATE'){
+                                        rh.Additional_Field_1__c = String.valueOf(Date.valueOf(so.get(tobj.Additional_Field_1__c)));
+                                    } else {
+                                        rh.Additional_Field_1__c = String.valueOf(so.get(tobj.Additional_Field_1__c));
+                                    }
                                 }
-                                fieldResult = mfields.get(tobj.Additional_Field_2__c).getDescribe();
-                                if(fieldResult.getType().toString() == 'DATE'){
-                                    rh.Additional_Field_2__c = String.valueOf(Date.valueOf(so.get(tobj.Additional_Field_2__c)));
-                                } else {
-                                    rh.Additional_Field_2__c = String.valueOf(so.get(tobj.Additional_Field_2__c));
+                                if(String.isNotBlank(tobj.Additional_Field_2__c)){
+                                    Schema.DescribeFieldResult fieldResult = mfields.get(tobj.Additional_Field_2__c).getDescribe();
+                                    if(fieldResult.getType().toString() == 'DATE'){
+                                        rh.Additional_Field_2__c = String.valueOf(Date.valueOf(so.get(tobj.Additional_Field_2__c)));
+                                    } else {
+                                        rh.Additional_Field_2__c = String.valueOf(so.get(tobj.Additional_Field_2__c));
+                                    }
                                 }
                             }
                             histories.add(rh);

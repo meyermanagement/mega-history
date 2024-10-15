@@ -117,7 +117,7 @@
                         <lightning-layout multiple-rows="true">
                             <template for:each={state.records} for:item="rec">
                                 <lightning-layout-item size="12" key={rec.historyId}>
-                                    <c-record-tile onselect={handleRowAction} record={rec} related-record={isNotRelated}></c-record-tile>
+                                    <c-record-tile onselect={handleRowAction} record={rec} related-record={isNotRelated} is-super-user={isSuperUser}></c-record-tile>
                                 </lightning-layout-item>
                             </template>
                         </lightning-layout>
@@ -201,7 +201,7 @@
                             <lightning-layout multiple-rows="true">
                                 <template for:each={state.filteredChildRecords} for:item="rec">
                                     <lightning-layout-item size="12" key={rec.historyId}>
-                                        <c-record-tile onselect={handleRowAction} record={rec} related-record={isRelated}></c-record-tile>
+                                        <c-record-tile onselect={handleRowAction} record={rec} related-record={isRelated} is-super-user={isSuperUser}></c-record-tile>
                                     </lightning-layout-item>
                                 </template>
                             </lightning-layout>

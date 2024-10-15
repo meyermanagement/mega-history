@@ -10,9 +10,16 @@
                         </h3>
                         <template lwc:if={record.isCustom}>
                             <div class="slds-shrink-none">
-                                <lightning-button-menu alternative-text="Show menu" onselect={handleOnselect}>
-                                    <lightning-menu-item value="edit" label="Edit"></lightning-menu-item>
-                                    <lightning-menu-item value="delete" label="Delete"></lightning-menu-item>
+                                <lightning-button-menu alternative-text="Show menu" onselect={handleOnSelect}>
+                                    <template lwc:if={relatedRecord}>
+                                        <lightning-menu-item value="view" label="View Details"></lightning-menu-item>
+                                    </template>
+                                    <template lwc:if={superUser}>
+                                        <template lwc:if={isNotRelatedUpdate}>
+                                            <lightning-menu-item value="edit" label="Edit"></lightning-menu-item>
+                                        </template>
+                                        <lightning-menu-item value="delete" label="Delete"></lightning-menu-item>
+                                    </template>
                                 </lightning-button-menu>
                             </div>
                         </template>
