@@ -166,7 +166,7 @@ export default class Tracking extends LightningElement {
     }
 
     get hasMetadata(){
-        return this.trackingData.length > 0;
+        return this.trackingData != undefined && this.trackingData.length > 0;
     }
 
     connectedCallback(){
@@ -275,7 +275,6 @@ export default class Tracking extends LightningElement {
             const selected = [];
             const required = [];
             const parentItems = [];
-            const parentSelected = data.parentRef.split(',');
             for(var f of data.fieldList){
                 items.push({
                     label: f.fieldLabel+'('+f.fieldAPIName+')',
@@ -298,7 +297,10 @@ export default class Tracking extends LightningElement {
             this.values.push(...selected);
             this.requiredOptions.push(...required);
             this.parentOptions.push(...parentItems);
-            this.parentValues.push(...parentSelected);
+            if(data.parentRef != undefined){
+                const parentSelected = data.parentRef.split(',');
+                this.parentValues.push(...parentSelected);
+            }
             this.modalLoading = false;
         })
         .catch(error => {

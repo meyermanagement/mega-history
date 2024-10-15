@@ -8,7 +8,7 @@
                             <lightning-formatted-date-time value={record.createdDate} year="numeric" month="numeric" day="numeric" hour="2-digit"
                                 minute="2-digit" time-zone-name="short"></lightning-formatted-date-time>
                         </h3>
-                        <template lwc:if={record.isCustom}>
+                        <template lwc:if={showMenu}>
                             <div class="slds-shrink-none">
                                 <lightning-button-menu alternative-text="Show menu" onselect={handleOnSelect}>
                                     <template lwc:if={relatedRecord}>

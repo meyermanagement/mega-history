@@ -6,6 +6,10 @@ export default class RecordTile extends LightningElement {
     @api relatedRecord
     @api isSuperUser
 
+    get showMenu(){
+        return this.record.isCustom && (this.relatedRecord || this.superUser)
+    }
+
     get isNotRelatedUpdate(){
         return !this.relatedRecord || (this.relatedRecord && this.record.event != 'Updated');
     }

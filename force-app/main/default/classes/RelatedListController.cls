@@ -165,7 +165,7 @@ public without sharing class RelatedListController {
             Schema.DescribeSObjectResult childObjectDescribe = child.getChildSObject().getDescribe();
             String childApiName = childObjectDescribe.getName();
             String childReferenceField = String.valueOf(child.getField());
-            if(tobjMap.get(childApiName) != null && tobjMap.get(childApiName).Parent_Reference_Field__c.contains(childReferenceField)){
+            if(tobjMap.get(childApiName) != null && tobjMap.get(childApiName).Parent_Reference_Field__c != null && tobjMap.get(childApiName).Parent_Reference_Field__c.contains(childReferenceField)){
                 if(!activityHistoryObjects.contains(childApiName)){
                     String childQuery = createQuery(null, childObjectDescribe, tobjMap.get(childApiName), recordId, childReferenceField);
                     try{
@@ -439,7 +439,7 @@ public without sharing class RelatedListController {
             query += recordNameField+',';
         }
         List<String> parentRefs = new List<String>();
-        if(tobj != null){
+        if(tobj != null && tobj.Parent_Reference_Field__c != null){
             parentRefs = tobj.Parent_Reference_Field__c.split(',');
             for(String parentRef : parentRefs){
                 query+= parentRef+',';
@@ -519,6 +519,9 @@ public without sharing class RelatedListController {
         }
         if(iconName == null){
             iconName = 'standard:entity';
+        }
+        if(iconName == ('standard:product2')){
+            iconName = 'standard:product';
         }
         return iconName;
     } 

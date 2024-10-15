@@ -55,7 +55,7 @@ global without sharing class HistoryTrackingService {
                             Record_History__c rh = new Record_History__c();
                             rh.Event__c = operationEvent;
                             rh.Record__c = recordId;
-                            rh.Record_Name__c = recordName.left(255);
+                            rh.Record_Name__c = recordName == null ? recordId : recordName.left(255);
                             if(!Test.isRunningTest()){
                                 String concatParents = '';
                                 List<String> parentRefs = tobj.Parent_Reference_Field__c.split(',');
@@ -116,7 +116,7 @@ global without sharing class HistoryTrackingService {
                             String recordName = objectDescribe.getName() == 'Contact' ? String.valueOf(so.get(getRecordNameField(objectDescribe.getName())))+', '+String.valueOf(so.get('FirstName')) : String.valueOf(so.get(getRecordNameField(objectDescribe.getName())));
                             Record_History__c rh = new Record_History__c();
                             rh.Record__c = recordId;
-                            rh.Record_Name__c = recordName.left(255);
+                            rh.Record_Name__c = recordName == null ? recordId : recordName.left(255);
                             rh.Event__c = 'Updated';
                             rh.Field__c = fieldResult.getName();
                             rh.New_Value__c = newValue != null ? newValue.left(255) : null;
@@ -171,7 +171,7 @@ global without sharing class HistoryTrackingService {
         } else {
             Schema.DescribeSobjectResult res = Schema.describeSObjects(new List<String>{objectAPIName})[0];
             Map<String,Schema.SObjectField> mfields = res.fields.getMap();
-            if(mfields.get('Name') != null){
+            if(mfields.containsKey('Name')){
                 recordName = 'Name';
             } else {
                 recordName = 'Id';

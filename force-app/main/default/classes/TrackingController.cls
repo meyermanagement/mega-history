@@ -204,7 +204,7 @@ public with sharing class TrackingController {
      * @param wrapperString
      * @return TrackingWrapper
      */
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static TrackingWrapper getObjectDetails(String wrapperString){
         try {
             TrackingWrapper wrapper = (TrackingWrapper)JSON.deserialize(wrapperString, TrackingWrapper.class);
@@ -230,9 +230,9 @@ public with sharing class TrackingController {
                         tfd.standardTracked = standardTrackedFields.contains(tfd.fieldAPIName);
                         resultDefinitions.put(tfd.fieldAPIName, tfd);
                     }
-                    if(fieldResult.getRelationshipName() != null){
-                        wrapper.parentRefMap.put(fieldResult.getName(), fieldResult.getLabel());
-                    }
+                }
+                if(fieldResult.getRelationshipName() != null && !systemRelationships.contains(fieldResult.getName())){
+                    wrapper.parentRefMap.put(fieldResult.getName(), fieldResult.getLabel());
                 }
             }
             List<String> orderedList = new List<String>(resultDefinitions.keySet());
