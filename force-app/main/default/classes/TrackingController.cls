@@ -112,23 +112,27 @@ public with sharing class TrackingController {
         {
             Schema.DescribeSObjectResult ds = d.getDescribe();
             if(!objectNameMap.keySet().contains(ds.getName())){
-                String sobjStruct = JSON.serialize(ds);
-                DescribeSobjectResultJSON sobjProps = (DescribeSobjectResultJSON)JSON.deserialize(sobjStruct, DescribeSobjectResultJSON.class);
-                if(sobjProps.triggerable){
-                    Boolean updateableFields = false;
-                    Map<String,Schema.SObjectField> mfields = ds.fields.getMap();
-                    for(Schema.SObjectField soField : mfields.values()){
-                        Schema.DescribeFieldResult fieldResult = soField.getDescribe();
-                        if(fieldResult.isUpdateable() && !fieldResult.isDeprecatedAndHidden()){
-                            updateableFields = true;
+                try{
+                    String sobjStruct = JSON.serialize(ds);
+                    DescribeSobjectResultJSON sobjProps = (DescribeSobjectResultJSON)JSON.deserialize(sobjStruct, DescribeSobjectResultJSON.class);
+                    if(sobjProps.triggerable){
+                        Boolean updateableFields = false;
+                        Map<String,Schema.SObjectField> mfields = ds.fields.getMap();
+                        for(Schema.SObjectField soField : mfields.values()){
+                            Schema.DescribeFieldResult fieldResult = soField.getDescribe();
+                            if(fieldResult.isUpdateable() && !fieldResult.isDeprecatedAndHidden()){
+                                updateableFields = true;
+                            }
+                        }
+                        if(updateableFields){
+                            TrackingWrapper wrapper = new TrackingWrapper();
+                            wrapper.objectName = ds.getName();
+                            wrapper.objectLabel = ds.getLabel();
+                            wrapperMap.put(ds.getName(), wrapper);
                         }
                     }
-                    if(updateableFields){
-                        TrackingWrapper wrapper = new TrackingWrapper();
-                        wrapper.objectName = ds.getName();
-                        wrapper.objectLabel = ds.getLabel();
-                        wrapperMap.put(ds.getName(), wrapper);
-                    }
+                } catch(Exception e){
+                    System.debug(e.getMessage());
                 }
             }
         }
@@ -616,7 +620,11 @@ public with sharing class TrackingController {
             }
             return deployResult.done;
         } catch (Exception e) {
-            throw new AuraHandledException(e.getMessage());
+            if(!e.getMessage().contains('Apex type not found')) {
+                throw new AuraHandledException(e.getMessage());
+            } else {
+                return true;
+            }
         }
     }
 

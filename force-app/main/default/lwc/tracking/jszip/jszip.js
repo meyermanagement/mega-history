@@ -23,7 +23,7 @@ Usage:
  * @param {String=} data the data to load, if any (optional).
  * @param {Object=} options the options for creating this objects (optional).
  */
-var JSZip = function(data, options) {
+export function JSZip(data, options) {
    // object containing the files :
    // {
    //   "folder/" : {...},

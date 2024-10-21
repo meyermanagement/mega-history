@@ -1,9 +1,9 @@
 import { LightningElement, wire, track } from 'lwc';
 import { refreshApex } from "@salesforce/apex";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
-import { loadStyle, loadScript } from 'lightning/platformResourceLoader';
+import { loadStyle } from 'lightning/platformResourceLoader';
 import iconColor from '@salesforce/resourceUrl/iconColor';
-import jszip from '@salesforce/resourceUrl/jszip';
+import {JSZip} from './jszip/jszip';
 import getTrackingRecords from '@salesforce/apex/TrackingController.getRecords';
 import getObjectDetails from '@salesforce/apex/TrackingController.getObjectDetails';
 import getObjectSelectedDetails from '@salesforce/apex/TrackingController.getObjectSelectedDetails';
@@ -172,10 +172,6 @@ export default class Tracking extends LightningElement {
     connectedCallback(){
         if(this.trackingData == undefined) this.loading = true;
         loadStyle(this, iconColor);
-        loadScript(this, jszip + '/jszip.js');
-        loadScript(this, jszip + '/jszip-load.js');
-        loadScript(this, jszip + '/jszip-deflate.js');
-        loadScript(this, jszip + '/jszip-inflate.js');
     }
 
     @wire(getTrackingRecords)

@@ -54,13 +54,22 @@ export default class RelatedListHelper {
         let keyValue = (a) => {
             return a[fieldname];
         };
+        let secondaryKey = 'event'
+        let secondaryKeyValue = (a) => {
+            return a[secondaryKey];
+        };
         // cheking reverse direction
         let isReverse = direction === 'asc' ? 1: -1;
         // sorting data
         parseData.sort((x, y) => {
+            let z = secondaryKeyValue(x) ? secondaryKeyValue(x) : '';
             x = keyValue(x) ? keyValue(x) : ''; // handling null values
             y = keyValue(y) ? keyValue(y) : '';
             // sorting values based on direction
+            if(x == y) {
+                if(z == 'Created') return 1;
+                return -1;
+            }
             return isReverse * ((x > y) - (y > x));
         });
         return parseData;

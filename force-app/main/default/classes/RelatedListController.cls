@@ -308,13 +308,20 @@ public without sharing class RelatedListController {
         Set<String> duplicateCreateRecords = new Set<String>();
         Map<String, List<HistoryWrapper>> historyMap = new Map<String, List<HistoryWrapper>>{'Child'=>new List<HistoryWrapper>(), 'Adult'=>new List<HistoryWrapper>()};
         for(HistoryWrapper wrapp : wrappers){
-            if(wrapp.recordId == recordId && wrapp.event == 'Updated'){
-                historyMap.get('Adult').add(wrapp);
+            if(wrapp.recordId == recordId){
+                if(wrapp.event == 'Created'){
+                    if(!duplicateCreateRecords.contains(wrapp.recordId)){
+                        historyMap.get('Adult').add(wrapp);
+                        duplicateCreateRecords.add(wrapp.recordId);
+                    }
+                } else {
+                    historyMap.get('Adult').add(wrapp);
+                }
             } else if(wrapp.recordId != recordId) {
                 if(wrapp.event == 'Created'){
-                    if(!duplicateCreateRecords.contains(wrapp.recordName)){
+                    if(!duplicateCreateRecords.contains(wrapp.recordId)){
                         historyMap.get('Child').add(wrapp);
-                        duplicateCreateRecords.add(wrapp.recordName);
+                        duplicateCreateRecords.add(wrapp.recordId);
                     }
                 } else {
                     historyMap.get('Child').add(wrapp);
@@ -373,6 +380,8 @@ public without sharing class RelatedListController {
                     wrapper.field = 'ContactId';
                 } else if(String.valueOf(record.get('Field')) == 'RecordType') {
                     wrapper.field = 'RecordTypeId';
+                } else if(String.valueOf(record.get('Field')) == 'TextName') {
+                    wrapper.field = 'Name';
                 } else {
                     wrapper.field = String.valueOf(record.get('Field'));
                 }
