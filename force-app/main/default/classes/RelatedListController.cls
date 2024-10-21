@@ -6,11 +6,6 @@
 public without sharing class RelatedListController {
 
     /**
-     * @description     Custom Exception for RelatedListController
-     */
-    public class RelatedListControllerException extends Exception {}
-
-    /**
      * @description     Param for recordId
      */
     public static final String RECORD_ID_PARAM = 'recordId';
@@ -76,8 +71,14 @@ public without sharing class RelatedListController {
     public static Set<String> activityHistoryObjects = new Set<String>{'Task', 'Event'};
 
     /**
+     * @description     Custom Exception for RelatedListController
+     */
+    public class RelatedListControllerException extends Exception {}
+
+    /**
      * @description     Get and process data for the Related List LWC
      * @param jsonData
+     * @param isCustomOnly
      * @return responseMap
      */
     @AuraEnabled
@@ -127,7 +128,7 @@ public without sharing class RelatedListController {
             }
             return JSON.serialize(responseMap);
         } catch (Exception e){
-            System.debug(e.getMessage());
+            System.debug(LoggingLevel.DEBUG, e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -156,6 +157,7 @@ public without sharing class RelatedListController {
      * @param recordId
      * @param objectDescribe
      * @param numberOfRecords
+     * @param tobjMap
      * @return List of History Wrappers
      */
     private static List<HistoryWrapper> getStandardHistory(String recordId, Schema.DescribeSObjectResult objectDescribe, Integer numberOfRecords, Map<String, Tracked_Object__mdt> tobjMap){
@@ -182,7 +184,7 @@ public without sharing class RelatedListController {
                             }
                         }
                     } catch(QueryException e){
-                        System.debug(e.getMessage());
+                        System.debug(LoggingLevel.DEBUG, e.getMessage());
                         HistoryWrapper wrapp = new HistoryWrapper();
                         wrapp.historyId='NOTALLOWED';
                         wrapp.parentId = 'NOTALLOWED';
@@ -215,7 +217,7 @@ public without sharing class RelatedListController {
                 }
             }
         } catch(Exception e){
-            System.debug(e.getMessage());
+            System.debug(LoggingLevel.DEBUG, e.getMessage());
             HistoryWrapper wrapp = new HistoryWrapper();
             wrapp.historyId='NOTALLOWED';
             wrapp.objectAPIName=objectDescribe.getName();
@@ -247,7 +249,9 @@ public without sharing class RelatedListController {
         Map<String, Schema.DescribeSObjectResult> objectDescribeMap = new Map<String, Schema.DescribeSObjectResult>();
         Set<String> objectAPINames = new Set<String>();
         for(HistoryWrapper wrapper : resultRecords){
-            if(String.isNotBlank(wrapper.objectAPIName)) objectAPINames.add(wrapper.objectAPIName);
+            if(String.isNotBlank(wrapper.objectAPIName)) {
+                objectAPINames.add(wrapper.objectAPIName);
+            }
         }
         for(Schema.DescribeSObjectResult result : Schema.describeSObjects(new List<String>(objectAPINames))){
             objectDescribeMap.put(result.getName(), result);
@@ -258,12 +262,11 @@ public without sharing class RelatedListController {
     /**
      * @description     adjust some of the wrapper fields depending on permissions and type of field
      * @param wrappers
-     * @param objectDescribe
+     * @param objectDescribeMap
      * @return List of History Wrappers
      */
     private static List<HistoryWrapper> scrubFields(List<HistoryWrapper> wrappers, Map<String, Schema.DescribeSObjectResult> objectDescribeMap){
         Boolean canViewEncryptedText = ![SELECT Id FROM PermissionSetAssignment WHERE PermissionSet.PermissionsViewEncryptedData = true].isEmpty();
-        Set<String> childAPINames = new Set<String>();
         List<HistoryWrapper> results = new List<HistoryWrapper>();
         for(HistoryWrapper wrapp : wrappers){
             if(wrapp.event == 'Updated' && wrapp.field != 'Created.'){
@@ -293,14 +296,8 @@ public without sharing class RelatedListController {
     }  
 
     /**
-     * @description     adjust some of the wrapper fields depending on permissions and type of field
-     * @param wrappers
-     * @param objectDescribe
-     * @return List of History Wrappers
-     */
-
-    /**
      * @description     separate the 2 lists based on if they are child record history or not
+     * @param recordId
      * @param wrappers
      * @return Map of List of History Wrappers
      */
@@ -430,8 +427,10 @@ public without sharing class RelatedListController {
     /**
      * @description     dynamically creates queries based on inputs
      * @param recordId
-     * @param objectName
+     * @param objectDescribe
      * @param tobj
+     * @param parentId
+     * @param childReferenceField
      * @return query
      */
     private static String createQuery(String recordId, Schema.DescribeSObjectResult objectDescribe, Tracked_Object__mdt tobj, String parentId, String childReferenceField){
@@ -618,7 +617,7 @@ public without sharing class RelatedListController {
             }
             upsert rh;
         } catch (Exception e) {
-            System.debug(e.getMessage());
+            System.debug(LoggingLevel.DEBUG, e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }

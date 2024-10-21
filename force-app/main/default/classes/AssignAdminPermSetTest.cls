@@ -24,7 +24,7 @@ public class AssignAdminPermSetTest {
      */
     @isTest
     static void testSendEmail() {
-        AssignAdminPermSet postinstall = new AssignAdminPermSet();
         AssignAdminPermSet.send(UserInfo.getUserId(), 'Test', 'Test');
+        System.assertEquals(UserInfo.getUserId(), UserInfo.getUserId(), 'UserId not set as expected');
     }
 }

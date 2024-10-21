@@ -14,7 +14,8 @@ public class SetupControllerTest {
         SetupController.checkPermissionAssignment();
         SetupController.checkRecordTracking();
         SetupController.checkViews();
-        SetupController.getSessionIdFromVFPage();
+        String sessionId = SetupController.getSessionIdFromVFPage();
         SetupController.getOrgURL();
+        System.assertEquals(null, sessionId, 'sessionId not set as expected');
     }
 }

@@ -66,7 +66,6 @@ global class AssignAdminPermSet implements InstallHandler {
      * @param recipients
      * @param subject
      * @param htmlBody
-     * @param attachments
      */
     public static void sendEmail(List<String> recipients, String subject, String htmlBody) {
         Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
@@ -81,7 +80,7 @@ global class AssignAdminPermSet implements InstallHandler {
             Messaging.sendEmail(new Messaging.SingleEmailMessage[]{mail});
         } catch (EmailException e) {
             //emailInvocationFailures++;
-            System.debug(e.getMessage());
+            System.debug(LoggingLevel.DEBUG, e.getMessage());
         }
     }
 }

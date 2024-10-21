@@ -12,7 +12,7 @@ public class ReassignHistoryQueueable implements Queueable {
 
     /**
      * @description constructor of queueable class
-     * @param recordIdToParentRefMap
+     * @param inputMap
      */
     public ReassignHistoryQueueable(Map<String, Map<String, String>> inputMap){
         recordIdToParentRefMap = inputMap;
@@ -25,7 +25,9 @@ public class ReassignHistoryQueueable implements Queueable {
     public void execute(QueueableContext context) {
         Boolean reachedLimit = false;
         for(String recordId : recordIdToParentRefMap.keySet()){
-            if(reachedLimit) break;
+            if(reachedLimit) {
+                break;
+            }
             Map<String, String> oldToNewValuesMap = recordIdToParentRefMap.get(recordId);
             for(String oldId : oldToNewValuesMap.keySet()){
                 String queryRef = '%'+oldId+'%';

@@ -5,9 +5,15 @@
  */
 public with sharing class TrackingController {
 
-    public class TrackingException extends Exception {}
-
+    /**
+     * @description  System relationship fields not to include in list of parent reference fields
+     */
     static Set<String> systemRelationships = new Set<String>{'CampaignMemberRecordTypeId','RecordTypeId', 'CreatedById','LastModifiedById','OwnerId'};
+
+    /**
+     * @description  Custom Exception for this class
+     */
+    public class TrackingException extends Exception {}
     
     /**
      * @description     get all tracking records
@@ -22,7 +28,7 @@ public with sharing class TrackingController {
             for(Tracked_Object__mdt to : trackedObjects){
                 objectNameMap.put(to.MasterLabel, new List<Tracked_Field__mdt>());
             }
-            for(Tracked_Field__mdt tf : [SELECT Tracked_Object__r.MasterLabel, Tracked_Object__r.DeveloperName, DeveloperName, Field_API_Name__c FROM Tracked_Field__mdt ORDER BY Field_API_Name__c]){
+            for(Tracked_Field__mdt tf : [SELECT Tracked_Object__r.MasterLabel, Tracked_Object__r.DeveloperName, DeveloperName, Field_API_Name__c FROM Tracked_Field__mdt WHERE Tracked_Object__r.MasterLabel IN :objectNameMap.keySet() ORDER BY Field_API_Name__c]){
                 objectNameMap.get(tf.Tracked_Object__r.MasterLabel).add(tf);
             }
             Map<String, Schema.DescribeSobjectResult> describeMap = new Map<String, Schema.DescribeSObjectResult>();
@@ -87,7 +93,7 @@ public with sharing class TrackingController {
             }
             return wrapperMap.values();
         } catch (Exception e) {
-            System.debug(e.getMessage());
+            System.debug(LoggingLevel.DEBUG, e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -104,9 +110,6 @@ public with sharing class TrackingController {
         for(Tracked_Object__mdt to : trackedObjects){
             objectNameMap.put(to.DeveloperName, new List<Tracked_Field__mdt>());
         }
-        // for(Tracked_Field__mdt tf : [SELECT Tracked_Object__r.DeveloperName, DeveloperName, Field_API_Name__c FROM Tracked_Field__mdt ORDER BY Field_API_Name__c]){
-        //     objectNameMap.get(tf.Tracked_Object__r.DeveloperName).add(tf);
-        // }
         Map<String, Schema.SObjectType> gd = Schema.getGlobalDescribe(); 
         for(Schema.SObjectType d : gd.values())
         {
@@ -132,7 +135,7 @@ public with sharing class TrackingController {
                         }
                     }
                 } catch(Exception e){
-                    System.debug(e.getMessage());
+                    System.debug(LoggingLevel.DEBUG, e.getMessage());
                 }
             }
         }
@@ -149,7 +152,13 @@ public with sharing class TrackingController {
      * @description     wrapper class for finding triggerable objects
      */
     public class DescribeSobjectResultJSON { 
+        /**
+         * @description object name
+         */
         public String name {get;set;}
+        /**
+         * @description is triggerable
+         */
         public Boolean triggerable {get;set;}
     }
 
@@ -435,7 +444,6 @@ public with sharing class TrackingController {
     @AuraEnabled
     public static String handleCustomMetadata(String wrappers){
         try {
-            Map<String, String> metaDataMap = new Map<String, String>();
             List<MetadataWrapper> wrapperList = (List<MetadataWrapper>)JSON.deserialize(wrappers, List<MetadataWrapper>.class);
             List<MetadataWrapper> metadataToDelete = new List<MetadataWrapper>();
             List<MetadataWrapper> metadataFieldsToDeploy = new List<MetadataWrapper>();
@@ -595,16 +603,17 @@ public with sharing class TrackingController {
                 }
                 MetadataService.RunTestsResult runTestResult = deployResult.details.runTestResult;
                 if (runTestResult.numFailures > 0){
-                    for (MetadataService.RunTestFailure testFailure : runTestResult.failures)
-                    throw new TrackingException(
-                        testFailure.name +
-                        '.' +
-                        testFailure.methodName +
-                        ' ' +
-                        testFailure.message +
-                        ' ' +
-                        testFailure.stackTrace
-                    );
+                    for (MetadataService.RunTestFailure testFailure : runTestResult.failures){
+                        throw new TrackingException(
+                            testFailure.name +
+                            '.' +
+                            testFailure.methodName +
+                            ' ' +
+                            testFailure.message +
+                            ' ' +
+                            testFailure.stackTrace
+                        );
+                    }
                 }
                 if (runTestResult.codeCoverageWarnings != null){
                     for (MetadataService.CodeCoverageWarning codeCoverageWarning : runTestResult.codeCoverageWarnings){

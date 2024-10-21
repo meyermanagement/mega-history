@@ -295,7 +295,7 @@ JSZip.prototype = (function ()
        *  options.base64 : is the stream in base64 ? default : false
        * @return {JSZip} the current JSZip object
        */
-      load : function (stream, options)
+      load : function ()
       {
          throw new Error("Load method is not defined. Is the file jszip-load.js included ?");
       },
@@ -454,7 +454,7 @@ JSZip.prototype = (function ()
 
          for (var name in this.files)
          {
-            if( !this.files.hasOwnProperty(name) ) { continue; }
+            if( !Object.prototype.hasOwnProperty.call(this.files, name) ) { continue; }
 
             var file = this.files[name];
 
@@ -595,7 +595,7 @@ JSZip.prototype = (function ()
       utf8decode : function (utftext) {
          var string = "";
          var i = 0;
-         var c = 0, c1 = 0, c2 = 0, c3 = 0;
+         var c = 0, c2 = 0, c3 = 0;
 
          while ( i < utftext.length ) {
 
@@ -663,7 +663,7 @@ var JSZipBase64 = (function() {
 
    return {
       // public method for encoding
-      encode : function(input, utf8) {
+      encode : function(input) {
          var output = "";
          var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
          var i = 0;
@@ -695,13 +695,13 @@ var JSZipBase64 = (function() {
       },
 
       // public method for decoding
-      decode : function(input, utf8) {
+      decode : function(input) {
          var output = "";
          var chr1, chr2, chr3;
          var enc1, enc2, enc3, enc4;
          var i = 0;
 
-         input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+         input = input.replace(/[^A-Za-z0-9]/g, "");
 
          while (i < input.length) {
 

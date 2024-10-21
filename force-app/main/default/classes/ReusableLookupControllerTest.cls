@@ -42,5 +42,6 @@ public class ReusableLookupControllerTest {
         wrapper.searchString = 't';
         results = ReusableLookupController.fetchRecords(JSON.serialize(wrapper));
         results = ReusableLookupController.fetchRecords(null);
+        System.assertEquals(0, results.size(), 'Results size not set as expected');
     }
 }

@@ -29,34 +29,35 @@ public class MetadataServiceTest
 			String endpoint, String soapAction, String requestName,
 			String responseNS, String responseName, String responseType) 
 		{
-			if(request instanceof MetadataService.retrieve_element)
+			if(request instanceof MetadataService.retrieve_element) {
 				response.put('response_x', new MetadataService.retrieveResponse_element());
-			else if(request instanceof MetadataService.checkDeployStatus_element)
+            } else if(request instanceof MetadataService.checkDeployStatus_element) {
 				response.put('response_x', new MetadataService.checkDeployStatusResponse_element());
-			else if(request instanceof MetadataService.listMetadata_element)
+			} else if(request instanceof MetadataService.listMetadata_element) {
 				response.put('response_x', new MetadataService.listMetadataResponse_element());
-			else if(request instanceof MetadataService.checkRetrieveStatus_element)
+			} else if(request instanceof MetadataService.checkRetrieveStatus_element) {
 				response.put('response_x', new MetadataService.checkRetrieveStatusResponse_element());
-			else if(request instanceof MetadataService.describeMetadata_element)
+			} else if(request instanceof MetadataService.describeMetadata_element) {
 				response.put('response_x', new MetadataService.describeMetadataResponse_element());
-			else if(request instanceof MetadataService.deploy_element)
+			} else if(request instanceof MetadataService.deploy_element) {
 				response.put('response_x', new MetadataService.deployResponse_element());
-            else if(request instanceof MetadataService.updateMetadata_element)
+            } else if(request instanceof MetadataService.updateMetadata_element) {
                 response.put('response_x', new MetadataService.updateMetadataResponse_element());
-            else if(request instanceof MetadataService.renameMetadata_element)
+            } else if(request instanceof MetadataService.renameMetadata_element) {
                 response.put('response_x', new MetadataService.renameMetadataResponse_element());
-            else if(request instanceof  MetadataService.cancelDeploy_element)
+            } else if(request instanceof  MetadataService.cancelDeploy_element) {
                 response.put('response_x', new MetadataService.cancelDeployResponse_element());
-            else if(request instanceof  MetadataService.deleteMetadata_element)
+            } else if(request instanceof  MetadataService.deleteMetadata_element) {
                 response.put('response_x', new MetadataService.deleteMetadataResponse_element());
-            else if(request instanceof  MetadataService.upsertMetadata_element)
+            } else if(request instanceof  MetadataService.upsertMetadata_element) {
                 response.put('response_x', new MetadataService.upsertMetadataResponse_element());
-            else if(request instanceof  MetadataService.createMetadata_element)
+            } else if(request instanceof  MetadataService.createMetadata_element) {
                 response.put('response_x', new MetadataService.createMetadataResponse_element());
-            else if(request instanceof  MetadataService.deployRecentValidation_element)
+            } else if(request instanceof  MetadataService.deployRecentValidation_element) {
                 response.put('response_x', new MetadataService.deployRecentValidationResponse_element());
-            else if(request instanceof MetadataService.checkRetrieveStatus_element)
+            } else if(request instanceof MetadataService.checkRetrieveStatus_element) {
                 response.put('response_x', new MetadataService.checkRetrieveStatusResponse_element());
+            }
 			return;
 		}
 	}    
@@ -68,10 +69,10 @@ public class MetadataServiceTest
 	private static void coverGeneratedCodeCRUDOperations()
 	{	
         System.Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
-        MetadataService metaDataService = new MetadataService();
         Test.startTest();    
         MetadataService.MetadataPort metaDataPort = new MetadataService.MetadataPort();
         Test.stopTest();
+        System.assertNotEquals(null, metaDataPort.endpoint_x, 'endpoint not set as expected');
 	}
 	
     /**
@@ -81,7 +82,6 @@ public class MetadataServiceTest
     private static void coverGeneratedCodeFileBasedOperations1()
     {    	
         System.Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
-        MetadataService metaDataService = new MetadataService();
         Test.startTest();     
         MetadataService.MetadataPort metaDataPort = new MetadataService.MetadataPort();
         metaDataPort.retrieve(new metaDataService.RetrieveRequest());
@@ -94,6 +94,7 @@ public class MetadataServiceTest
         metaDataPort.renameMetadata(null, null, null);
         metaDataPort.cancelDeploy(null);
         Test.stopTest();
+        System.assertNotEquals(null, metaDataPort.endpoint_x, 'endpoint not set as expected');
     }
 
     /**
@@ -103,7 +104,6 @@ public class MetadataServiceTest
     private static void coverGeneratedCodeFileBasedOperations2()
     {       
         System.Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
-        MetadataService metaDataService = new MetadataService();
         Test.startTest();    
         MetadataService.MetadataPort metaDataPort = new MetadataService.MetadataPort();
         metaDataPort.deleteMetadata(null, null);
@@ -112,6 +112,7 @@ public class MetadataServiceTest
         metaDataPort.deployRecentValidation(null);
         metaDataPort.checkRetrieveStatus(null, null);
         Test.stopTest();
+        System.assertNotEquals(null, metaDataPort.endpoint_x, 'endpoint not set as expected');
     }
         
     /**
@@ -194,7 +195,9 @@ public class MetadataServiceTest
         new MetaDataService.deployRecentValidationResponse_element();
         new MetaDataService.deployRecentValidation_element();
         new MetaDataService.AllOrNoneHeader_element();
+        MetadataService.MetadataPort metaDataPort = new MetadataService.MetadataPort();
         Test.stopTest();
+        System.assertNotEquals(null, metaDataPort.endpoint_x, 'endpoint not set as expected');
     }
 
     /**
@@ -206,7 +209,9 @@ public class MetadataServiceTest
         new MetadataService.ReadCustomMetadataResult().getRecords();
         new MetadataService.ReadApexClassResult().getRecords();
         new MetadataService.ReadApexTriggerResult().getRecords();
+        MetadataService.MetadataPort metaDataPort = new MetadataService.MetadataPort();
         Test.stopTest();
+        System.assertNotEquals(null, metaDataPort.endpoint_x, 'endpoint not set as expected');
     }
 
     /**
@@ -218,6 +223,8 @@ public class MetadataServiceTest
         new MetadataService.readApexTriggerResponse_element().getResult();
         new MetadataService.readApexClassResponse_element().getResult();
         new MetadataService.readCustomMetadataResponse_element().getResult();
+        MetadataService.MetadataPort metaDataPort = new MetadataService.MetadataPort();
         Test.stopTest();
+        System.assertNotEquals(null, metaDataPort.endpoint_x, 'endpoint not set as expected');
     }    
 }

@@ -60,9 +60,13 @@ global without sharing class HistoryTrackingService {
                                 String concatParents = '';
                                 List<String> parentRefs = tobj.Parent_Reference_Field__c.split(',');
                                 for(String parentRef : parentRefs) {
-                                    if(so.get(parentRef) != null) concatParents = concatParents+String.valueOf(so.get(parentRef)) +',';
+                                    if(so.get(parentRef) != null) {
+                                        concatParents = concatParents+String.valueOf(so.get(parentRef)) +',';
+                                    }
                                 }
-                                if(String.isBlank(concatParents)) break;
+                                if(String.isBlank(concatParents)) {
+                                    break;
+                                }
                                 concatParents = concatParents.removeEnd(',');
                                 rh.ParentId__c = concatParents;
                                 if(String.isNotBlank(tobj.Additional_Field_1__c)){

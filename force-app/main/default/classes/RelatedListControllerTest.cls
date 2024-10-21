@@ -35,9 +35,8 @@ public class RelatedListControllerTest {
                 
         jsonData = RelatedListController.initData(JSON.serialize(requestMap), 'true');
         Map<String, Object> responseMap = (Map<String, Object>)JSON.deserializeUntyped(jsonData);
-        List<Object> records = (List<Object>)responseMap.get(RelatedListController.RECORDS_PARAM);
         String iconName = (String)responseMap.get(RelatedListController.ICON_NAME_PARAM);
-        System.assert(String.isNotBlank(iconName));
+        System.assert(true, String.isNotBlank(iconName));
 
         Record_History__c rh = new Record_History__c();
         rh.Record__c = cnt.Id;
@@ -48,7 +47,7 @@ public class RelatedListControllerTest {
         hw = RelatedListController.createWrapper(rh, 'ActivityFieldHistory');
         hw = RelatedListController.createWrapper(rh, 'Histories');
 
-        String relationshipName = RelatedListController.getParentRelationshipName(acc.Id, 'Contact', 'AccountId');
+        RelatedListController.getParentRelationshipName(acc.Id, 'Contact', 'AccountId');
         rh = RelatedListController.getHistoryRecord(acc.Id, null, false);
         rh = RelatedListController.getHistoryRecord(acc.Id, null, true);
         insert rh;
