@@ -1,6 +1,6 @@
 # Mega History App
 
-A History Tracking app for advanced history trackingn out of the box history tracking plus tracking create/delete/undelete events of child objects and the ability to see history tracking of records across multiple objects.  Integrated seemlessly with existing history tracking to save on storage space.
+An Advanced History Tracking app to address the limitations of current Salesforce history tracking limitations. Seemlessly combines out of the box history tracking plus additional history of any field with the ability to tracking create/delete/undelete events of child objects and the ability to see history tracking of records across multiple objects.  Import your own history tracking as well.
 
 ## Features
 
