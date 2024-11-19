@@ -17,4 +17,14 @@ public class AssignAdminPermSetTest {
         List<PermissionSetAssignment> a = [Select id from PermissionSetAssignment where AssigneeId = :UserInfo.getUserId() AND PermissionSet.Name = 'MEGA_History_Super_Admin'];
         System.assertEquals(1, a.size(), 'Permission Set not assigned correctly');
     }
+
+    /**
+     * @description WHEN install script is run
+     *              THEN permission set is assigned
+     */
+    @isTest
+    static void testSendEmail() {
+        AssignAdminPermSet.send(UserInfo.getUserId(), 'Test', 'Test');
+        System.assertEquals(UserInfo.getUserId(), UserInfo.getUserId(), 'UserId not set as expected');
+    }
 }

@@ -16,44 +16,44 @@ public without sharing class CreateMetadata {
         Metadata.CustomMetadata customMetadata =  new Metadata.CustomMetadata();
         if(wrapper.mdType == 'Object'){
             TrackingWrapper tw = wrapper.mdObjectWrapper;
-            customMetadata.fullName = 'megahistory__Tracked_Object__mdt.'+wrapper.mdObject;
+            customMetadata.fullName = 'megatools__Tracked_Object__mdt.'+wrapper.mdObject.replaceAll('_','');
             customMetadata.label = wrapper.mdObject;
             Metadata.CustomMetadataValue customField = new Metadata.CustomMetadataValue();
-            customField.field = 'megahistory__Additional_Field_1__c';
+            customField.field = 'megatools__Additional_Field_1__c';
             customField.value = tw.additionalField1;
             customMetadata.values.add(customField);
             customField = new Metadata.CustomMetadataValue();
-            customField.field = 'megahistory__Additional_Field_2__c';
+            customField.field = 'megatools__Additional_Field_2__c';
             customField.value = tw.additionalField2;
             customMetadata.values.add(customField);
             customField = new Metadata.CustomMetadataValue();
-            customField.field = 'megahistory__Parent_Reference_Field__c';
+            customField.field = 'megatools__Parent_Reference_Field__c';
             customField.value = tw.parentRef;
             customMetadata.values.add(customField);
             customField = new Metadata.CustomMetadataValue();
-            customField.field = 'megahistory__Track_Create__c';
+            customField.field = 'megatools__Track_Create__c';
             customField.value = tw.trackCreate;
             customMetadata.values.add(customField);
             customField = new Metadata.CustomMetadataValue();
-            customField.field = 'megahistory__Track_Delete__c';
+            customField.field = 'megatools__Track_Delete__c';
             customField.value = tw.trackDelete;
             customMetadata.values.add(customField);
             customField = new Metadata.CustomMetadataValue();
-            customField.field = 'megahistory__Track_Undelete__c';
+            customField.field = 'megatools__Track_Undelete__c';
             customField.value = tw.trackUndelete;
             customMetadata.values.add(customField);
         } else {
-            String metadataRecordName = wrapper.mdObject+'_'+wrapper.mdName.replaceAll('_', '');
+            String metadataRecordName = wrapper.mdObject.replaceAll('_', '')+'_'+wrapper.mdName.replaceAll('_', '');
             metadataRecordName = metadataRecordName.left(40);
-            customMetadata.fullName = 'megahistory__Tracked_Field__mdt.'+metadataRecordName;
-            customMetadata.label = metadataRecordName;
+            customMetadata.fullName = 'megatools__Tracked_Field__mdt.'+metadataRecordName;
+            customMetadata.label = wrapper.mdName;
             Metadata.CustomMetadataValue customField = new Metadata.CustomMetadataValue();
-            customField.field = 'megahistory__Field_API_Name__c';
+            customField.field = 'megatools__Field_API_Name__c';
             customField.value = wrapper.mdName;
             customMetadata.values.add(customField);
             customField = new Metadata.CustomMetadataValue();
-            customField.field = 'megahistory__Tracked_Object__c';
-            customField.value = String.valueOf(Tracked_Object__mdt.getInstance(wrapper.mdObject).DeveloperName);
+            customField.field = 'megatools__Tracked_Object__c';
+            customField.value = String.valueOf(Tracked_Object__mdt.getInstance(wrapper.mdObject.replaceAll('_', '')).DeveloperName);
             customMetadata.values.add(customField);
         }
     

@@ -1,32 +1,40 @@
 {
   "packageDirectories": [
     {
-      "versionName": "ver 0.4",
-      "versionNumber": "0.4.0.NEXT",
+      "versionName": "ver 0.1",
+      "versionNumber": "0.2.0.NEXT",
+      "ancestorVersion": "HIGHEST",
       "path": "force-app",
-      "default": true,
       "package": "MEGA History",
       "versionDescription": "",
       "postInstallUrl": "https://jetsetandboogie.com/mega-history-installation/",
-      "releaseNotesUrl": "https://jetsetandboogie.com/mega-history-user-guide/",
-      "postInstallScript": "AssignAdminPermSet",
-      "ancestorVersion": "HIGHEST"
+      "releaseNotesUrl": "https://jetsetandboogie.com/mega-history-user-guide/"
     }
   ],
   "name": "mega-history",
-  "namespace": "megahistory",
+  "namespace": "megatools",
   "sfdcLoginUrl": "https://login.salesforce.com",
   "sourceApiVersion": "61.0",
   "packageAliases": {
-    "MEGA History": "0Hobn00000029gjCAA",
-    "MEGA History@0.1.0-1": "04tbn000000m5ztAAA",
-    "MEGA History@0.1.0-2": "04tbn000000m6KrAAI",
-    "MEGA History@0.1.0-3": "04tbn000000m6kfAAA",
-    "MEGA History@0.1.0-4": "04tbn000000m75dAAA",
-    "MEGA History@0.1.0-5": "04tbn000000m77FAAQ",
-    "MEGA History@0.2.0-1": "04tbn000000m7DhAAI",
-    "MEGA History@0.3.0-1": "04tbn000000nPYLAA2",
-    "MEGA History@0.4.0-1": "04tbn000000nU4zAAE",
-    "MEGA History@0.4.0-2": "04tbn000000nUOLAA2"
+    "MEGA History": "0Hobn0000002BPBCA2",
+    "MEGA History@0.1.0-1": "04tbn000000ncKHAAY",
+    "MEGA History@0.1.0-2": "04tbn000000ncXBAAY",
+    "MEGA History@0.1.0-3": "04tbn000000ng2vAAA",
+    "MEGA History@0.1.0-4": "04tbn000000ng4XAAQ",
+    "MEGA History@0.1.0-5": "04tbn000000ng69AAA",
+    "MEGA History@0.1.0-6": "04tbn000000nhobAAA",
+    "MEGA History@0.1.0-7": "04tbn000000ni7xAAA",
+    "MEGA History@0.1.0-8": "04tbn000000nkRVAAY",
+    "MEGA History@0.1.0-9": "04tbn000000nkT7AAI",
+    "MEGA History@0.1.0-10": "04tbn000000nkZZAAY",
+    "MEGA History@0.1.0-11": "04tbn000000nkuXAAQ",
+    "MEGA History@0.1.0-12": "04tbn000000nkw9AAA",
+    "MEGA History@0.1.0-13": "04tbn000000nkxlAAA",
+    "MEGA History@0.1.0-14": "04tbn000000nkzNAAQ",
+    "MEGA History@0.1.0-15": "04tbn000000nl0zAAA",
+    "MEGA History@0.1.0-16": "04tbn000000nl2bAAA",
+    "MEGA History@0.1.0-17": "04tbn000000nmLFAAY",
+    "MEGA History@0.1.0-18": "04tbn000000nvI5AAI",
+    "MEGA History@0.2.0-1": "04tbn000000o0PpAAI"
   }
 }

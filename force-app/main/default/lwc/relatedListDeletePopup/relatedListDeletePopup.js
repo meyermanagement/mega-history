@@ -38,7 +38,6 @@ export default class RelatedListDeletePopup extends LightningElement {
     }    
 
     handleDelete(){
-        console.log('this.recordId>>'+this.recordId);
         deleteRecord(this.recordId)
             .then(() => {    
                 this.hide()

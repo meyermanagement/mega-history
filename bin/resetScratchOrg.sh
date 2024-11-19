@@ -158,7 +158,7 @@ fi
 # Run Apex Tests - JS CR - Depricated?
 if [ 10 -gt "$progress_marker_value" ] && [ 10 -le "$stop_marker" ]
   then
-    sfdx force:apex:test:run -w 5 --targetusername $org_alias 
+    sf apex run test -w 5 --target-org $org_alias 
     echo 10 > "$temp_dir/$progress_marker_filename"
     progress_marker_value=10
 fi

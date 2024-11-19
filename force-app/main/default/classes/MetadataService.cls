@@ -32,16 +32,6 @@ public class MetadataService {
      /**
      * @description     MetadataService classes
      */
-    public class readMetadataResponse_element {
-        public MetadataService.ReadResult result;
-        private String[] result_type_info = new String[]{'result','http://soap.sforce.com/2006/04/metadata',null,'1','1','false'};
-        private String[] apex_schema_type_info = new String[]{'http://soap.sforce.com/2006/04/metadata','true','false'};
-        private String[] field_order_type_info = new String[]{'result'};
-    }
-
-     /**
-     * @description     MetadataService classes
-     */
     public class UpsertResult {
         public Boolean created;
         public MetadataService.Error[] errors;
@@ -637,6 +627,9 @@ public class MetadataService {
      * @description     MetadataService classes
      */
     public interface IReadResult {
+        /**
+         * @description     getRecords
+         */
         MetadataService.Metadata[] getRecords();
     }
 
@@ -644,6 +637,9 @@ public class MetadataService {
      * @description     MetadataService classes
      */
     public interface IReadResponseElement {
+        /**
+         * @description     getResult
+         */
         IReadResult getResult();
     }
 
@@ -652,10 +648,13 @@ public class MetadataService {
      */
     public class ReadApexClassResult implements IReadResult {
         public MetadataService.ApexClass[] records;
-        public MetadataService.Metadata[] getRecords() { return records; }
         private String[] records_type_info = new String[]{'records','http://soap.sforce.com/2006/04/metadata',null,'0','-1','false'};
         private String[] apex_schema_type_info = new String[]{'http://soap.sforce.com/2006/04/metadata','true','false'};
         private String[] field_order_type_info = new String[]{'records'};
+        /**
+         * @description     getRecords
+         */
+        public MetadataService.Metadata[] getRecords() { return records; }
     }
 
     /**
@@ -663,10 +662,13 @@ public class MetadataService {
      */
     public class readApexClassResponse_element implements IReadResponseElement {
         public MetadataService.ReadApexClassResult result;
-        public IReadResult getResult() { return result; }
         private String[] result_type_info = new String[]{'result','http://soap.sforce.com/2006/04/metadata',null,'1','1','false'};
         private String[] apex_schema_type_info = new String[]{'http://soap.sforce.com/2006/04/metadata','true','false'};
         private String[] field_order_type_info = new String[]{'result'};
+        /**
+         * @description     getResult
+         */
+        public IReadResult getResult() { return result; }
     }
 
     /**
@@ -674,10 +676,13 @@ public class MetadataService {
      */
     public class ReadApexTriggerResult implements IReadResult {
         public MetadataService.ApexTrigger[] records;
-        public MetadataService.Metadata[] getRecords() { return records; }
         private String[] records_type_info = new String[]{'records','http://soap.sforce.com/2006/04/metadata',null,'0','-1','false'};
         private String[] apex_schema_type_info = new String[]{'http://soap.sforce.com/2006/04/metadata','true','false'};
         private String[] field_order_type_info = new String[]{'records'};
+        /**
+         * @description     getRecords
+         */
+        public MetadataService.Metadata[] getRecords() { return records; }
     }
 
     /**
@@ -685,10 +690,13 @@ public class MetadataService {
      */
     public class readApexTriggerResponse_element implements IReadResponseElement {
         public MetadataService.ReadApexTriggerResult result;
-        public IReadResult getResult() { return result; }
         private String[] result_type_info = new String[]{'result','http://soap.sforce.com/2006/04/metadata',null,'1','1','false'};
         private String[] apex_schema_type_info = new String[]{'http://soap.sforce.com/2006/04/metadata','true','false'};
         private String[] field_order_type_info = new String[]{'result'};
+        /**
+         * @description     getResult
+         */
+        public IReadResult getResult() { return result; }
     }
 
     /**
@@ -696,10 +704,13 @@ public class MetadataService {
      */
     public class ReadPackageResult implements IReadResult {
         public MetadataService.Package_x[] records;
-        public MetadataService.Metadata[] getRecords() { return records; }
         private String[] records_type_info = new String[]{'records','http://soap.sforce.com/2006/04/metadata',null,'0','-1','false'};
         private String[] apex_schema_type_info = new String[]{'http://soap.sforce.com/2006/04/metadata','true','false'};
         private String[] field_order_type_info = new String[]{'records'};
+        /**
+         * @description     getRecords
+         */
+        public MetadataService.Metadata[] getRecords() { return records; }
     }
 
     /**
@@ -707,10 +718,13 @@ public class MetadataService {
      */
     public class readPackageResponse_element implements IReadResponseElement {
         public MetadataService.ReadPackageResult result;
-        public IReadResult getResult() { return result; }
         private String[] result_type_info = new String[]{'result','http://soap.sforce.com/2006/04/metadata',null,'1','1','false'};
         private String[] apex_schema_type_info = new String[]{'http://soap.sforce.com/2006/04/metadata','true','false'};
         private String[] field_order_type_info = new String[]{'result'};
+        /**
+         * @description     getResult
+         */
+        public IReadResult getResult() { return result; }
     }
  
     /**
@@ -718,10 +732,13 @@ public class MetadataService {
      */
     public class ReadCustomMetadataResult implements IReadResult {
         public MetadataService.CustomMetadata[] records;
-        public MetadataService.Metadata[] getRecords() { return records; }
         private String[] records_type_info = new String[]{'records','http://soap.sforce.com/2006/04/metadata',null,'0','-1','false'};
         private String[] apex_schema_type_info = new String[]{'http://soap.sforce.com/2006/04/metadata','true','false'};
         private String[] field_order_type_info = new String[]{'records'};
+        /**
+         * @description     getRecords
+         */
+        public MetadataService.Metadata[] getRecords() { return records; }
     }
 
     /**
@@ -729,10 +746,13 @@ public class MetadataService {
      */
     public class readCustomMetadataResponse_element implements IReadResponseElement {
         public MetadataService.ReadCustomMetadataResult result;
-        public IReadResult getResult() { return result; }
         private String[] result_type_info = new String[]{'result','http://soap.sforce.com/2006/04/metadata',null,'1','1','false'};
         private String[] apex_schema_type_info = new String[]{'http://soap.sforce.com/2006/04/metadata','true','false'};
         private String[] field_order_type_info = new String[]{'result'};
+        /**
+         * @description     getResult
+         */
+        public IReadResult getResult() { return result; }
     }
 
     /**
@@ -1117,18 +1137,6 @@ public class MetadataService {
     /**
      * @description     MetadataService classes
      */
-    public class readMetadata_element {
-        public String type_x;
-        public String[] fullNames;
-        private String[] type_x_type_info = new String[]{'type','http://soap.sforce.com/2006/04/metadata',null,'1','1','false'};
-        private String[] fullNames_type_info = new String[]{'fullNames','http://soap.sforce.com/2006/04/metadata',null,'0','-1','false'};
-        private String[] apex_schema_type_info = new String[]{'http://soap.sforce.com/2006/04/metadata','true','false'};
-        private String[] field_order_type_info = new String[]{'type_x','fullNames'};
-    }
-
-    /**
-     * @description     MetadataService classes
-     */
     public class CallOptions_element {
         public String client;
         private String[] client_type_info = new String[]{'client','http://soap.sforce.com/2006/04/metadata',null,'1','1','false'};
@@ -1161,6 +1169,9 @@ public class MetadataService {
 
         /**
          * @description     MetadataService MetadataPort methods
+         * @param type_x
+         * @param fullNames
+         * @return DeleteResult
          */
         public MetadataService.DeleteResult[] deleteMetadata(String type_x,String[] fullNames) {
             MetadataService.deleteMetadata_element request_x = new MetadataService.deleteMetadata_element();
@@ -1187,6 +1198,10 @@ public class MetadataService {
 
         /**
          * @description     MetadataService MetadataPort methods
+         * @param type_x
+         * @param oldFullName
+         * @param newFullName
+         * @return SaveResult
          */
         public MetadataService.SaveResult renameMetadata(String type_x,String oldFullName,String newFullName) {
             MetadataService.renameMetadata_element request_x = new MetadataService.renameMetadata_element();
@@ -1214,6 +1229,8 @@ public class MetadataService {
 
         /**
          * @description     MetadataService MetadataPort methods
+         * @param metadata
+         * @return SaveResult
          */
         public MetadataService.SaveResult[] updateMetadata(MetadataService.Metadata[] metadata) {
             MetadataService.updateMetadata_element request_x = new MetadataService.updateMetadata_element();
@@ -1239,6 +1256,8 @@ public class MetadataService {
 
         /**
          * @description     MetadataService MetadataPort methods
+         * @param asOfVersion
+         * @return DescribeMetadataResult
          */
         public MetadataService.DescribeMetadataResult describeMetadata(Double asOfVersion) {
             MetadataService.describeMetadata_element request_x = new MetadataService.describeMetadata_element();
@@ -1264,6 +1283,9 @@ public class MetadataService {
 
         /**
          * @description     MetadataService MetadataPort methods
+         * @param asyncProcessId
+         * @param includeDetails
+         * @return DeployResult
          */
         public MetadataService.DeployResult checkDeployStatus(String asyncProcessId,Boolean includeDetails) {
             MetadataService.checkDeployStatus_element request_x = new MetadataService.checkDeployStatus_element();
@@ -1290,6 +1312,9 @@ public class MetadataService {
 
         /**
          * @description     MetadataService MetadataPort methods
+         * @param asyncProcessId
+         * @param includeZip
+         * @return RetrieveResult
          */
         public MetadataService.RetrieveResult checkRetrieveStatus(String asyncProcessId,Boolean includeZip) {
             MetadataService.checkRetrieveStatus_element request_x = new MetadataService.checkRetrieveStatus_element();
@@ -1316,6 +1341,8 @@ public class MetadataService {
 
         /**
          * @description     MetadataService MetadataPort methods
+         * @param retrieveRequest
+         * @return AsyncResult
          */
         public MetadataService.AsyncResult retrieve(MetadataService.RetrieveRequest retrieveRequest) {
             MetadataService.retrieve_element request_x = new MetadataService.retrieve_element();
@@ -1341,6 +1368,8 @@ public class MetadataService {
 
         /**
          * @description     MetadataService MetadataPort methods
+         * @param String_x
+         * @return CancelDeployResult
          */
         public MetadataService.CancelDeployResult cancelDeploy(String String_x) {
             MetadataService.cancelDeploy_element request_x = new MetadataService.cancelDeploy_element();
@@ -1366,6 +1395,8 @@ public class MetadataService {
 
         /**
          * @description     MetadataService MetadataPort methods
+         * @param validationId
+         * @return response_x.result
          */
         public String deployRecentValidation(String validationId) {
             MetadataService.deployRecentValidation_element request_x = new MetadataService.deployRecentValidation_element();
@@ -1391,6 +1422,8 @@ public class MetadataService {
         
         /**
          * @description     MetadataService MetadataPort methods
+         * @param metadata
+         * @return SaveResult[]
          */
         public MetadataService.SaveResult[] createMetadata(MetadataService.Metadata[] metadata) {
             MetadataService.createMetadata_element request_x = new MetadataService.createMetadata_element();
@@ -1416,6 +1449,9 @@ public class MetadataService {
 
         /**
          * @description     MetadataService MetadataPort methods
+         * @param ZipFile
+         * @param DeployOptions
+         * @return AsyncResult
          */
         public MetadataService.AsyncResult deploy(String ZipFile,MetadataService.DeployOptions DeployOptions) {
             MetadataService.deploy_element request_x = new MetadataService.deploy_element();
@@ -1442,32 +1478,8 @@ public class MetadataService {
 
         /**
          * @description     MetadataService MetadataPort methods
-         */
-        public MetadataService.IReadResult readMetadata(String type_x,String[] fullNames) {
-            MetadataService.readMetadata_element request_x = new MetadataService.readMetadata_element();
-            request_x.type_x = type_x;
-            request_x.fullNames = fullNames;
-            MetadataService.IReadResponseElement response_x;
-            Map<String, MetadataService.IReadResponseElement> response_map_x = new Map<String, MetadataService.IReadResponseElement>();
-            response_map_x.put('response_x', response_x);
-            WebServiceCallout.invoke(
-              this,
-              request_x,
-              response_map_x,
-              new String[]{endpoint_x,
-              '',
-              'http://soap.sforce.com/2006/04/metadata',
-              'readMetadata',
-              'http://soap.sforce.com/2006/04/metadata',
-              'readMetadataResponse',
-              'MetadataService.read' + type_x + 'Response_element'}
-            );
-            response_x = response_map_x.get('response_x');
-            return response_x.getResult();
-        }
-
-        /**
-         * @description     MetadataService MetadataPort methods
+         * @param metadata
+         * @return UpsertResult[]
          */
         public MetadataService.UpsertResult[] upsertMetadata(MetadataService.Metadata[] metadata) {
             MetadataService.upsertMetadata_element request_x = new MetadataService.upsertMetadata_element();
@@ -1493,6 +1505,9 @@ public class MetadataService {
 
         /**
          * @description     MetadataService MetadataPort methods
+         * @param queries
+         * @param asOfVersion
+         * @return FileProperties[]
          */
         public MetadataService.FileProperties[] listMetadata(MetadataService.ListMetadataQuery[] queries,Double asOfVersion) {
             MetadataService.listMetadata_element request_x = new MetadataService.listMetadata_element();

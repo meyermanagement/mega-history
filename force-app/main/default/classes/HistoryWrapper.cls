@@ -26,6 +26,10 @@ public with sharing class HistoryWrapper {
      */
     @AuraEnabled public String recordName;
     /**
+     * @description recordURL
+     */
+    @AuraEnabled public String recordURL;
+    /**
      * @description parentId
      */
     @AuraEnabled public String parentId;

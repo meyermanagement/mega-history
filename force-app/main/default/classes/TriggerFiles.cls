@@ -101,7 +101,7 @@ public with sharing class TriggerFiles {
         className = className + '_Test';
         // Deploy generated code
         return '/**\n' +
-        ' * Auto Generated and Deployed by the MegaHistory package (megahistory)\n' +
+        ' * Auto Generated and Deployed by the MEGA History package (megatools)\n' +
         ' **/\n' +
         '@IsTest\n' +
         'private class ' +
@@ -115,7 +115,7 @@ public with sharing class TriggerFiles {
             triggerName +
             ' to be invoked, fails the test if org config or other Apex code prevents this.\n' +
             '        ' +
-            'megahistory.HistoryTrackingService.testHandler(new ' +
+            'megatools.HistoryTrackingService.testHandler(new ' +
             wrapp.mdObject +
             '());\n' +
         '    }\n' +
@@ -146,7 +146,7 @@ public with sharing class TriggerFiles {
         // Namespace?
         // Deploy generated code
         return '/**\n' +
-        ' * Auto Generated and Deployed by the Declarative Lookup Rollup Summaries Tool package (dlrs)\n' +
+        ' * Auto Generated and Deployed by the MEGA History package (megatools)\n' +
         ' **/\n' +
         'trigger ' +
         wrapp.mdName +
@@ -156,7 +156,7 @@ public with sharing class TriggerFiles {
         '    (before insert, after insert, after update, after delete, after undelete)\n' +
         '{\n' +
         '    ' +
-        'megahistory.HistoryTrackingService.track(Trigger.new, Trigger.oldMap, Trigger.OperationType.toString());\n' +
+        'megatools.HistoryTrackingService.track(Trigger.new, Trigger.oldMap, Trigger.OperationType.toString());\n' +
         '}\n';
     }
 }

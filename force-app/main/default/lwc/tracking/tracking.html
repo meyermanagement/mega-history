@@ -57,7 +57,7 @@
                     <div class="slds-col">
                         <div class="cardTitle">
                             <p>
-                                Depending on your organization.  Some items may take a few minutes to deploy.
+                                Depending on your organization.  Some items may take a few minutes or longer to deploy.
                             </p>
                         </div>
                     </div>
@@ -101,13 +101,13 @@
                         </div>
                     </template>
                     <template lwc:else>
-                        <div class="slds-section slds-is-open slds-p-bottom_small">
+                        <div class="slds-section slds-is-open slds-p-bottom_medium">
                             <h3 class="slds-section__title slds-theme_shade">
-                                <span class="slds-truncate" title="Object">Object Information</span>
+                                <span class="slds-truncate" title="Object">Current Object Configuration</span>
                             </h3>
-                            <div class="slds-section__content slds-p-horizontal_small">
+                            <div class="slds-section__content">
                                 <lightning-layout multiple-rows>
-                                    <lightning-layout-item size="6" class="slds-p-right_small">
+                                    <lightning-layout-item size="6">
                                         <template lwc:if={showObjectLookup}>
                                             <lightning-select
                                                 name="objects"
@@ -122,64 +122,74 @@
                                             <lightning-input type="text" label="Object API Name" value={selectedObject.objectName} readonly></lightning-input>
                                         </template>
                                     </lightning-layout-item>
-                                    <lightning-layout-item size="6">
-                                        <template lwc:if={hasSelectedObject}>
-                                            <lightning-select
-                                                name="objects"
-                                                label="Parent Reference Field"
-                                                value={selectedObject.parentRef}
-                                                options={parentRefs}
-                                                onchange={handleParentChange}
-                                                field-level-help="Reference to the parent record to view when a record was Created, Deleted, and/or Undeleted"
-                                                ></lightning-select>
-                                        </template>
-                                    </lightning-layout-item>
                                 </lightning-layout>
                             </div>
                         </div>
-                        <template lwc:if={hasParentRef}>
+                        <template lwc:if={hasSelectedObject}>
                             <div class="slds-section slds-is-open slds-p-bottom_small">
                                 <h3 class="slds-section__title slds-theme_shade">
-                                    <span class="slds-truncate" title="Events">Select Events to Track on Parent Object</span>
+                                    <span class="slds-truncate" title="Parents">OPTIONAL: Select Parent References to Track as Child Events</span>
                                 </h3>
                                 <div class="slds-section__content slds-p-horizontal_small">
                                     <lightning-layout>
-                                        <lightning-layout-item size="6" class="slds-p-top_medium slds-p-bottom_small">
-                                            <lightning-input type="checkbox" label="Track Create" name="input1" checked={selectedObject.trackCreate} onchange={handleTrackCreate} class="slds-p-around_small"></lightning-input>
-                                            <lightning-input type="checkbox" label="Track Delete" name="input1" checked={selectedObject.trackDelete} onchange={handleTrackDelete} class="slds-p-around_small"></lightning-input>
-                                            <lightning-input type="checkbox" label="Track Undelete" name="input1" checked={selectedObject.trackUndelete} onchange={handleTrackUndelete} class="slds-p-around_small"></lightning-input>
-                                        </lightning-layout-item>
-                                        <lightning-layout-item size="6">
-                                            <template lwc:if={trackDelete}>
-                                                <div style="padding:0.5rem; background:#16325c">
-                                                    <div class="slds-text-color_inverse-weak">
-                                                        <lightning-icon icon-name="utility:info" alternative-text="help" title="help" size="x-small" class="slds-p-right_xx-small"></lightning-icon>
-                                                        Select additional identifier fields for deleted records.  Record Name is automatically tracked.  If you select a related record id field, only the id of the record will show in the related list.
-                                                    </div>
-                                                </div>
-                                                <lightning-select
-                                                    name="objects"
-                                                    label="Additional Field 1"
-                                                    value={selectedObject.additionalField1}
-                                                    options={options}
-                                                    onchange={handleAdditionalField1}
-                                                    class="slds-p-top_x-small" 
-                                                ></lightning-select>
-                                            </template>
-                                            <template lwc:if={trackDelete}>
-                                                <lightning-select
-                                                    name="objects"
-                                                    label="Additional Field 2"
-                                                    value={selectedObject.additionalField2}
-                                                    options={options}
-                                                    onchange={handleAdditionalField2}
-                                                    class="slds-p-top_x-small"
-                                                ></lightning-select>
-                                            </template>
+                                        <lightning-layout-item size="12">
+                                            <lightning-dual-listbox name="parent relationships"
+                                                label="Parent Reference Fields"
+                                                source-label="Available"
+                                                selected-label="Selected"
+                                                field-level-help="Reference to the parent record to view child record history."
+                                                options={parentOptions}
+                                                value={parentValues}
+                                                onchange={handleParentChange}>
+                                            </lightning-dual-listbox>
                                         </lightning-layout-item>
                                     </lightning-layout>
                                 </div>
                             </div>
+                            <template lwc:if={hasParentRef}>
+                                <div class="slds-section slds-is-open slds-p-bottom_small">
+                                    <h3 class="slds-section__title slds-theme_shade">
+                                        <span class="slds-truncate" title="Events">Select Events to Track on Parent Objects</span>
+                                    </h3>
+                                    <div class="slds-section__content slds-p-horizontal_small">
+                                        <lightning-layout>
+                                            <lightning-layout-item size="6" class="slds-p-top_medium slds-p-bottom_small">
+                                                <lightning-input type="checkbox" label="Track Create" name="input1" checked={selectedObject.trackCreate} onchange={handleTrackCreate} class="slds-p-around_small"></lightning-input>
+                                                <lightning-input type="checkbox" label="Track Delete" name="input1" checked={selectedObject.trackDelete} onchange={handleTrackDelete} class="slds-p-around_small"></lightning-input>
+                                                <lightning-input type="checkbox" label="Track Undelete" name="input1" checked={selectedObject.trackUndelete} onchange={handleTrackUndelete} class="slds-p-around_small"></lightning-input>
+                                            </lightning-layout-item>
+                                            <lightning-layout-item size="6">
+                                                <template lwc:if={trackDelete}>
+                                                    <div style="padding:0.5rem; background:#16325c">
+                                                        <div class="slds-text-color_inverse-weak">
+                                                            <lightning-icon icon-name="utility:info" alternative-text="help" title="help" size="x-small" class="slds-p-right_xx-small"></lightning-icon>
+                                                            Select additional identifier fields for deleted records.  Record Name is automatically tracked.  If you select a related record id field, only the id of the record will show in the related list.
+                                                        </div>
+                                                    </div>
+                                                    <lightning-select
+                                                        name="objects"
+                                                        label="Additional Field 1"
+                                                        value={selectedObject.additionalField1}
+                                                        options={options}
+                                                        onchange={handleAdditionalField1}
+                                                        class="slds-p-top_x-small" 
+                                                    ></lightning-select>
+                                                </template>
+                                                <template lwc:if={trackDelete}>
+                                                    <lightning-select
+                                                        name="objects"
+                                                        label="Additional Field 2"
+                                                        value={selectedObject.additionalField2}
+                                                        options={options}
+                                                        onchange={handleAdditionalField2}
+                                                        class="slds-p-top_x-small"
+                                                    ></lightning-select>
+                                                </template>
+                                            </lightning-layout-item>
+                                        </lightning-layout>
+                                    </div>
+                                </div>
+                            </template>
                         </template>
                         <template lwc:if={hasSelectedObject}>
                             <div class="slds-section slds-is-open slds-p-bottom_small">

@@ -15,7 +15,11 @@ export default class RelatedListNewEditPopup extends LightningElement {
     loading = true;
 
     get clearDisabled(){
-        return this.historyRec.megahistory__Created_Date_DL__c == undefined;
+        return this.historyRec.megatools__Created_Date_DL__c == undefined;
+    }
+
+    get updatedRecord(){
+        return (this.historyRec != undefined && this.historyRec.megatools__Event__c == 'Updated') || !this.relatedRecord;
     }
 
     get eventOptions() {
@@ -31,82 +35,81 @@ export default class RelatedListNewEditPopup extends LightningElement {
     handleEventChange(event){
         this.eventValue = event.detail.value;
         let historyRecord = {...this.historyRec};
-        historyRecord.megahistory__Event__c = event.detail.value;
+        historyRecord.megatools__Event__c = event.detail.value;
         this.historyRec = historyRecord;
     }
 
     handleFieldChange(event){
         this.eventValue = event.detail.value;
         let historyRecord = {...this.historyRec};
-        historyRecord.megahistory__Field__c = event.detail.value;
+        historyRecord.megatools__Field__c = event.detail.value;
         this.historyRec = historyRecord;
     }
 
     handleRecordIdChange(event){
         let historyRecord = {...this.historyRec};
-        historyRecord.megahistory__Record__c = event.detail.value;
+        historyRecord.megatools__Record__c = event.detail.value;
         this.historyRec = historyRecord;
     }
 
     handleRecordNameChange(event){
         let historyRecord = {...this.historyRec};
-        historyRecord.megahistory__Record_Name__c = event.detail.value;
+        historyRecord.megatools__Record_Name__c = event.detail.value;
         this.historyRec = historyRecord;
     }
 
     handleAddId1Change(event){
         let historyRecord = {...this.historyRec};
-        historyRecord.megahistory__Additional_Field_1__c = event.detail.value;
+        historyRecord.megatools__Additional_Field_1__c = event.detail.value;
         this.historyRec = historyRecord;
     }
 
     handleAddId2Change(event){
         let historyRecord = {...this.historyRec};
-        historyRecord.megahistory__Additional_Field_2__c = event.detail.value;
+        historyRecord.megatools__Additional_Field_2__c = event.detail.value;
         this.historyRec = historyRecord;
     }
 
     handleOldValueChange(event){
         let historyRecord = {...this.historyRec};
-        historyRecord.megahistory__Old_Value__c = event.detail.value;
+        historyRecord.megatools__Old_Value__c = event.detail.value;
         this.historyRec = historyRecord;
     }
 
     handleOldValueExtndedChange(event){
         let historyRecord = {...this.historyRec};
-        historyRecord.megahistory__Old_Value_Extended__c = event.detail.value;
+        historyRecord.megatools__Old_Value_Extended__c = event.detail.value;
         this.historyRec = historyRecord;
     }
 
     handleNewValueChange(event){
         let historyRecord = {...this.historyRec};
-        historyRecord.megahistory__New_Value__c = event.detail.value;
+        historyRecord.megatools__New_Value__c = event.detail.value;
         this.historyRec = historyRecord;
     }
 
     handleNewValueExtndedChange(event){
         let historyRecord = {...this.historyRec};
-        historyRecord.megahistory__New_Value_Extended__c = event.detail.value;
+        historyRecord.megatools__New_Value_Extended__c = event.detail.value;
         this.historyRec = historyRecord;
     }
 
     handleCreatedDateChange(event){
         let historyRecord = {...this.historyRec};
-        historyRecord.megahistory__Created_Date_DL__c = event.detail.value;
+        historyRecord.megatools__Created_Date_DL__c = event.detail.value;
         this.historyRec = historyRecord;
     }
 
     handleClearCreatedDate(){
         let historyRecord = {...this.historyRec};
-        historyRecord.megahistory__Created_Date_DL__c = undefined;
+        historyRecord.megatools__Created_Date_DL__c = undefined;
         this.historyRec = historyRecord;
     }
 
     handleValueSelectedOnUser(event){
-        console.log('handleValueSelectedOnUser>>'+JSON.stringify(event.detail));
         let historyRecord = {...this.historyRec};
-        if(event.detail.id) historyRecord.megahistory__Created_By_DL__c = event.detail.id;
-        else historyRecord.megahistory__Created_By_DL__c = undefined;
+        if(event.detail.id) historyRecord.megatools__Created_By_DL__c = event.detail.id;
+        else historyRecord.megatools__Created_By_DL__c = undefined;
         this.historyRec = historyRecord;
     }
 
@@ -127,12 +130,17 @@ export default class RelatedListNewEditPopup extends LightningElement {
     }
 
     handleSave(){
-        console.log('handleSave>>'+JSON.stringify(this.historyRec));
+
         let histRecId = this.template.querySelector('.historyRecName');
-        if(this.relatedRecord == true && this.historyRec.megahistory__Record_Name__c == undefined){
+        let historyField = this.template.querySelector('.historyField');
+        if(this.relatedRecord == true && this.historyRec.megatools__Record_Name__c == undefined){
             histRecId.setCustomValidity("Field is required.");
+        } else if(this.updatedRecord && this.historyRec.megatools__Field__c == undefined){
+            historyField.setCustomValidity("Field is required.");
+            historyField.reportValidity();
         } else {
             if(histRecId) histRecId.setCustomValidity("");
+            if(historyField) historyField.setCustomValidity("");
             saveHistory({ historyString : JSON.stringify(this.historyRec) })
             .then(() => {
                 let message = `${(this.relatedRecord ? "Related "+this.sobjectLabel : this.sobjectLabel)} was ${(this.isNew ? "created" : "saved")}.`
@@ -168,7 +176,7 @@ export default class RelatedListNewEditPopup extends LightningElement {
     renderedCallback() {
         loadStyle(this, relatedListResource + '/relatedListNewEditPopup.css');
         if(this.historyRec != undefined) {
-            this.eventValue = this.historyRec.megahistory__Event__c;
+            this.eventValue = this.historyRec.megatools__Event__c;
             this.loading = false;
         }
     }  

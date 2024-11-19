@@ -3,12 +3,7 @@
  * @author          Mark Meyer
  * @date            09/27/2024
  */
-public with sharing class RelatedListController {
-
-    /**
-     * @description     Custom Exception for RelatedListController
-     */
-    public class RelatedListControllerException extends Exception {}
+public without sharing class RelatedListController {
 
     /**
      * @description     Param for recordId
@@ -66,16 +61,29 @@ public with sharing class RelatedListController {
      * @description     Param for superUser
      */
     public static final String SUPER_USER_PARAM = 'superUser';
+    /**
+     * @description     Param for disabledRecords
+     */
+    public static final String DISABLED_RECORDS_PARAM = 'disabledRecords';
+    /**
+     * @description     Set of Activity History Objects
+     */
+    public static Set<String> activityHistoryObjects = new Set<String>{'Task', 'Event'};
+
+    /**
+     * @description     Custom Exception for RelatedListController
+     */
+    public class RelatedListControllerException extends Exception {}
 
     /**
      * @description     Get and process data for the Related List LWC
      * @param jsonData
+     * @param isCustomOnly
      * @return responseMap
      */
     @AuraEnabled
-    public static String initData(String jsonData){
+    public static String initData(String jsonData, String isCustomOnly){
         try{
-            system.debug(jsonData);
             Map<String, Object> requestMap = (Map<String, Object>)JSON.deserializeUntyped(jsonData);  
             Map<String, Object> responseMap = new Map<String, Object>();
             
@@ -83,11 +91,25 @@ public with sharing class RelatedListController {
             Integer numberOfRecords = (Integer)requestMap.get(NUMBER_OF_RECORDS_PARAM);
             Schema.DescribeSObjectResult objectDescribe = Id.valueOf(recordId).getSObjectType().getDescribe();
             String sobjectApiName = objectDescribe.getName();
+            Map<String, Tracked_Object__mdt> tobjMap = new Map<String, Tracked_Object__mdt>();
+            for(Tracked_Object__mdt to : Tracked_Object__mdt.getAll().values()){
+                tobjMap.put(to.MasterLabel, to);
+            }
             List<HistoryWrapper> customRecords = getCustomHistory(recordId, numberOfRecords);
-            List<HistoryWrapper> standardRecords = getStandardHistory(recordId, objectDescribe, numberOfRecords);
-            List<HistoryWrapper> results = mergeLists(customRecords, standardRecords);
-            results = scrubFields(results, objectDescribe);
-            Map<String, List<HistoryWrapper>> resultsMap = splitLists(results);
+            List<HistoryWrapper> standardRecords = new List<HistoryWrapper>();
+            List<HistoryWrapper> disabledRecords = new List<HistoryWrapper>();
+            for(HistoryWrapper st : getStandardHistory(recordId, objectDescribe, numberOfRecords, tobjMap)){
+                if(st.historyId != null && st.historyId == 'NOTALLOWED'){
+                    disabledRecords.add(st);
+                } else {
+                    standardRecords.add(st);
+                }
+            }
+            responseMap.put(DISABLED_RECORDS_PARAM, disabledRecords);
+            List<HistoryWrapper> results = mergeLists(customRecords, isCustomOnly == 'true' ? new List<HistoryWrapper>() : standardRecords);
+            Map<String, Schema.DescribeSObjectResult> objectDescribeMap = getObjectDescribes(results);
+            results = scrubFields(results, objectDescribeMap);
+            Map<String, List<HistoryWrapper>> resultsMap = splitLists(recordId, results);
             responseMap.put(CHILD_RECORDS_PARAM, resultsMap.get('Child'));
             responseMap.put(RECORDS_PARAM, resultsMap.get('Adult'));
             responseMap.put(ICON_NAME_PARAM, getIconName(sobjectApiName));
@@ -102,11 +124,11 @@ public with sharing class RelatedListController {
             if(!initialization.initialized__c){
                 initialization.Name = 'Default Initialization';
                 initialization.initialized__c = true;
-                upsert as user initialization;
+                upsert initialization;
             }
             return JSON.serialize(responseMap);
         } catch (Exception e){
-            System.debug(e.getMessage());
+            System.debug(LoggingLevel.DEBUG, e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -122,11 +144,10 @@ public with sharing class RelatedListController {
         String query = 'SELECT Id, Name, Additional_Field_1__c, Additional_Field_2__c, CreatedById, Created_By_DL__c, Created_By_Formula__c, Created_Date_DL__c,'+
                         'Created_Date_Formula__c, Event__c, Field__c, New_Value__c, New_Value_Extended__c, Old_Value__c, Old_Value_Extended__c,'+
                         'ParentId__c, Record__c, Record_Name__c FROM Record_History__c WHERE Record__c = :recordId'+
-                        ' OR ParentId__c = :recordId'+
-                        ' ORDER BY Created_Date_Formula__c DESC'+
-                        ' Limit '+numberOfRecords;
-        for(Sobject sobj : Database.query(String.escapeSingleQuotes(query))){
-            wrappers.add(createWrapper(sobj, true));
+                        ' OR ParentId__c LIKE ' + '\'%' + String.escapeSingleQuotes(recordId) + '%\''+
+                        ' ORDER BY Created_Date_Formula__c DESC';
+        for(Sobject sobj : Database.query(query)){
+            wrappers.add(createWrapper(sobj, 'Record_History__c'));
         }
         return wrappers;
 	}
@@ -136,35 +157,71 @@ public with sharing class RelatedListController {
      * @param recordId
      * @param objectDescribe
      * @param numberOfRecords
+     * @param tobjMap
      * @return List of History Wrappers
      */
-    private static List<HistoryWrapper> getStandardHistory(String recordId, Schema.DescribeSObjectResult objectDescribe, Integer numberOfRecords){
-        List<HistoryWrapper> wrappers = new List<HistoryWrapper>();
-        String objectHistoryFieldAPIName;
-        String objectHistoryName;
-        String apiName = objectDescribe.getName();
-        if(objectDescribe.isCustom()) {
-            apiName = apiName.removeEnd('__c');
-            objectHistoryName = apiName+'__history';
-            objectHistoryFieldAPIName = 'ParentId';
-        } else {
-            Set<String> fieldHistoryObjects = new Set<String>{'Opportunity', 'Activity'};
-            if(fieldHistoryObjects.contains(apiName)) {
-                objectHistoryName = apiName+'FieldHistory';
+    private static List<HistoryWrapper> getStandardHistory(String recordId, Schema.DescribeSObjectResult objectDescribe, Integer numberOfRecords, Map<String, Tracked_Object__mdt> tobjMap){
+        List<HistoryWrapper> wrappers = new List<HistoryWrapper>();        
+        List<Schema.ChildRelationship> children = objectDescribe.getChildRelationships();
+        for(Schema.ChildRelationship child : children){
+            Schema.DescribeSObjectResult childObjectDescribe = child.getChildSObject().getDescribe();
+            String childApiName = childObjectDescribe.getName();
+            String childReferenceField = String.valueOf(child.getField());
+            if(tobjMap.get(childApiName) != null && tobjMap.get(childApiName).Parent_Reference_Field__c != null && tobjMap.get(childApiName).Parent_Reference_Field__c.contains(childReferenceField)){
+                if(!activityHistoryObjects.contains(childApiName)){
+                    String childQuery = createQuery(null, childObjectDescribe, tobjMap.get(childApiName), recordId, childReferenceField);
+                    try{
+                        for(Sobject sobj : Database.query(String.escapeSingleQuotes(childQuery))){
+                            for(Sobject hist : sobj.getSobjects('Histories')){
+                                HistoryWrapper wrapp = createWrapper(hist, 'Histories');
+                                wrapp.objectAPIName = childApiName;
+                                wrapp.objectLabel = childObjectDescribe.getLabel();
+                                String nameField = HistoryTrackingService.getRecordNameField(childApiName);
+                                wrapp.recordName = childApiName == 'Contact' ? String.valueOf(sobj.get(nameField))+', '+String.valueOf(sobj.get('FirstName')) : String.valueOf(sobj.get(nameField));
+                                wrapp.recordId = String.valueOf(sobj.get('Id'));
+                                wrapp.recordURL = '/one/one.app?#/sObject/'+wrapp.recordId+'/view';
+                                wrappers.add(wrapp);
+                            }
+                        }
+                    } catch(QueryException e){
+                        System.debug(LoggingLevel.DEBUG, e.getMessage());
+                        HistoryWrapper wrapp = new HistoryWrapper();
+                        wrapp.historyId='NOTALLOWED';
+                        wrapp.parentId = 'NOTALLOWED';
+                        wrapp.objectAPIName=childApiName;
+                        wrapp.objectLabel=childObjectDescribe.getLabel();
+                        wrappers.add(wrapp);
+                    }
+                } else {
+                    HistoryWrapper wrapp = new HistoryWrapper();
+                    wrapp.historyId='NOTALLOWED';
+                    wrapp.parentId = 'NOTALLOWED';
+                    wrapp.objectAPIName=childApiName;
+                    wrapp.objectLabel=childObjectDescribe.getLabel();
+                    wrappers.add(wrapp);
+                }
             }
-            else objectHistoryName = apiName+'History';
-            objectHistoryFieldAPIName = apiName+'Id';
         }
-        String query = 'SELECT '+objectHistoryFieldAPIName+', Id, Field, NewValue, OldValue, CreatedDate, CreatedBy.Name, CreatedById FROM '+
-                        objectHistoryName+' WHERE '+
-                        objectHistoryFieldAPIName+' = :recordId'+
-                        ' ORDER BY CreatedDate DESC'+
-                        ' Limit '+numberOfRecords;
-        for(Sobject sobj : Database.query(String.escapeSingleQuotes(query))){
-            HistoryWrapper wrapp = createWrapper(sobj, false);
-            wrapp.objectAPIName = apiName;
-            wrapp.objectLabel = objectDescribe.getLabel();
-            wrapp.recordId = String.valueOf(sobj.get(objectHistoryFieldAPIName));
+        
+        
+        String query = createQuery(recordId, objectDescribe, tobjMap.get(objectDescribe.getName()), null, null);
+        
+        try{
+            for(Sobject sobj : Database.query(String.escapeSingleQuotes(query))){
+                for(Sobject hist : sobj.getSobjects('Histories')){
+                    HistoryWrapper wrapp = createWrapper(hist, 'Histories');
+                    wrapp.objectAPIName = objectDescribe.getName();
+                    wrapp.objectLabel = objectDescribe.getLabel();
+                    wrapp.recordId = String.valueOf(sobj.get('Id'));
+                    wrappers.add(wrapp);
+                }
+            }
+        } catch(Exception e){
+            System.debug(LoggingLevel.DEBUG, e.getMessage());
+            HistoryWrapper wrapp = new HistoryWrapper();
+            wrapp.historyId='NOTALLOWED';
+            wrapp.objectAPIName=objectDescribe.getName();
+            wrapp.objectLabel=objectDescribe.getLabel();
             wrappers.add(wrapp);
         }
         return wrappers;
@@ -184,46 +241,89 @@ public with sharing class RelatedListController {
     }  
 
     /**
+     * @description     getSobjectDesbribes for each object
+     * @param resultRecords
+     * @return Map of objectApiName to DescribeSobjectResult
+     */
+    private static Map<String, Schema.DescribeSObjectResult> getObjectDescribes(List<HistoryWrapper> resultRecords){
+        Map<String, Schema.DescribeSObjectResult> objectDescribeMap = new Map<String, Schema.DescribeSObjectResult>();
+        Set<String> objectAPINames = new Set<String>();
+        for(HistoryWrapper wrapper : resultRecords){
+            if(String.isNotBlank(wrapper.objectAPIName)) {
+                objectAPINames.add(wrapper.objectAPIName);
+            }
+        }
+        for(Schema.DescribeSObjectResult result : Schema.describeSObjects(new List<String>(objectAPINames))){
+            objectDescribeMap.put(result.getName(), result);
+        }
+        return objectDescribeMap;
+    }  
+
+    /**
      * @description     adjust some of the wrapper fields depending on permissions and type of field
      * @param wrappers
-     * @param objectDescribe
+     * @param objectDescribeMap
      * @return List of History Wrappers
      */
-    private static List<HistoryWrapper> scrubFields(List<HistoryWrapper> wrappers, Schema.DescribeSObjectResult objectDescribe){
+    private static List<HistoryWrapper> scrubFields(List<HistoryWrapper> wrappers, Map<String, Schema.DescribeSObjectResult> objectDescribeMap){
         Boolean canViewEncryptedText = ![SELECT Id FROM PermissionSetAssignment WHERE PermissionSet.PermissionsViewEncryptedData = true].isEmpty();
-        Map<String,Schema.SObjectField> mfields = objectDescribe.fields.getMap();
+        List<HistoryWrapper> results = new List<HistoryWrapper>();
         for(HistoryWrapper wrapp : wrappers){
             if(wrapp.event == 'Updated' && wrapp.field != 'Created.'){
-                if(wrapp.field != 'RecordType'){
+                if(wrapp.field != 'RecordType' && wrapp.field != 'RecordTypeId'){
+                    Map<String,Schema.SObjectField> mfields = objectDescribeMap.get(wrapp.objectAPIName).fields.getMap();
                     Schema.DescribeFieldResult fieldResult = mfields.get(wrapp.field).getDescribe();
-                    if(fieldResult.getType() == Schema.DisplayType.ENCRYPTEDSTRING && !canViewEncryptedText){
-                        String mask ='*';
-                        wrapp.oldValue = mask.repeat(wrapp.oldValue.length());
-                        wrapp.oldValueFull = mask.repeat(wrapp.oldValueFull.length());
-                        wrapp.newValue = mask.repeat(wrapp.newValue.length());
-                        wrapp.newValueFull = mask.repeat(wrapp.newValueFull.length());
+                    if(fieldResult.isAccessible()){
+                        if(fieldResult.getType() == Schema.DisplayType.ENCRYPTEDSTRING && !canViewEncryptedText){
+                            String mask ='*';
+                            wrapp.oldValue = wrapp.oldValue == null ? null : mask.repeat(wrapp.oldValue.length());
+                            wrapp.oldValueFull = wrapp.oldValueFull == null ? null : mask.repeat(wrapp.oldValueFull.length());
+                            wrapp.newValue = wrapp.newValue == null ? null : mask.repeat(wrapp.newValue.length());
+                            wrapp.newValueFull = wrapp.newValueFull == null ? null : mask.repeat(wrapp.newValueFull.length());
+                        }
+                        wrapp.fieldLabel = fieldResult.getLabel();
+                        results.add(wrapp);
                     }
-                    wrapp.fieldLabel = fieldResult.getLabel();
                 } else {
                     wrapp.fieldLabel = 'Record Type';
                 }
+            } else {
+                results.add(wrapp);
             }
+            
         }
-        return wrappers;
+        return results;
     }  
 
     /**
      * @description     separate the 2 lists based on if they are child record history or not
+     * @param recordId
      * @param wrappers
      * @return Map of List of History Wrappers
      */
-    private static Map<String, List<HistoryWrapper>> splitLists(List<HistoryWrapper> wrappers){
+    private static Map<String, List<HistoryWrapper>> splitLists(String recordId, List<HistoryWrapper> wrappers){
+        Set<String> duplicateCreateRecords = new Set<String>();
         Map<String, List<HistoryWrapper>> historyMap = new Map<String, List<HistoryWrapper>>{'Child'=>new List<HistoryWrapper>(), 'Adult'=>new List<HistoryWrapper>()};
         for(HistoryWrapper wrapp : wrappers){
-            if(wrapp.event == 'Updated'){
-                historyMap.get('Adult').add(wrapp);
-            } else {
-                historyMap.get('Child').add(wrapp);
+            if(wrapp.recordId == recordId){
+                if(wrapp.event == 'Created'){
+                    if(!duplicateCreateRecords.contains(wrapp.recordId)){
+                        historyMap.get('Adult').add(wrapp);
+                        duplicateCreateRecords.add(wrapp.recordId);
+                    }
+                } else {
+                    historyMap.get('Adult').add(wrapp);
+                }
+            } else if(wrapp.recordId != recordId) {
+                if(wrapp.event == 'Created'){
+                    if(!duplicateCreateRecords.contains(wrapp.recordId)){
+                        historyMap.get('Child').add(wrapp);
+                        duplicateCreateRecords.add(wrapp.recordId);
+                    }
+                } else {
+                    historyMap.get('Child').add(wrapp);
+                }
+                
             }
         }
         return historyMap;
@@ -232,22 +332,26 @@ public with sharing class RelatedListController {
     /**
      * @description     Maps the HistoryWrapper instance depending on if it is a custom or standard record
      * @param record
-     * @param customRecord
+     * @param objectName
      * @return HistoryWrapper
      */
     @TestVisible
-    private static HistoryWrapper createWrapper(SObject record, Boolean customRecord){
+    private static HistoryWrapper createWrapper(SObject record, String objectName){
         HistoryWrapper wrapper = new HistoryWrapper();
         wrapper.historyId = String.valueOf(record.get('Id'));
-        if(customRecord){
-            Schema.DescribeSObjectResult objectDescribe = Id.valueOf(String.valueOf(record.get('Record__c'))).getSObjectType().getDescribe();
-            wrapper.objectAPIName = objectDescribe.getName();
-            wrapper.objectLabel = objectDescribe.getLabel();
+        if(objectName == 'Record_History__c'){
+            if(record.get('Record__c') != null){
+                Schema.DescribeSObjectResult objectDescribe = Id.valueOf(String.valueOf(record.get('Record__c'))).getSObjectType().getDescribe();
+                wrapper.objectAPIName = objectDescribe.getName();
+                wrapper.objectLabel = objectDescribe.getLabel();
+            }
             wrapper.recordId = String.valueOf(record.get('Record__c'));
             wrapper.recordName = String.valueOf(record.get('Record_Name__c'));
+            wrapper.recordURL = '/one/one.app?#/sObject/'+wrapper.recordId+'/view';
             wrapper.parentId = String.valueOf(record.get('ParentId__c'));
             wrapper.event = String.valueOf(record.get('Event__c'));
-            wrapper.field = String.valueOf(record.get('Field__c'));
+            wrapper.field = wrapper.event != 'Updated' ? wrapper.event : String.valueOf(record.get('Field__c'));
+            wrapper.fieldLabel = wrapper.field;
             wrapper.oldValue = String.valueOf(record.get('Old_Value__c'));
             wrapper.oldValueFull = String.valueOf(record.get('Old_Value_Extended__c'));
             wrapper.newValue = String.valueOf(record.get('New_Value__c'));
@@ -264,6 +368,17 @@ public with sharing class RelatedListController {
                 if(String.valueOf(record.get('Field')) == 'created'){
                     wrapper.field = 'Created.';
                     wrapper.fieldLabel = 'Created.';
+                    wrapper.event = 'Created';
+                } else if(String.valueOf(record.get('Field')) == 'Owner') {
+                    wrapper.field = 'OwnerId';
+                } else if(String.valueOf(record.get('Field')) == 'Account') {
+                    wrapper.field = 'AccountId';
+                } else if(String.valueOf(record.get('Field')) == 'Contact') {
+                    wrapper.field = 'ContactId';
+                } else if(String.valueOf(record.get('Field')) == 'RecordType') {
+                    wrapper.field = 'RecordTypeId';
+                } else if(String.valueOf(record.get('Field')) == 'TextName') {
+                    wrapper.field = 'Name';
                 } else {
                     wrapper.field = String.valueOf(record.get('Field'));
                 }
@@ -275,10 +390,85 @@ public with sharing class RelatedListController {
                 wrapper.createdByURL = '/one/one.app?#/sObject/'+String.valueOf(record.get('CreatedById'))+'/view';
             }
             wrapper.createdDate = DateTime.valueOf(record.get('CreatedDate'));
-            wrapper.createdById = String.valueOf(record.get('CreatedById'));
+            wrapper.createdById = String.valueOf(record.get('CreatedById'));      
         }
         return wrapper;
     }  
+
+    /**
+     * @description     dynamically creates queries based on inputs
+     * @param objectName
+     * @return query
+     */
+    private static String getNameField(String objectName){
+        String nameField = 'Name';
+        if(HistoryTrackingService.objectTypeToNameMap.get(objectName) != null) {
+            nameField = HistoryTrackingService.objectTypeToNameMap.get(objectName);
+        }
+        return nameField;
+    }
+
+    /**
+     * @description     dynamically creates queries based on inputs
+     * @param objectDescribe
+     * @return query
+     */
+    private static String getObjectHistorySubQuery(Schema.DescribeSObjectResult objectDescribe){
+        String subQuery = '(SELECT ';
+        if(activityHistoryObjects.contains(objectDescribe.getName())){
+            subQuery += 'FieldName, NewValueText, OldValueText, CreatedDate, CreatedBy.Name, CreatedById FROM ActivityFieldHistories';
+        } else {
+            subQuery += 'Field, NewValue, OldValue, CreatedDate, CreatedBy.Name, CreatedById FROM Histories';
+        }
+        subQuery += ')';
+        return subQuery;
+    }
+    
+    /**
+     * @description     dynamically creates queries based on inputs
+     * @param recordId
+     * @param objectDescribe
+     * @param tobj
+     * @param parentId
+     * @param childReferenceField
+     * @return query
+     */
+    private static String createQuery(String recordId, Schema.DescribeSObjectResult objectDescribe, Tracked_Object__mdt tobj, String parentId, String childReferenceField){
+        String objectName = objectDescribe.getName();
+        String objectHistoryName = 'Histories';
+        if(!objectDescribe.isCustom() && activityHistoryObjects.contains(objectName)) {
+            objectHistoryName = 'ActivityFieldHistories';
+        }
+        String query = 'SELECT Id,';
+        String recordNameField = HistoryTrackingService.getRecordNameField(objectName);
+        if(objectName == 'Contact'){
+            query += recordNameField+',FirstName,';
+        } else if(recordNameField != 'Id') {
+            query += recordNameField+',';
+        }
+        List<String> parentRefs = new List<String>();
+        if(tobj != null && tobj.Parent_Reference_Field__c != null){
+            parentRefs = tobj.Parent_Reference_Field__c.split(',');
+            for(String parentRef : parentRefs){
+                query+= parentRef+',';
+            }
+        }
+        query += getObjectHistorySubQuery(objectDescribe);
+        query = query.removeEnd(',');
+        query += ' FROM ';
+        query += objectName;
+        if(recordId != null || parentId != null) {
+            query +=' WHERE ';
+            if(recordId != null && parentId != null){
+                query +='Id = :recordId AND '+childReferenceField+' = :recordId';
+            } else if(recordId != null) {
+                query += 'Id = :recordId';
+            } else {
+                query += childReferenceField+' = :recordId';
+            }
+        }
+        return query;
+    }
         
     /**
      * @description     Determine the name of the parent relationship
@@ -309,6 +499,9 @@ public with sharing class RelatedListController {
     @AuraEnabled
     public static String getIconName(String sobjectApiName){
         String iconName;
+        if(sobjectApiName == 'Task'){
+            iconName = 'standard:' + sobjectApiName.toLowerCase();
+        }
         List<Schema.DescribeTabSetResult> tabSetDesc = Schema.DescribeTabs();
         List<Schema.DescribeTabResult> tabDesc = new List<Schema.DescribeTabResult>();
         List<Schema.DescribeIconResult> iconDesc = new List<Schema.DescribeIconResult>();
@@ -332,6 +525,12 @@ public with sharing class RelatedListController {
                 break;
             }
         }
+        if(iconName == null){
+            iconName = 'standard:entity';
+        }
+        if(iconName == ('standard:product2')){
+            iconName = 'standard:product';
+        }
         return iconName;
     } 
     
@@ -345,10 +544,24 @@ public with sharing class RelatedListController {
     @AuraEnabled
     public static Record_History__c getHistoryRecord(String recordId, String historyId, Boolean isRelated){
         try {
-            List<Record_History__c> histList = [SELECT Id, Name, Additional_Field_1__c, Additional_Field_2__c, CreatedById, Created_By_DL__c, Created_By_Formula__c, Created_Date_DL__c,Created_Date_Formula__c, Event__c, Field__c, New_Value__c, New_Value_Extended__c, Old_Value__c, Old_Value_Extended__c,ParentId__c, Record__c, Record_Name__c FROM Record_History__c WHERE Id = :historyId];
+            List<Record_History__c> histList = [SELECT Id, Name, Additional_Field_1__c, Additional_Field_2__c, CreatedById, Created_By_DL__c, Created_By_DL__r.Name, Created_By_Formula__c, Created_Date_DL__c,Created_Date_Formula__c, Event__c, Field__c, New_Value__c, New_Value_Extended__c, Old_Value__c, Old_Value_Extended__c,ParentId__c, Record__c, Record_Name__c FROM Record_History__c WHERE Id = :historyId];
             Record_History__c histRec;
             if(!histList.isEmpty()){
+                Boolean canViewEncryptedText = ![SELECT Id FROM PermissionSetAssignment WHERE PermissionSet.PermissionsViewEncryptedData = true].isEmpty();
                 histRec = histList[0];
+                if(histRec.Event__c == 'Updated' && histRec.Field__c != 'Created.' && histRec.Field__c != 'RecordType' && histRec.Field__c != 'RecordTypeId'){
+                    Schema.sObjectType objectType = Id.valueOf(histRec.Record__c).getSObjectType();
+                    Schema.DescribeSObjectResult objectDescribe = objectType.getDescribe();
+                    Map<String,Schema.SObjectField> mfields = objectDescribe.fields.getMap();
+                    Schema.DescribeFieldResult fieldResult = mfields.get(histRec.Field__c).getDescribe();
+                    if(fieldResult.getType() == Schema.DisplayType.ENCRYPTEDSTRING && !canViewEncryptedText){
+                        String mask ='*';
+                        histRec.Old_Value__c = histRec.Old_Value__c == null ? null : mask.repeat(histRec.Old_Value__c.length());
+                        histRec.Old_Value_Extended__c = histRec.Old_Value_Extended__c == null ? null : mask.repeat(histRec.Old_Value_Extended__c.length());
+                        histRec.New_Value__c = histRec.New_Value__c == null ? null : mask.repeat(histRec.New_Value__c.length());
+                        histRec.New_Value_Extended__c = histRec.New_Value_Extended__c == null ? null : mask.repeat(histRec.New_Value_Extended__c.length());
+                    }
+                }
             } else {
                 histRec = new Record_History__c();
                 if(isRelated){
@@ -357,7 +570,23 @@ public with sharing class RelatedListController {
                     histRec.Created_By_DL__c = UserInfo.getUserId();
                     histRec.Created_Date_DL__c = System.now();
                 } else {
+                    Schema.sObjectType objectType = Id.valueOf(recordId).getSObjectType();
+                    Schema.DescribeSObjectResult objectDescribe = objectType.getDescribe();
+                    String objectName = objectDescribe.getName();
+                    String nameField = HistoryTrackingService.getRecordNameField(objectName);
+                    Tracked_Object__mdt tobj = Tracked_Object__mdt.getInstance(objectName.replaceAll('_',''));
+                    Sobject sobj = Database.query(String.escapeSingleQuotes(createQuery(recordId, objectDescribe, tobj, null, null)))[0];
+                    List<String> parentRefs = new List<String>();
+                    if(!parentRefs.isEmpty()){
+                        String concatParents = '';
+                        for(String parentRef : parentRefs) {
+                            concatParents = concatParents+String.valueOf(sobj.get(parentRef)) +',';
+                        }
+                        concatParents = concatParents.removeEnd(',');
+                        histRec.ParentId__c = concatParents;
+                    }
                     histRec.Record__c = recordId;
+                    histRec.Record_Name__c = objectName == 'Contact' ? String.valueOf(sobj.get(nameField))+', '+String.valueOf(sobj.get('FirstName')) : String.valueOf(sobj.get(nameField));
                     histRec.Event__c = 'Updated';
                     histRec.Created_By_DL__c = UserInfo.getUserId();
                     histRec.Created_Date_DL__c = System.now();
@@ -365,7 +594,6 @@ public with sharing class RelatedListController {
             }  
             return histRec;
         } catch (Exception e) {
-            System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -384,13 +612,12 @@ public with sharing class RelatedListController {
             if(rh.Created_Date_DL__c == null){
                 rh.Created_Date_DL__c = null;
             }
-            Id recordId = rh.Record__c != null ? Id.valueOf(rh.Record__c) : null;
             if(rh.Event__c != 'Updated' && String.isBlank(rh.Record_Name__c)) {
                 throw new RelatedListControllerException('Record Name is required');
             }
-            upsert as user rh;
+            upsert rh;
         } catch (Exception e) {
-            System.debug(e.getMessage());
+            System.debug(LoggingLevel.DEBUG, e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }
@@ -400,7 +627,7 @@ public with sharing class RelatedListController {
      * @param recordId
      * @return fieldMap
      */
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static Map<String, String> getFields(String recordId){
         try {
             Map<String, String> fieldMap = new Map<String, String>();

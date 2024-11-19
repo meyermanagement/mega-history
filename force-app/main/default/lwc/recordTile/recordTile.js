@@ -4,10 +4,21 @@ export default class RecordTile extends LightningElement {
 
     @api record
     @api relatedRecord
+    @api isSuperUser
+
+    get showMenu(){
+        return this.record.isCustom && (this.relatedRecord || this.superUser)
+    }
+
+    get isNotRelatedUpdate(){
+        return !this.relatedRecord || (this.relatedRecord && this.record.event != 'Updated');
+    }
+
+    get superUser() {
+        return this.isSuperUser == 'true';
+    }
     
-    handleOnselect(event) {
-        console.log(JSON.stringify(event.detail));
-        console.log(JSON.stringify(event.detail.value));
+    handleOnSelect(event) {
         const selectedEvent = new CustomEvent('select', {
             detail: {
                 action: {

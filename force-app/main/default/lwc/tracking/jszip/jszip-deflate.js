@@ -253,31 +253,6 @@ var zip_deflate_start = function(level) {
     zip_flag_buf = new Array(parseInt(zip_LIT_BUFSIZE / 8));
 }
 
-var zip_deflate_end = function() {
-    zip_free_queue = zip_qhead = zip_qtail = null;
-    zip_outbuf = null;
-    zip_window = null;
-    zip_d_buf = null;
-    zip_l_buf = null;
-    zip_prev = null;
-    zip_dyn_ltree = null;
-    zip_dyn_dtree = null;
-    zip_static_ltree = null;
-    zip_static_dtree = null;
-    zip_bl_tree = null;
-    zip_l_desc = null;
-    zip_d_desc = null;
-    zip_bl_desc = null;
-    zip_bl_count = null;
-    zip_heap = null;
-    zip_depth = null;
-    zip_length_code = null;
-    zip_dist_code = null;
-    zip_base_length = null;
-    zip_base_dist = null;
-    zip_flag_buf = null;
-}
-
 var zip_reuse_queue = function(p) {
     p.next = zip_free_queue;
     zip_free_queue = p;
@@ -483,8 +458,7 @@ var zip_longest_match = function(cur_match) {
 	/* We check for insufficient lookahead only every 8th comparison;
          * the 256th check will be made at strstart+258.
          */
-	do {
-	} while(zip_window[++scanp] == zip_window[++matchp] &&
+	while(zip_window[++scanp] == zip_window[++matchp] &&
 		zip_window[++scanp] == zip_window[++matchp] &&
 		zip_window[++scanp] == zip_window[++matchp] &&
 		zip_window[++scanp] == zip_window[++matchp] &&

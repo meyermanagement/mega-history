@@ -1,9 +1,9 @@
 import { LightningElement, wire, track } from 'lwc';
 import { refreshApex } from "@salesforce/apex";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
-import { loadStyle, loadScript } from 'lightning/platformResourceLoader';
+import { loadStyle } from 'lightning/platformResourceLoader';
 import iconColor from '@salesforce/resourceUrl/iconColor';
-import jszip from '@salesforce/resourceUrl/jszip';
+import {JSZip} from './jszip/jszip';
 import getTrackingRecords from '@salesforce/apex/TrackingController.getRecords';
 import getObjectDetails from '@salesforce/apex/TrackingController.getObjectDetails';
 import getObjectSelectedDetails from '@salesforce/apex/TrackingController.getObjectSelectedDetails';
@@ -128,10 +128,11 @@ export default class Tracking extends LightningElement {
     @track editModal = false;
     showObjectLookup = false;
     @track selectedObject = {};
+    @track parentOptions = [];
+    @track parentValues = [];
     @track options = [];
     @track values = [];
     @track requiredOptions = [];
-    @track parentRefs = [];
     objects = [];
     objectSelected = '';
     @track deleteConfirmModal = false;
@@ -153,7 +154,7 @@ export default class Tracking extends LightningElement {
     }
 
     get hasParentRef(){
-        return this.selectedObject.parentRef != undefined && this.selectedObject.parentRef != '';
+        return this.parentValues != undefined && this.parentValues.length > 0;
     }
 
     get trackDelete(){
@@ -161,20 +162,16 @@ export default class Tracking extends LightningElement {
     }
 
     get hasSelectedObject(){
-        return this.objectSelected != '' || JSON.stringify(this.selectedObject) != '{}';
+        return this.objectSelected != '' || JSON.stringify(this.selectedObject) != '{}' ;
     }
 
     get hasMetadata(){
-        return this.trackingData.length > 0;
+        return this.trackingData != undefined && this.trackingData.length > 0;
     }
 
     connectedCallback(){
         if(this.trackingData == undefined) this.loading = true;
         loadStyle(this, iconColor);
-        loadScript(this, jszip + '/jszip.js');
-        loadScript(this, jszip + '/jszip-load.js');
-        loadScript(this, jszip + '/jszip-deflate.js');
-        loadScript(this, jszip + '/jszip-inflate.js');
     }
 
     @wire(getTrackingRecords)
@@ -227,9 +224,7 @@ export default class Tracking extends LightningElement {
 
     handleRowAction(event) {
         const actionName = event.detail.action.name;
-        console.log(actionName);
         const row = event.detail.row;
-        console.log(row);
         switch (actionName) {
             case 'delete_tracking':
                 this.deleteTracking(row);
@@ -272,7 +267,6 @@ export default class Tracking extends LightningElement {
                 tempObj.additionalField2 = '';
                 this.selectedObject = {...tempObj};
             }
-            console.log('this.selectedObject>>'+JSON.stringify(this.selectedObject));
             const items = [];
             const selected = [];
             const required = [];
@@ -298,11 +292,15 @@ export default class Tracking extends LightningElement {
             this.options.push(...items);
             this.values.push(...selected);
             this.requiredOptions.push(...required);
-            this.parentRefs.push(...parentItems);
+            this.parentOptions.push(...parentItems);
+            if(data.parentRef != undefined){
+                const parentSelected = data.parentRef.split(',');
+                this.parentValues.push(...parentSelected);
+            }
             this.modalLoading = false;
         })
         .catch(error => {
-			console.error(error);
+			console.error(JSON.stringify(error));
             this.dispatchEvent(
                 new ShowToastEvent({
                     title: "An error has occurred. Please contact the system administrator for further assistance.",
@@ -323,13 +321,17 @@ export default class Tracking extends LightningElement {
         this.options = [];
         this.values = [];
         this.requiredOptions = [];
-        this.parentRefs = [];
+        this.parentOptions = [];
+        this.parentValues = [];
         this.objectSelected = '';
         this.mdData = [];
     }
 
     handleSave(){
         this.modalLoading = true;
+        let tempObj = {...this.selectedObject};
+        tempObj.parentRef = this.parentValues.toString();
+        this.selectedObject = {...tempObj};
         submitMetaData({ wrapperString : JSON.stringify(this.selectedObject), trackingData : JSON.stringify(this.trackingData), fields : this.values })
         .then((data) => {
             this.trackingData = data;
@@ -536,6 +538,7 @@ export default class Tracking extends LightningElement {
                         variant: "error",
                     }),
                 );
+                clearInterval(this.interval);
                 this.modalLoading = false;
             }); 
         } else {
@@ -582,7 +585,8 @@ export default class Tracking extends LightningElement {
         this.options = [];
         this.values = [];
         this.requiredOptions = [];
-        this.parentRefs = [];
+        this.parentOptions = [];
+        this.parentValues = [];
         getObjectSelectedDetails({ objectName : this.objectSelected })
         .then((data) => {
             this.selectedObject = {...data};
@@ -611,7 +615,7 @@ export default class Tracking extends LightningElement {
             this.options.push(...items);
             this.values.push(...selected);
             this.requiredOptions.push(...required);
-            this.parentRefs.push(...parentItems);
+            this.parentOptions.push(...parentItems);
             this.modalLoading = false;
         })
         .catch(error => {
@@ -628,9 +632,7 @@ export default class Tracking extends LightningElement {
     }
 
     handleParentChange(event) {
-        let tempObj = {...this.selectedObject};
-        tempObj.parentRef = event.detail.value;
-        this.selectedObject = {...tempObj};
+        this.parentValues = event.detail.value;
     }
 
     handleTrackCreate(event) {
