@@ -1,6 +1,6 @@
 # Mega History App
 
-An Advanced History Tracking app to address the limitations of current Salesforce history tracking limitations. Seemlessly combines out of the box history tracking plus additional history of any field with the ability to tracking create/delete/undelete events of child objects and the ability to see history tracking of records across multiple objects.  Import your own history tracking as well.
+An advanced, multi-functional Record and Field History Tracking app that addresses the limitations of current Salesforce history tracking and record event monitoring/auditing. Seemlessly combines out of the box field history tracking with custom field history and the ability to track create/delete/undelete events of child objects across multiple parent records.  Additional features include the ability to import your own history records, track objects that can't normally be history tracked(ie. AccountTeamMember, OpportunityContactRole), prioritize visibility of certain fields, see history timeline of child records, create/edit/delete custom history records, completely deployable configuration for CI/CD processes, and a user-freindly/guided configuration tool.
 
 ## Features
 
@@ -8,11 +8,11 @@ An Advanced History Tracking app to address the limitations of current Salesforc
 * Track as many fields as desired, beyond Salesforce limits
 * Track objects that you can't normally track, ie. AccountTeamMember, CampaignMember, OpportunityContactRole, etc...
 * Prioritize & highlight certain fields
-* See complete start to end timeline of child records
 
 **View history of child records on parents**:
 * CRUD History: See when child records were created, deleted, and undeleted on multiple parent records
 * See Field History of child records on parent records
+* See complete start to end timeline of child records
 * Create different views based on profiles and/or record types
 
 **Import history from external systems**:

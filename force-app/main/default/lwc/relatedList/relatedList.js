@@ -412,13 +412,15 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
     handleRowAction(event) {
         const actionName = event.detail.action.name;
         const row = event.detail.row;
+        console.log('actionName>>'+actionName);
+        console.log('row>>'+JSON.stringify(row));
         switch (actionName) {
             case "delete":
-                if(row.parentId.includes(this.recordId)) this.handleDeleteRelatedRecord(row);
+                if(row.parentId != undefined && row.parentId != null && row.parentId.includes(this.recordId)) this.handleDeleteRelatedRecord(row);
                 else this.handleDeleteRecord(row);
                 break;
             case "edit":
-                if(row.parentId.includes(this.recordId)) this.handleEditRelatedRecord(row);
+                if(row.parentId != undefined && row.parentId != null && row.parentId.includes(this.recordId)) this.handleEditRelatedRecord(row);
                 else this.handleEditRecord(row);
                 break;
             case "view":
@@ -517,6 +519,7 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
     }
 
     handleDeleteRecord(row) {
+        console.log('row>>'+JSON.stringify(row));
         const newEditPopup = this.template.querySelector("c-related-list-delete-popup");
         newEditPopup.recordId = row.historyId;
         newEditPopup.recordName = row.recordName;
