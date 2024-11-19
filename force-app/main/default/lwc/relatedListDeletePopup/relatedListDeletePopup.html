@@ -3,7 +3,7 @@
         <c-modal onclosedialog={handleDialogClose}>
             <span slot="header">{header}</span>
             <slot class="slds-align_absolute-center">
-                {body}
+                <template lwc:if={relatedRecord}>{relatedBody}</template><template lwc:else>{body}</template>
             </slot>
             <span slot="footer" >
                 <lightning-button variant="neutral" label="Cancel" title="Cancel" onclick={handleClose} ></lightning-button>

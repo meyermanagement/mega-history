@@ -1,0 +1,99 @@
+<template>
+    <div class="slds-m-around_x-small">
+        <div class="slds-card">
+            <div class="slds-p-around_small">
+                <article class="slds-tile slds-tile_board">
+                    <div class="slds-grid slds-grid_align-spread slds-has-flexi-truncate">
+                        <h3 class="slds-tile__title slds-truncate slds-p-bottom_small" title={record.createdDate}>
+                            <lightning-formatted-date-time value={record.createdDate} year="numeric" month="numeric" day="numeric" hour="2-digit"
+                                minute="2-digit" time-zone-name="short"></lightning-formatted-date-time>
+                        </h3>
+                        <template lwc:if={showMenu}>
+                            <div class="slds-shrink-none">
+                                <lightning-button-menu alternative-text="Show menu" onselect={handleOnSelect}>
+                                    <template lwc:if={relatedRecord}>
+                                        <lightning-menu-item value="view" label="View Details"></lightning-menu-item>
+                                    </template>
+                                    <template lwc:if={superUser}>
+                                        <template lwc:if={isNotRelatedUpdate}>
+                                            <lightning-menu-item value="edit" label="Edit"></lightning-menu-item>
+                                        </template>
+                                        <lightning-menu-item value="delete" label="Delete"></lightning-menu-item>
+                                    </template>
+                                </lightning-button-menu>
+                            </div>
+                        </template>
+                    </div>
+                    <div class="slds-tile__detail">
+                        <dl class="slds-dl_horizontal slds-wrap">
+                            <template lwc:if={relatedRecord}>
+                                <dt class="slds-dl_horizontal__label">
+                                    <p class="slds-truncate" title="Object">Object:</p>
+                                </dt>
+                                <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                    <p class="slds-truncate" title={record.objectLabel}>{record.objectLabel}</p>
+                                </dd>
+                                <dt class="slds-dl_horizontal__label">
+                                    <p class="slds-truncate" title="Event">Event:</p>
+                                </dt>
+                                <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                    <p class="slds-truncate" title={record.event}>{record.event}</p>
+                                </dd>
+                                <dt class="slds-dl_horizontal__label">
+                                    <p class="slds-truncate" title="User">User:</p>
+                                </dt>
+                                <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                    <p class="slds-truncate" title={record.createdByName}>{record.createdByName}</p>
+                                </dd>
+                                <dt class="slds-dl_horizontal__label">
+                                    <p class="slds-truncate" title="Record">Record:</p>
+                                </dt>
+                                <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                    <p class="slds-truncate" title={record.recordName}>{record.recordName}</p>
+                                </dd>
+                                <dt class="slds-dl_horizontal__label">
+                                    <p class="slds-truncate" title="Field">Field:</p>
+                                </dt>
+                                <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                    <p class="slds-truncate" title={record.fieldLabel}>{record.fieldLabel}</p>
+                                </dd>
+                                <dt class="slds-dl_horizontal__label">
+                                    <p class="slds-truncate" title="New Value">New Value:</p>
+                                </dt>
+                                <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                    <p class="slds-truncate" title={record.newValue}>{record.newValue}</p>
+                                </dd>
+                            </template>
+                            <template lwc:else>
+                                <dt class="slds-dl_horizontal__label">
+                                    <p class="slds-truncate" title="Field">Field:</p>
+                                </dt>
+                                <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                    <p class="slds-truncate" title={record.fieldLabel}>{record.fieldLabel}</p>
+                                </dd>
+                                <dt class="slds-dl_horizontal__label">
+                                    <p class="slds-truncate" title="User">User:</p>
+                                </dt>
+                                <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                    <p class="slds-truncate" title={record.createdByName}>{record.createdByName}</p>
+                                </dd>
+                                <dt class="slds-dl_horizontal__label">
+                                    <p class="slds-truncate" title="Original Value">Original Value:</p>
+                                </dt>
+                                <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                    <p class="slds-truncate" title={record.oldValue}>{record.oldValue}</p>
+                                </dd>
+                                <dt class="slds-dl_horizontal__label">
+                                    <p class="slds-truncate" title="New Value">New Value:</p>
+                                </dt>
+                                <dd class="slds-dl_horizontal__detail slds-tile__meta">
+                                    <p class="slds-truncate" title={record.newValue}>{record.newValue}</p>
+                                </dd>
+                            </template>
+                        </dl>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </div>
+</template>

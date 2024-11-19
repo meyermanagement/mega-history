@@ -1,7 +1,16 @@
-global with sharing class SetupController {
+/**
+ * @description     Controller for the Setup LWC
+ * @author          Mark Meyer
+ * @date            09/27/2024
+ */
+public with sharing class SetupController {
 
+    /**
+     * @description     Checks that the connection to the MetaData API will work
+     * @return connectionAvailable
+     */
     @AuraEnabled(cacheable=true)
-    global static Boolean checkMetadataAPIConnection() {
+    public static Boolean checkMetadataAPIConnection() {
         try {
             MetadataService.MetadataPort service = new MetadataService.MetadataPort();
             service.SessionHeader = new MetadataService.SessionHeader_element();
@@ -13,47 +22,59 @@ global with sharing class SetupController {
             service.listMetadata(queries, 58);
             //return true;
         } catch (Exception e) {
-            System.debug(e.getMessage());
             return true;
         }
         return false;
     }
 
+    /**
+     * @description     Checks that other users have been assigned to the MEGA History permission sets
+     * @return permissions Assigned
+     */
     @AuraEnabled(cacheable=true)
-    global static Boolean checkPermissionAssignment() {
+    public static Boolean checkPermissionAssignment() {
         try {
             List<PermissionSetAssignment> assignments = [SELECT Id FROM PermissionSetAssignment WHERE PermissionSet.Name = 'Mega_History_User' AND AssigneeId != :UserInfo.getUserId()];
             return assignments.isEmpty();
         } catch (Exception e) {
-            System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }
 
+    /**
+     * @description     Checks that tracking on objects has been configured
+     * @return Records created
+     */
     @AuraEnabled(cacheable=true)
-    global static Boolean checkRecordTracking() {
+    public static Boolean checkRecordTracking() {
         try {
             List<Tracked_Object__mdt> records = [SELECT Id FROM Tracked_Object__mdt LIMIT 1];
             return records.isEmpty();
         } catch (Exception e) {
-            System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }
 
+    /**
+     * @description     Checks that the lightning web compnent has been embedded on any lightning record pages
+     * @return lwc embedded
+     */
     @AuraEnabled(cacheable=true)
-    global static Boolean checkViews() {
+    public static Boolean checkViews() {
         try {
             Initialization__c initialization = Initialization__c.getInstance();
             return !initialization.initialized__c;
         } catch (Exception e) {
-            System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }
 
+    /**
+     * @description     get the session id from a VF Page
+     * @return session Id
+     */
     @AuraEnabled(cacheable=true)
-    global static String getSessionIdFromVFPage(){
+    public static String getSessionIdFromVFPage(){
         try {
             if(!Test.isRunningTest()){
                 String content = Page.SessionIdPage.getContent().toString();
@@ -64,17 +85,19 @@ global with sharing class SetupController {
                 return null;
             }
         } catch (Exception e) {
-            System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }
 
+    /**
+     * @description     get the Org URL
+     * @return org url
+     */
     @AuraEnabled(cacheable=true)
-    global static String getOrgURL(){
+    public static String getOrgURL(){
         try {
             return URL.getOrgDomainUrl().toExternalForm();
         } catch (Exception e) {
-            System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }

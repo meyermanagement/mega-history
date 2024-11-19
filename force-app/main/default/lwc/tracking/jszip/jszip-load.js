@@ -333,7 +333,7 @@ Dual licenced under the MIT license or GPLv3. See LICENSE.markdown.
        * Parse the ZIP64 extra field and merge the info in the current ZipEntry.
        * @param {StreamReader} reader the reader to use.
        */
-      parseZIP64ExtraField : function(reader)
+      parseZIP64ExtraField : function()
       {
          // should be something, preparing the extra reader
          var extraReader = new StreamReader(this.extraFields[0x0001].value);

@@ -20,6 +20,10 @@
     display: inline-block;
     width: 60px;
     height: 60px;
+    
+}
+.slds-spinner_container {
+    background-color: #f3f3f3;
 }
 .my-box {
      padding: 0 0 0;  

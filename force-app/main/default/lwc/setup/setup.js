@@ -75,7 +75,6 @@ export default class Setup extends NavigationMixin(LightningElement) {
 
     @wire(checkAPIConnection)
     getConnection(result) {
-        console.log('getConnection');
         this.wiredConnection = result;
         this.connectionLoading = false;
         if (result.error) {
@@ -92,7 +91,6 @@ export default class Setup extends NavigationMixin(LightningElement) {
 
     @wire(checkPermissions)
     getPermissions(result) {
-        console.log('getPermissions');
         this.wiredPermission = result;
         this.permissionLoading = false;
         if (result.error) {
@@ -109,7 +107,6 @@ export default class Setup extends NavigationMixin(LightningElement) {
 
     @wire(checkTracking)
     getTracking(result) {
-        console.log('getTracking');
         this.wiredTracking = result;
         this.trackingLoading = false;
         if (result.error) {
@@ -126,7 +123,6 @@ export default class Setup extends NavigationMixin(LightningElement) {
 
     @wire(checkViews)
     getViews(result) {
-        console.log('getViewsresult>>'+JSON.stringify(result));
         this.wiredViews = result.data;
         this.viewsLoading = false;
         if (result.error) {
@@ -204,7 +200,7 @@ export default class Setup extends NavigationMixin(LightningElement) {
         this[NavigationMixin.Navigate]({
             type: "standard__navItemPage",
             attributes: {
-            apiName: "megahistory__Tracking",
+            apiName: "megatools__Tracking",
             },
         });
     }
@@ -214,7 +210,7 @@ export default class Setup extends NavigationMixin(LightningElement) {
         this[NavigationMixin.Navigate]({
             type: "standard__navItemPage",
             attributes: {
-            apiName: "megahistory__Views",
+            apiName: "megatools__Views",
             },
         });
     }

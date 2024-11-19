@@ -1,8 +1,28 @@
-global with sharing class TrackingFieldDefinition {
+/**
+ * @description     wrapper for Field Definitions
+ * @author          Mark Meyer
+ * @date            09/27/2024
+ */
+public with sharing class TrackingFieldDefinition {
     
-    @AuraEnabled global String fieldLabel;
-    @AuraEnabled global String fieldAPIName;
-    @AuraEnabled global Boolean standardTracked = false;
-    @AuraEnabled global Boolean customTracked = false;
-    @AuraEnabled global String operation;
+    /**
+     * @description fieldLabel
+     */
+    @AuraEnabled public String fieldLabel;
+    /**
+     * @description fieldAPIName
+     */
+    @AuraEnabled public String fieldAPIName;
+    /**
+     * @description standardTracked
+     */
+    @AuraEnabled public Boolean standardTracked = false;
+    /**
+     * @description customTracked
+     */
+    @AuraEnabled public Boolean customTracked = false;
+    /**
+     * @description operation
+     */
+    @AuraEnabled public String operation;
 }
