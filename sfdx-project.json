@@ -2,7 +2,8 @@
   "packageDirectories": [
     {
       "versionName": "ver 0.1",
-      "versionNumber": "0.1.0.NEXT",
+      "versionNumber": "0.2.0.NEXT",
+      "ancestorVersion": "HIGHEST",
       "path": "force-app",
       "package": "MEGA History",
       "versionDescription": "",
@@ -33,6 +34,7 @@
     "MEGA History@0.1.0-15": "04tbn000000nl0zAAA",
     "MEGA History@0.1.0-16": "04tbn000000nl2bAAA",
     "MEGA History@0.1.0-17": "04tbn000000nmLFAAY",
-    "MEGA History@0.1.0-18": "04tbn000000nvI5AAI"
+    "MEGA History@0.1.0-18": "04tbn000000nvI5AAI",
+    "MEGA History@0.2.0-1": "04tbn000000o0PpAAI"
   }
 }

@@ -7,7 +7,7 @@ An advanced, multi-functional Record and Field History Tracking app that address
 **Enhanced history tracking on objects.**:
 * Track as many fields as desired, beyond Salesforce limits
 * Track objects that you can't normally track, ie. AccountTeamMember, CampaignMember, OpportunityContactRole, etc...
-* Prioritize & highlight certain fields
+* Prioritize & highlight specified fields
 
 **View history of child records on parents**:
 * CRUD History: See when child records were created, deleted, and undeleted on multiple parent records
@@ -17,7 +17,7 @@ An advanced, multi-functional Record and Field History Tracking app that address
 
 **Import history from external systems**:
 * Flexible Import of data allows you to show your record history even when migrating data from one system into Salesforce
-* Display with Salesforce standard history tracking in seemless/combined view
+* Display with Salesforce standard history tracking in seamless/combined view
 * Custom created date and created by field for historical data load to merge data with standard history
 
 **Enhanced control/adjustment of history**:

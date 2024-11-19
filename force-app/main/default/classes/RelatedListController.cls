@@ -350,7 +350,7 @@ public without sharing class RelatedListController {
             wrapper.recordURL = '/one/one.app?#/sObject/'+wrapper.recordId+'/view';
             wrapper.parentId = String.valueOf(record.get('ParentId__c'));
             wrapper.event = String.valueOf(record.get('Event__c'));
-            wrapper.field = wrapper.event == 'Created' ? 'Created' : String.valueOf(record.get('Field__c'));
+            wrapper.field = wrapper.event != 'Updated' ? wrapper.event : String.valueOf(record.get('Field__c'));
             wrapper.fieldLabel = wrapper.field;
             wrapper.oldValue = String.valueOf(record.get('Old_Value__c'));
             wrapper.oldValueFull = String.valueOf(record.get('Old_Value_Extended__c'));
