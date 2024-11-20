@@ -20,7 +20,7 @@ public with sharing class ReusableLookupController {
                     fieldsToQuery = fieldsToQuery + inputWrapper.fieldApiName;
                 }
                 if(string.isNotBlank(inputWrapper.otherFieldApiName)){
-                    fieldsToQuery = fieldsToQuery + ', ' + inputWrapper.otherFieldApiName;
+                    fieldsToQuery = fieldsToQuery + ', ' + String.escapeSingleQuotes(inputWrapper.otherFieldApiName);
                 }
                 String query = fieldsToQuery + ' FROM '+ String.escapeSingleQuotes(inputWrapper.objectApiName);
                 String filterCriteria = inputWrapper.fieldApiName + ' LIKE ' + '\'' + String.escapeSingleQuotes(inputWrapper.searchString.trim()) + '%\' LIMIT 10';
