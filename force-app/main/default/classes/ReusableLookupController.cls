@@ -22,12 +22,12 @@ public with sharing class ReusableLookupController {
                 if(string.isNotBlank(inputWrapper.otherFieldApiName)){
                     fieldsToQuery = fieldsToQuery + ', ' + inputWrapper.otherFieldApiName;
                 }
-                String query = fieldsToQuery + ' FROM '+ inputWrapper.objectApiName;
+                String query = fieldsToQuery + ' FROM '+ String.escapeSingleQuotes(inputWrapper.objectApiName);
                 String filterCriteria = inputWrapper.fieldApiName + ' LIKE ' + '\'' + String.escapeSingleQuotes(inputWrapper.searchString.trim()) + '%\' LIMIT 10';
                 if(String.isNotBlank(inputWrapper.selectedRecordId)) {
-                    query += ' WHERE Id = \''+ inputWrapper.selectedRecordId + '\'';
+                    query += ' WHERE Id = \''+ String.escapeSingleQuotes(inputWrapper.selectedRecordId) + '\'';
                 }else if(String.isNotBlank(inputWrapper.parentFieldApiName) && String.isNotBlank(inputWrapper.parentRecordId)){
-                    query += ' WHERE '+ inputWrapper.parentFieldApiName+ ' = \''+ inputWrapper.parentRecordId + '\'';
+                    query += ' WHERE '+ String.escapeSingleQuotes(inputWrapper.parentFieldApiName)+ ' = \''+ String.escapeSingleQuotes(inputWrapper.parentRecordId) + '\'';
                     query += ' AND ' + filterCriteria;
                 } 
                 else {
