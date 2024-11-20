@@ -17,13 +17,13 @@ public with sharing class ReusableLookupController {
                 SearchWrapper inputWrapper = (SearchWrapper)JSON.deserialize(input, SearchWrapper.class);
                 String fieldsToQuery = 'SELECT Id, ';
                 if(string.isNotBlank(inputWrapper.fieldApiName)){
-                    fieldsToQuery = fieldsToQuery + inputWrapper.fieldApiName;
+                    fieldsToQuery = fieldsToQuery + String.escapeSingleQuotes(inputWrapper.fieldApiName);
                 }
                 if(string.isNotBlank(inputWrapper.otherFieldApiName)){
                     fieldsToQuery = fieldsToQuery + ', ' + String.escapeSingleQuotes(inputWrapper.otherFieldApiName);
                 }
                 String query = fieldsToQuery + ' FROM '+ String.escapeSingleQuotes(inputWrapper.objectApiName);
-                String filterCriteria = inputWrapper.fieldApiName + ' LIKE ' + '\'' + String.escapeSingleQuotes(inputWrapper.searchString.trim()) + '%\' LIMIT 10';
+                String filterCriteria = String.escapeSingleQuotes(inputWrapper.fieldApiName) + ' LIKE ' + '\'' + String.escapeSingleQuotes(inputWrapper.searchString.trim()) + '%\' LIMIT 10';
                 if(String.isNotBlank(inputWrapper.selectedRecordId)) {
                     query += ' WHERE Id = \''+ String.escapeSingleQuotes(inputWrapper.selectedRecordId) + '\'';
                 }else if(String.isNotBlank(inputWrapper.parentFieldApiName) && String.isNotBlank(inputWrapper.parentRecordId)){
