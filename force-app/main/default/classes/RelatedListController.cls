@@ -3,7 +3,7 @@
  * @author          Mark Meyer
  * @date            09/27/2024
  */
-public without sharing class RelatedListController {
+public with sharing class RelatedListController {
 
     /**
      * @description     Param for recordId
@@ -146,8 +146,13 @@ public without sharing class RelatedListController {
                         'ParentId__c, Record__c, Record_Name__c FROM Record_History__c WHERE Record__c = :recordId'+
                         ' OR ParentId__c LIKE ' + '\'%' + String.escapeSingleQuotes(recordId) + '%\''+
                         ' ORDER BY Created_Date_Formula__c DESC';
-        for(Sobject sobj : Database.query(query)){
-            wrappers.add(createWrapper(sobj, 'Record_History__c'));
+        Map<String, Object> binds = new Map<String, Object>{'recordId' => recordId };
+        try{
+            for(SObject sobj : Database.queryWithBinds(query, binds, AccessLevel.USER_MODE)) {
+                wrappers.add(createWrapper(sobj, 'Record_History__c'));
+            }
+        } catch(Exception e){
+            System.debug(e.getMessage());
         }
         return wrappers;
 	}
@@ -171,7 +176,8 @@ public without sharing class RelatedListController {
                 if(!activityHistoryObjects.contains(childApiName)){
                     String childQuery = createQuery(null, childObjectDescribe, tobjMap.get(childApiName), recordId, childReferenceField);
                     try{
-                        for(Sobject sobj : Database.query(String.escapeSingleQuotes(childQuery))){
+                        Map<String, Object> binds = new Map<String, Object>{'recordId' => recordId };
+                        for(SObject sobj : Database.queryWithBinds(String.escapeSingleQuotes(childQuery), binds, AccessLevel.USER_MODE)) {
                             for(Sobject hist : sobj.getSobjects('Histories')){
                                 HistoryWrapper wrapp = createWrapper(hist, 'Histories');
                                 wrapp.objectAPIName = childApiName;
@@ -207,7 +213,8 @@ public without sharing class RelatedListController {
         String query = createQuery(recordId, objectDescribe, tobjMap.get(objectDescribe.getName()), null, null);
         
         try{
-            for(Sobject sobj : Database.query(String.escapeSingleQuotes(query))){
+            Map<String, Object> binds = new Map<String, Object>{'recordId' => recordId };
+            for(SObject sobj : Database.queryWithBinds(query, binds, AccessLevel.USER_MODE)) {
                 for(Sobject hist : sobj.getSobjects('Histories')){
                     HistoryWrapper wrapp = createWrapper(hist, 'Histories');
                     wrapp.objectAPIName = objectDescribe.getName();
@@ -447,7 +454,7 @@ public without sharing class RelatedListController {
             query += recordNameField+',';
         }
         List<String> parentRefs = new List<String>();
-        if(tobj != null && tobj.Parent_Reference_Field__c != null){
+        if(tobj != null && String.isNotBlank(tobj.Parent_Reference_Field__c)){
             parentRefs = tobj.Parent_Reference_Field__c.split(',');
             for(String parentRef : parentRefs){
                 query+= parentRef+',';
@@ -544,7 +551,12 @@ public without sharing class RelatedListController {
     @AuraEnabled
     public static Record_History__c getHistoryRecord(String recordId, String historyId, Boolean isRelated){
         try {
-            List<Record_History__c> histList = [SELECT Id, Name, Additional_Field_1__c, Additional_Field_2__c, CreatedById, Created_By_DL__c, Created_By_DL__r.Name, Created_By_Formula__c, Created_Date_DL__c,Created_Date_Formula__c, Event__c, Field__c, New_Value__c, New_Value_Extended__c, Old_Value__c, Old_Value_Extended__c,ParentId__c, Record__c, Record_Name__c FROM Record_History__c WHERE Id = :historyId];
+            List<Record_History__c> histList = new List<Record_History__c>();
+            try{
+                histList = [SELECT Id, Name, Additional_Field_1__c, Additional_Field_2__c, CreatedById, Created_By_DL__c, Created_By_DL__r.Name, Created_By_Formula__c, Created_Date_DL__c,Created_Date_Formula__c, Event__c, Field__c, New_Value__c, New_Value_Extended__c, Old_Value__c, Old_Value_Extended__c,ParentId__c, Record__c, Record_Name__c FROM Record_History__c WHERE Id = :historyId WITH USER_MODE];
+            } catch (Exception e){
+                System.debug(e.getMessage());
+            }
             Record_History__c histRec;
             if(!histList.isEmpty()){
                 Boolean canViewEncryptedText = ![SELECT Id FROM PermissionSetAssignment WHERE PermissionSet.PermissionsViewEncryptedData = true].isEmpty();
@@ -575,11 +587,11 @@ public without sharing class RelatedListController {
                     String objectName = objectDescribe.getName();
                     String nameField = HistoryTrackingService.getRecordNameField(objectName);
                     Tracked_Object__mdt tobj = Tracked_Object__mdt.getInstance(objectName.replaceAll('_',''));
-                    Sobject sobj = Database.query(String.escapeSingleQuotes(createQuery(recordId, objectDescribe, tobj, null, null)))[0];
-                    List<String> parentRefs = new List<String>();
-                    if(!parentRefs.isEmpty()){
+                    Map<String, Object> binds = new Map<String, Object>{'recordId' => recordId };
+                    Sobject sobj = Database.queryWithBinds(createQuery(recordId, objectDescribe, tobj, null, null), binds, AccessLevel.USER_MODE)[0];
+                    if(tobj != null && String.isNotBlank(tobj.Parent_Reference_Field__c)){
                         String concatParents = '';
-                        for(String parentRef : parentRefs) {
+                        for(String parentRef : tobj.Parent_Reference_Field__c.split(',')) {
                             concatParents = concatParents+String.valueOf(sobj.get(parentRef)) +',';
                         }
                         concatParents = concatParents.removeEnd(',');
@@ -594,6 +606,7 @@ public without sharing class RelatedListController {
             }  
             return histRec;
         } catch (Exception e) {
+            System.debug(e.getMessage());
             throw new AuraHandledException(e.getMessage());
         }
     }
