@@ -33,8 +33,10 @@ public with sharing class ReusableLookupController {
                 else {
                     query += ' WHERE '+ filterCriteria;
                 }
+                //query += '  WITH USER_MODE';
                 List<ResultWrapper> returnWrapperList = new List<ResultWrapper>();
-                for(SObject s : Database.query(query)) {
+                Map<String, Object> binds = new Map<String, Object>{ };
+                for(SObject s : Database.queryWithBinds(query, binds, AccessLevel.USER_MODE)) {
                     ResultWrapper wrap = new ResultWrapper();
                     wrap.mainField = (String)s.get(inputWrapper.fieldApiName);
                     wrap.subField = (String)s.get(inputWrapper.otherFieldApiName);
@@ -45,7 +47,8 @@ public with sharing class ReusableLookupController {
             }
             return null;
         } catch (Exception err) {
-            throw new AuraHandledException(err.getMessage());
+            System.debug(err.getMessage());
+            return null;
         }
     }
 

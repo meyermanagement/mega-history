@@ -3,7 +3,7 @@
  * @author          Mark Meyer
  * @date            09/27/2024
  */
-public without sharing class CreateMetadata {
+public with sharing class CreateMetadata {
 
     /**
      * @description Updates and Deploys custom metadata
