@@ -209,7 +209,6 @@ public with sharing class RelatedListController {
             }
         }
         
-        
         String query = createQuery(recordId, objectDescribe, tobjMap.get(objectDescribe.getName()), null, null);
         
         try{
@@ -278,18 +277,20 @@ public with sharing class RelatedListController {
         for(HistoryWrapper wrapp : wrappers){
             if(wrapp.event == 'Updated' && wrapp.field != 'Created.'){
                 if(wrapp.field != 'RecordType' && wrapp.field != 'RecordTypeId'){
-                    Map<String,Schema.SObjectField> mfields = objectDescribeMap.get(wrapp.objectAPIName).fields.getMap();
-                    Schema.DescribeFieldResult fieldResult = mfields.get(wrapp.field).getDescribe();
-                    if(fieldResult.isAccessible()){
-                        if(fieldResult.getType() == Schema.DisplayType.ENCRYPTEDSTRING && !canViewEncryptedText){
-                            String mask ='*';
-                            wrapp.oldValue = wrapp.oldValue == null ? null : mask.repeat(wrapp.oldValue.length());
-                            wrapp.oldValueFull = wrapp.oldValueFull == null ? null : mask.repeat(wrapp.oldValueFull.length());
-                            wrapp.newValue = wrapp.newValue == null ? null : mask.repeat(wrapp.newValue.length());
-                            wrapp.newValueFull = wrapp.newValueFull == null ? null : mask.repeat(wrapp.newValueFull.length());
+                    Schema.SObjectField sobjField = objectDescribeMap.get(wrapp.objectAPIName).fields.getMap().get(wrapp.field);
+                    if(sobjField != null){
+                        Schema.DescribeFieldResult fieldResult = sobjField.getDescribe();
+                        if(fieldResult.isAccessible()){
+                            if(fieldResult.getType() == Schema.DisplayType.ENCRYPTEDSTRING && !canViewEncryptedText){
+                                String mask ='*';
+                                wrapp.oldValue = wrapp.oldValue == null ? null : mask.repeat(wrapp.oldValue.length());
+                                wrapp.oldValueFull = wrapp.oldValueFull == null ? null : mask.repeat(wrapp.oldValueFull.length());
+                                wrapp.newValue = wrapp.newValue == null ? null : mask.repeat(wrapp.newValue.length());
+                                wrapp.newValueFull = wrapp.newValueFull == null ? null : mask.repeat(wrapp.newValueFull.length());
+                            }
+                            wrapp.fieldLabel = fieldResult.getLabel();
+                            results.add(wrapp);
                         }
-                        wrapp.fieldLabel = fieldResult.getLabel();
-                        results.add(wrapp);
                     }
                 } else {
                     wrapp.fieldLabel = 'Record Type';
@@ -458,9 +459,14 @@ public with sharing class RelatedListController {
         if(tobj != null && String.isNotBlank(tobj.Parent_Reference_Field__c)){
             parentRefs = tobj.Parent_Reference_Field__c.split(',');
             for(String parentRef : parentRefs){
-                Schema.DescribeFieldResult fieldResult = mfields.get(parentRef).getDescribe();
-                if(fieldResult.isAccessible()){
-                    query+= parentRef+',';
+                System.debug(parentRef);
+                Schema.SObjectField sobjField = mfields.get(parentRef);
+                if(sobjField != null){
+                    System.debug(sobjField);
+                    Schema.DescribeFieldResult fieldResult = sobjField.getDescribe();
+                    if(fieldResult.isAccessible()){
+                        query+= parentRef+',';
+                    }
                 }
             }
         }
@@ -471,6 +477,7 @@ public with sharing class RelatedListController {
         if(recordId != null || parentId != null) {
             query +=' WHERE ';
             if(recordId != null && parentId != null){
+                System.debug(childReferenceField);
                 query +='Id = :recordId AND '+childReferenceField+' = :recordId';
             } else if(recordId != null) {
                 query += 'Id = :recordId';
@@ -569,13 +576,16 @@ public with sharing class RelatedListController {
                     Schema.sObjectType objectType = Id.valueOf(histRec.Record__c).getSObjectType();
                     Schema.DescribeSObjectResult objectDescribe = objectType.getDescribe();
                     Map<String,Schema.SObjectField> mfields = objectDescribe.fields.getMap();
-                    Schema.DescribeFieldResult fieldResult = mfields.get(histRec.Field__c).getDescribe();
-                    if(fieldResult.getType() == Schema.DisplayType.ENCRYPTEDSTRING && !canViewEncryptedText){
-                        String mask ='*';
-                        histRec.Old_Value__c = histRec.Old_Value__c == null ? null : mask.repeat(histRec.Old_Value__c.length());
-                        histRec.Old_Value_Extended__c = histRec.Old_Value_Extended__c == null ? null : mask.repeat(histRec.Old_Value_Extended__c.length());
-                        histRec.New_Value__c = histRec.New_Value__c == null ? null : mask.repeat(histRec.New_Value__c.length());
-                        histRec.New_Value_Extended__c = histRec.New_Value_Extended__c == null ? null : mask.repeat(histRec.New_Value_Extended__c.length());
+                    Schema.SObjectField sobjField = mfields.get(histRec.Field__c);
+                    if(sobjField != null){
+                        Schema.DescribeFieldResult fieldResult = sobjField.getDescribe();
+                        if(fieldResult.getType() == Schema.DisplayType.ENCRYPTEDSTRING && !canViewEncryptedText){
+                            String mask ='*';
+                            histRec.Old_Value__c = histRec.Old_Value__c == null ? null : mask.repeat(histRec.Old_Value__c.length());
+                            histRec.Old_Value_Extended__c = histRec.Old_Value_Extended__c == null ? null : mask.repeat(histRec.Old_Value_Extended__c.length());
+                            histRec.New_Value__c = histRec.New_Value__c == null ? null : mask.repeat(histRec.New_Value__c.length());
+                            histRec.New_Value_Extended__c = histRec.New_Value_Extended__c == null ? null : mask.repeat(histRec.New_Value_Extended__c.length());
+                        }
                     }
                 }
             } else {
@@ -597,17 +607,30 @@ public with sharing class RelatedListController {
                     if(tobj != null && String.isNotBlank(tobj.Parent_Reference_Field__c)){
                         String concatParents = '';
                         for(String parentRef : tobj.Parent_Reference_Field__c.split(',')) {
-                            if(String.isNotBlank(String.valueOf(sobj.get(parentRef)))) {
-                                Schema.DescribeFieldResult fieldResult = mfields.get(parentRef).getDescribe();
-                                if(fieldResult.isAccessible()){
-                                    concatParents = concatParents+String.valueOf(sobj.get(parentRef)) +',';
+                            System.debug(parentRef);
+                            
+                            try{
+                                System.debug(sobj.get(parentRef));
+                                if(sobj.get(parentRef) != null && String.isNotBlank(String.valueOf(sobj.get(parentRef)))) {
+                                    System.debug(parentRef);
+                                    Schema.SObjectField sobjField = mfields.get(parentRef);
+                                    System.debug(sobjField);
+                                    if(sobjField != null){
+                                        Schema.DescribeFieldResult fieldResult = sobjField.getDescribe();
+                                        if(fieldResult.isAccessible()){
+                                            concatParents = concatParents+String.valueOf(sobj.get(parentRef)) +',';
+                                        }
+                                    }
                                 }
+                            } catch (Exception e) {
+                                System.debug(e.getMessage());
                             }
                         }
                         concatParents = concatParents.removeEnd(',');
                         histRec.ParentId__c = concatParents;
                     }
                     histRec.Record__c = recordId;
+                    System.debug(sobj.get(nameField));
                     histRec.Record_Name__c = objectName == 'Contact' ? String.valueOf(sobj.get(nameField))+', '+String.valueOf(sobj.get('FirstName')) : String.valueOf(sobj.get(nameField));
                     histRec.Event__c = 'Updated';
                     histRec.Created_By_DL__c = UserInfo.getUserId();

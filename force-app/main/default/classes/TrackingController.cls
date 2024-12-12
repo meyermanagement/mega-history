@@ -59,9 +59,10 @@ public with sharing class TrackingController {
                 String concatFields = '';
                 wrapper.fieldList = new List<TrackingFieldDefinition>();
                 for(Tracked_Field__mdt field: objectNameMap.get(to.MasterLabel)){
+                    Schema.SObjectField sobjField = describeMap.get(to.MasterLabel).fields.getMap().get(field.Field_API_Name__c);
                     concatFields = concatFields += field.Field_API_Name__c+', ';
                     TrackingFieldDefinition fd = new TrackingFieldDefinition();
-                    fd.fieldLabel = describeMap.get(to.MasterLabel).fields.getMap().get(field.Field_API_Name__c).getDescribe().getLabel();
+                    fd.fieldLabel = sobjField != null ? sobjField.getDescribe().getLabel() : 'DELETED-';
                     fd.fieldAPIName = field.Field_API_Name__c;
                     fd.customTracked = true;
                     wrapper.fieldList.add(fd);
