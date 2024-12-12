@@ -580,7 +580,7 @@ public without sharing class RelatedListController {
                     if(tobj != null && String.isNotBlank(tobj.Parent_Reference_Field__c)){
                         String concatParents = '';
                         for(String parentRef : tobj.Parent_Reference_Field__c.split(',')) {
-                            concatParents = concatParents+String.valueOf(sobj.get(parentRef)) +',';
+                            if(String.isNotBlank(String.valueOf(sobj.get(parentRef)))) concatParents = concatParents+String.valueOf(sobj.get(parentRef)) +',';
                         }
                         concatParents = concatParents.removeEnd(',');
                         histRec.ParentId__c = concatParents;
