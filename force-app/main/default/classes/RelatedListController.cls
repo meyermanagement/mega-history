@@ -447,7 +447,7 @@ public without sharing class RelatedListController {
             query += recordNameField+',';
         }
         List<String> parentRefs = new List<String>();
-        if(tobj != null && tobj.Parent_Reference_Field__c != null){
+        if(tobj != null && String.isNotBlank(tobj.Parent_Reference_Field__c)){
             parentRefs = tobj.Parent_Reference_Field__c.split(',');
             for(String parentRef : parentRefs){
                 query+= parentRef+',';
@@ -577,9 +577,9 @@ public without sharing class RelatedListController {
                     Tracked_Object__mdt tobj = Tracked_Object__mdt.getInstance(objectName.replaceAll('_',''));
                     Sobject sobj = Database.query(String.escapeSingleQuotes(createQuery(recordId, objectDescribe, tobj, null, null)))[0];
                     List<String> parentRefs = new List<String>();
-                    if(!parentRefs.isEmpty()){
+                    if(tobj != null && String.isNotBlank(tobj.Parent_Reference_Field__c)){
                         String concatParents = '';
-                        for(String parentRef : parentRefs) {
+                        for(String parentRef : tobj.Parent_Reference_Field__c.split(',')) {
                             concatParents = concatParents+String.valueOf(sobj.get(parentRef)) +',';
                         }
                         concatParents = concatParents.removeEnd(',');
