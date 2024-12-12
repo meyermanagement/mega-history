@@ -441,6 +441,7 @@ public with sharing class RelatedListController {
      * @return query
      */
     private static String createQuery(String recordId, Schema.DescribeSObjectResult objectDescribe, Tracked_Object__mdt tobj, String parentId, String childReferenceField){
+        Map<String,Schema.SObjectField> mfields = objectDescribe.fields.getMap();
         String objectName = objectDescribe.getName();
         String objectHistoryName = 'Histories';
         if(!objectDescribe.isCustom() && activityHistoryObjects.contains(objectName)) {
@@ -457,7 +458,10 @@ public with sharing class RelatedListController {
         if(tobj != null && String.isNotBlank(tobj.Parent_Reference_Field__c)){
             parentRefs = tobj.Parent_Reference_Field__c.split(',');
             for(String parentRef : parentRefs){
-                query+= parentRef+',';
+                Schema.DescribeFieldResult fieldResult = mfields.get(parentRef).getDescribe();
+                if(fieldResult.isAccessible()){
+                    query+= parentRef+',';
+                }
             }
         }
         query += getObjectHistorySubQuery(objectDescribe);
@@ -584,6 +588,7 @@ public with sharing class RelatedListController {
                 } else {
                     Schema.sObjectType objectType = Id.valueOf(recordId).getSObjectType();
                     Schema.DescribeSObjectResult objectDescribe = objectType.getDescribe();
+                    Map<String,Schema.SObjectField> mfields = objectDescribe.fields.getMap();
                     String objectName = objectDescribe.getName();
                     String nameField = HistoryTrackingService.getRecordNameField(objectName);
                     Tracked_Object__mdt tobj = Tracked_Object__mdt.getInstance(objectName.replaceAll('_',''));
@@ -592,7 +597,12 @@ public with sharing class RelatedListController {
                     if(tobj != null && String.isNotBlank(tobj.Parent_Reference_Field__c)){
                         String concatParents = '';
                         for(String parentRef : tobj.Parent_Reference_Field__c.split(',')) {
-                            concatParents = concatParents+String.valueOf(sobj.get(parentRef)) +',';
+                            if(String.isNotBlank(String.valueOf(sobj.get(parentRef)))) {
+                                Schema.DescribeFieldResult fieldResult = mfields.get(parentRef).getDescribe();
+                                if(fieldResult.isAccessible()){
+                                    concatParents = concatParents+String.valueOf(sobj.get(parentRef)) +',';
+                                }
+                            }
                         }
                         concatParents = concatParents.removeEnd(',');
                         histRec.ParentId__c = concatParents;

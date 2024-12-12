@@ -61,7 +61,7 @@ global without sharing class HistoryTrackingService {
                                 List<String> parentRefs = tobj.Parent_Reference_Field__c.split(',');
                                 for(String parentRef : parentRefs) {
                                     if(so.get(parentRef) != null) {
-                                        concatParents = concatParents+String.valueOf(so.get(parentRef)) +',';
+                                        if(String.isNotBlank(String.valueOf(so.get(parentRef)))) concatParents = concatParents+String.valueOf(so.get(parentRef)) +',';
                                     }
                                 }
                                 if(String.isBlank(concatParents)) {
@@ -133,7 +133,7 @@ global without sharing class HistoryTrackingService {
                                 String concatParents = '';
                                 List<String> parentRefs = tobj.Parent_Reference_Field__c.split(',');
                                 for(String parentRef : parentRefs) {
-                                    concatParents = concatParents+String.valueOf(so.get(parentRef)) +',';
+                                    if(String.isNotBlank(String.valueOf(so.get(parentRef)))) concatParents = concatParents+String.valueOf(so.get(parentRef)) +',';
                                 }
                                 concatParents = concatParents.removeEnd(',');
                                 rh.ParentId__c = concatParents;
