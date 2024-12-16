@@ -116,7 +116,7 @@ public with sharing class RelatedListController {
             responseMap.put(SOBJECT_LABEL_PARAM, objectDescribe.getLabel() + ' History');
             responseMap.put(SOBJECT_LABEL_PLURAL_PARAM, objectDescribe.getLabel() + ' History');
             Boolean isSuperUser = false;
-            for(PermissionSetAssignment assignment : [SELECT Id FROM PermissionSetAssignment WHERE PermissionSet.Name = 'Mega_History_Super_Admin' AND AssigneeId = :UserInfo.getUserId()]){
+            for(PermissionSetAssignment assignment : [SELECT Id FROM PermissionSetAssignment WHERE PermissionSet.Name = 'Mega_History_Super_Admin' AND AssigneeId = :UserInfo.getUserId() WITH USER_MODE]){
                 isSuperUser = true;
             }
             responseMap.put(SUPER_USER_PARAM, String.valueOf(isSuperUser));
@@ -124,7 +124,10 @@ public with sharing class RelatedListController {
             if(!initialization.initialized__c){
                 initialization.Name = 'Default Initialization';
                 initialization.initialized__c = true;
-                upsert initialization;
+                if(Initialization__c.SObjectType.getDescribe().isCreateable() && Initialization__c.SObjectType.getDescribe().isUpdateable() && Schema.SObjectType.Initialization__c.fields.Name.isUpdateable() && Schema.SObjectType.Initialization__c.fields.initialized__c.isUpdateable()) {
+                    upsert initialization;
+                }
+                
             }
             return JSON.serialize(responseMap);
         } catch (Exception e){
@@ -174,7 +177,7 @@ public with sharing class RelatedListController {
             String childReferenceField = String.valueOf(child.getField());
             if(tobjMap.get(childApiName) != null && tobjMap.get(childApiName).Parent_Reference_Field__c != null && tobjMap.get(childApiName).Parent_Reference_Field__c.contains(childReferenceField)){
                 if(!activityHistoryObjects.contains(childApiName)){
-                    String childQuery = createQuery(null, childObjectDescribe, tobjMap.get(childApiName), recordId, childReferenceField);
+                    String childQuery = createQuery(null, childObjectDescribe, tobjMap.get(childApiName), recordId, childReferenceField, true);
                     try{
                         Map<String, Object> binds = new Map<String, Object>{'recordId' => recordId };
                         for(SObject sobj : Database.queryWithBinds(String.escapeSingleQuotes(childQuery), binds, AccessLevel.USER_MODE)) {
@@ -209,7 +212,7 @@ public with sharing class RelatedListController {
             }
         }
         
-        String query = createQuery(recordId, objectDescribe, tobjMap.get(objectDescribe.getName()), null, null);
+        String query = createQuery(recordId, objectDescribe, tobjMap.get(objectDescribe.getName()), null, null, true);
         
         try{
             Map<String, Object> binds = new Map<String, Object>{'recordId' => recordId };
@@ -439,9 +442,10 @@ public with sharing class RelatedListController {
      * @param tobj
      * @param parentId
      * @param childReferenceField
+     * @param checkPermission
      * @return query
      */
-    private static String createQuery(String recordId, Schema.DescribeSObjectResult objectDescribe, Tracked_Object__mdt tobj, String parentId, String childReferenceField){
+    private static String createQuery(String recordId, Schema.DescribeSObjectResult objectDescribe, Tracked_Object__mdt tobj, String parentId, String childReferenceField, Boolean checkPermission){
         Map<String,Schema.SObjectField> mfields = objectDescribe.fields.getMap();
         String objectName = objectDescribe.getName();
         String objectHistoryName = 'Histories';
@@ -464,7 +468,7 @@ public with sharing class RelatedListController {
                 if(sobjField != null){
                     System.debug(sobjField);
                     Schema.DescribeFieldResult fieldResult = sobjField.getDescribe();
-                    if(fieldResult.isAccessible()){
+                    if(!checkPermission || fieldResult.isAccessible()){
                         query+= parentRef+',';
                     }
                 }
@@ -603,24 +607,18 @@ public with sharing class RelatedListController {
                     String nameField = HistoryTrackingService.getRecordNameField(objectName);
                     Tracked_Object__mdt tobj = Tracked_Object__mdt.getInstance(objectName.replaceAll('_',''));
                     Map<String, Object> binds = new Map<String, Object>{'recordId' => recordId };
-                    Sobject sobj = Database.queryWithBinds(createQuery(recordId, objectDescribe, tobj, null, null), binds, AccessLevel.USER_MODE)[0];
+                    Sobject sobj = Database.queryWithBinds(createQuery(recordId, objectDescribe, tobj, null, null, false), binds, AccessLevel.SYSTEM_MODE)[0];
+                    System.debug(sobj);
                     if(tobj != null && String.isNotBlank(tobj.Parent_Reference_Field__c)){
                         String concatParents = '';
                         for(String parentRef : tobj.Parent_Reference_Field__c.split(',')) {
                             System.debug(parentRef);
                             
                             try{
-                                System.debug(sobj.get(parentRef));
-                                if(sobj.get(parentRef) != null && String.isNotBlank(String.valueOf(sobj.get(parentRef)))) {
-                                    System.debug(parentRef);
-                                    Schema.SObjectField sobjField = mfields.get(parentRef);
-                                    System.debug(sobjField);
-                                    if(sobjField != null){
-                                        Schema.DescribeFieldResult fieldResult = sobjField.getDescribe();
-                                        if(fieldResult.isAccessible()){
-                                            concatParents = concatParents+String.valueOf(sobj.get(parentRef)) +',';
-                                        }
-                                    }
+                                Schema.SObjectField sobjField = mfields.get(parentRef);
+                                String fieldValue = HistoryTrackingService.getFieldFromSobject(sobj, parentRef);
+                                if(sobjField != null && String.isNotBlank(fieldValue)){
+                                    concatParents = concatParents+fieldValue +',';
                                 }
                             } catch (Exception e) {
                                 System.debug(e.getMessage());
@@ -661,7 +659,9 @@ public with sharing class RelatedListController {
             if(rh.Event__c != 'Updated' && String.isBlank(rh.Record_Name__c)) {
                 throw new RelatedListControllerException('Record Name is required');
             }
-            upsert rh;
+            if(Record_History__c.SObjectType.getDescribe().isCreateable() && Record_History__c.SObjectType.getDescribe().isUpdateable() && Schema.SObjectType.Record_History__c.fields.Created_By_DL__c.isUpdateable() && Schema.SObjectType.Record_History__c.fields.Created_Date_DL__c.isUpdateable()) {
+                upsert rh;
+            }
         } catch (Exception e) {
             System.debug(LoggingLevel.DEBUG, e.getMessage());
             throw new AuraHandledException(e.getMessage());

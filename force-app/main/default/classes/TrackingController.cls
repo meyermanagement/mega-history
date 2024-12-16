@@ -24,11 +24,11 @@ public with sharing class TrackingController {
         try {
             Map<String, TrackingWrapper> wrapperMap = new Map<String, TrackingWrapper>();
             Map<String, List<Tracked_Field__mdt>> objectNameMap = new Map<String, List<Tracked_Field__mdt>>();
-            List<Tracked_Object__mdt> trackedObjects = [SELECT Id, MasterLabel, DeveloperName, Additional_Field_1__c, Additional_Field_2__c, Parent_Reference_Field__c, Track_Create__c, Track_Delete__c, Track_Undelete__c FROM Tracked_Object__mdt ORDER BY MasterLabel];
+            List<Tracked_Object__mdt> trackedObjects = [SELECT Id, MasterLabel, DeveloperName, Additional_Field_1__c, Additional_Field_2__c, Parent_Reference_Field__c, Track_Create__c, Track_Delete__c, Track_Undelete__c FROM Tracked_Object__mdt WITH USER_MODE ORDER BY MasterLabel];
             for(Tracked_Object__mdt to : trackedObjects){
                 objectNameMap.put(to.MasterLabel, new List<Tracked_Field__mdt>());
             }
-            for(Tracked_Field__mdt tf : [SELECT Tracked_Object__r.MasterLabel, Tracked_Object__r.DeveloperName, DeveloperName, Field_API_Name__c FROM Tracked_Field__mdt WHERE Tracked_Object__r.MasterLabel IN :objectNameMap.keySet() ORDER BY Field_API_Name__c]){
+            for(Tracked_Field__mdt tf : [SELECT Tracked_Object__r.MasterLabel, Tracked_Object__r.DeveloperName, DeveloperName, Field_API_Name__c FROM Tracked_Field__mdt WHERE Tracked_Object__r.MasterLabel IN :objectNameMap.keySet() WITH USER_MODE ORDER BY Field_API_Name__c]){
                 objectNameMap.get(tf.Tracked_Object__r.MasterLabel).add(tf);
             }
             Map<String, Schema.DescribeSobjectResult> describeMap = new Map<String, Schema.DescribeSObjectResult>();
@@ -75,7 +75,7 @@ public with sharing class TrackingController {
                 wrapper.mdtStatusClass = 'slds-text-color_success slds-text-title_caps';
                 wrapperMap.put(to.MasterLabel, wrapper);
             }
-            for(ApexTrigger at : [SELECT Id, NamespacePrefix, name, Body, Status, TableEnumOrId FROM ApexTrigger WHERE Name LIKE 'mh%' AND Status = 'Active' WITH SECURITY_ENFORCED]){
+            for(ApexTrigger at : [SELECT Id, NamespacePrefix, name, Body, Status, TableEnumOrId FROM ApexTrigger WHERE Name LIKE 'mh%' AND Status = 'Active' WITH USER_MODE]){
                 if(wrapperMap.get(at.TableEnumOrId) != null){
                     TrackingWrapper wrapper = wrapperMap.get(at.TableEnumOrId);
                     wrapper.trigStatusLabel = 'Deployed';
@@ -107,7 +107,7 @@ public with sharing class TrackingController {
     public static List<TrackingWrapper> getObjects(){
         Map<String, TrackingWrapper> wrapperMap = new Map<String, TrackingWrapper>();
         Map<String, List<Tracked_Field__mdt>> objectNameMap = new Map<String, List<Tracked_Field__mdt>>();
-        List<Tracked_Object__mdt> trackedObjects = [SELECT Id, MasterLabel, DeveloperName, Additional_Field_1__c, Additional_Field_2__c, Parent_Reference_Field__c, Track_Create__c, Track_Delete__c, Track_Undelete__c FROM Tracked_Object__mdt ORDER BY MasterLabel];
+        List<Tracked_Object__mdt> trackedObjects = [SELECT Id, MasterLabel, DeveloperName, Additional_Field_1__c, Additional_Field_2__c, Parent_Reference_Field__c, Track_Create__c, Track_Delete__c, Track_Undelete__c FROM Tracked_Object__mdt WITH USER_MODE ORDER BY MasterLabel];
         for(Tracked_Object__mdt to : trackedObjects){
             objectNameMap.put(to.DeveloperName, new List<Tracked_Field__mdt>());
         }
@@ -181,7 +181,7 @@ public with sharing class TrackingController {
             //List<Schema.ChildRelationship> childRels = res.getChildRelationships();
             Map<String,Schema.SObjectField> mfields = res.fields.getMap();
             Set<String> standardTrackedFields = new Set<String>();
-            for(FieldDefinition fd : [SELECT Label, QualifiedApiName FROM FieldDefinition WHERE EntityDefinition.QualifiedApiName = :objectName AND IsFieldHistoryTracked = true ORDER BY QualifiedApiName]){
+            for(FieldDefinition fd : [SELECT Label, QualifiedApiName FROM FieldDefinition WHERE EntityDefinition.QualifiedApiName = :objectName AND IsFieldHistoryTracked = true WITH USER_MODE ORDER BY QualifiedApiName]){
                 standardTrackedFields.add(fd.QualifiedApiName);
             }
             Map<String, TrackingFieldDefinition> resultDefinitions = new Map<String, TrackingFieldDefinition>();
@@ -226,7 +226,7 @@ public with sharing class TrackingController {
             //List<Schema.ChildRelationship> childRels = res.getChildRelationships();
             Map<String,Schema.SObjectField> mfields = res.fields.getMap();
             Set<String> standardTrackedFields = new Set<String>();
-            for(FieldDefinition fd : [SELECT Label, QualifiedApiName FROM FieldDefinition WHERE EntityDefinition.QualifiedApiName = :wrapper.objectName AND IsFieldHistoryTracked = true ORDER BY QualifiedApiName]){
+            for(FieldDefinition fd : [SELECT Label, QualifiedApiName FROM FieldDefinition WHERE EntityDefinition.QualifiedApiName = :wrapper.objectName AND IsFieldHistoryTracked = true WITH USER_MODE ORDER BY QualifiedApiName]){
                 standardTrackedFields.add(fd.QualifiedApiName);
             }
             Map<String, TrackingFieldDefinition> resultDefinitions = new Map<String, TrackingFieldDefinition>();
@@ -274,7 +274,7 @@ public with sharing class TrackingController {
         try {
             TrackingWrapper wrapper = (TrackingWrapper)JSON.deserialize(wrapperString, TrackingWrapper.class);
             TrackingWrapper orignal = new TrackingWrapper(wrapper);
-            List<Tracked_Object__mdt> toList = [SELECT Id, MasterLabel, DeveloperName, Additional_Field_1__c, Additional_Field_2__c, Parent_Reference_Field__c, Track_Create__c, Track_Delete__c, Track_Undelete__c FROM Tracked_Object__mdt WHERE DeveloperName = :wrapper.objectName ORDER BY MasterLabel LIMIT 1];
+            List<Tracked_Object__mdt> toList = [SELECT Id, MasterLabel, DeveloperName, Additional_Field_1__c, Additional_Field_2__c, Parent_Reference_Field__c, Track_Create__c, Track_Delete__c, Track_Undelete__c FROM Tracked_Object__mdt WHERE DeveloperName = :wrapper.objectName WITH USER_MODE ORDER BY MasterLabel LIMIT 1];
             if(!toList.isEmpty()){
                 Tracked_Object__mdt to = toList[0];
                 orignal.parentRef = to.Parent_Reference_Field__c;
@@ -500,7 +500,7 @@ public with sharing class TrackingController {
             recordsToDelete.add(metadataTypeName+'.'+metadataRecordName);
         }
         if(!objectNames.isEmpty()){
-            for(Tracked_Field__mdt tf : [SELECT Tracked_Object__r.DeveloperName, DeveloperName, Field_API_Name__c FROM Tracked_Field__mdt WHERE Tracked_Object__r.DeveloperName IN :objectNames ORDER BY Field_API_Name__c]){
+            for(Tracked_Field__mdt tf : [SELECT Tracked_Object__r.DeveloperName, DeveloperName, Field_API_Name__c FROM Tracked_Field__mdt WHERE Tracked_Object__r.DeveloperName IN :objectNames WITH USER_MODE ORDER BY Field_API_Name__c]){
                 String metadataTypeName = 'megatools__Tracked_Field__mdt';
                 String metadataRecordName = tf.DeveloperName;
                 recordsToDelete.add(metadataTypeName+'.'+metadataRecordName);
