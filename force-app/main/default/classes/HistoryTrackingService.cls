@@ -60,8 +60,12 @@ global without sharing class HistoryTrackingService {
                                 String concatParents = '';
                                 List<String> parentRefs = tobj.Parent_Reference_Field__c.split(',');
                                 for(String parentRef : parentRefs) {
-                                    if(so.get(parentRef) != null) {
-                                        concatParents = concatParents+String.valueOf(so.get(parentRef)) +',';
+                                    try{
+                                        if(so.get(parentRef) != null) {
+                                            if(String.isNotBlank(String.valueOf(so.get(parentRef)))) concatParents = concatParents+String.valueOf(so.get(parentRef)) +',';
+                                        }
+                                    } catch(Exception e){
+                                        System.debug(e.getMessage());
                                     }
                                 }
                                 if(String.isBlank(concatParents)) {
@@ -94,11 +98,11 @@ global without sharing class HistoryTrackingService {
                 String tId = tobj != null ? tobj.Id : null;
                 Map<String, Schema.DescribeFieldResult> fieldMap = new Map<String, Schema.DescribeFieldResult>();
                 Set<String> standardTrackedFields = new Set<String>();
-                for(FieldDefinition fd : [SELECT Label, QualifiedApiName FROM FieldDefinition WHERE EntityDefinition.QualifiedApiName = :objectDescribe.getName() AND IsFieldHistoryTracked = true]){
+                for(FieldDefinition fd : [SELECT Label, QualifiedApiName FROM FieldDefinition WHERE EntityDefinition.QualifiedApiName = :objectDescribe.getName() AND IsFieldHistoryTracked = true WITH SYSTEM_MODE]){
                     standardTrackedFields.add(fd.QualifiedApiName);
                 }
-                for(Tracked_Field__mdt field : [SELECT Field_API_Name__c FROM Tracked_Field__mdt WHERE Tracked_Object__c = :tId]) {
-                    if(!standardTrackedFields.contains(field.Field_API_Name__c)) {
+                for(Tracked_Field__mdt field : [SELECT Field_API_Name__c FROM Tracked_Field__mdt WHERE Tracked_Object__c = :tId WITH SYSTEM_MODE]) {
+                    if(!standardTrackedFields.contains(field.Field_API_Name__c) && mfields.get(field.Field_API_Name__c) != null) {
                         fieldMap.put(field.Field_API_Name__c, mfields.get(field.Field_API_Name__c).getDescribe());
                     }
                 }
@@ -133,7 +137,11 @@ global without sharing class HistoryTrackingService {
                                 String concatParents = '';
                                 List<String> parentRefs = tobj.Parent_Reference_Field__c.split(',');
                                 for(String parentRef : parentRefs) {
-                                    concatParents = concatParents+String.valueOf(so.get(parentRef)) +',';
+                                    try{
+                                        if(String.isNotBlank(String.valueOf(so.get(parentRef)))) concatParents = concatParents+String.valueOf(so.get(parentRef)) +',';
+                                    } catch(Exception e){
+                                        System.debug(e.getMessage());
+                                    }
                                 }
                                 concatParents = concatParents.removeEnd(',');
                                 rh.ParentId__c = concatParents;
@@ -144,11 +152,15 @@ global without sharing class HistoryTrackingService {
                     if(tobj != null && String.isNotBlank(tobj.Parent_Reference_Field__c)) {
                         List<String> parentRefs = tobj.Parent_Reference_Field__c.split(',');
                         for(String parentRef : parentRefs) {
-                            if(String.valueOf(so.get(parentRef)) != String.valueOf(oldMap.get(String.valueOf(so.get('Id'))).get(parentRef))){
-                                if(recordIdToParentRefMap.get(String.valueOf(so.get('Id'))) == null) {
-                                    recordIdToParentRefMap.put(String.valueOf(so.get('Id')), new Map<String, String>());
+                            try{
+                                if(so.get(parentRef) != null && String.valueOf(so.get(parentRef)) != String.valueOf(oldMap.get(String.valueOf(so.get('Id'))).get(parentRef))){
+                                    if(recordIdToParentRefMap.get(String.valueOf(so.get('Id'))) == null) {
+                                        recordIdToParentRefMap.put(String.valueOf(so.get('Id')), new Map<String, String>());
+                                    }
+                                    recordIdToParentRefMap.get(String.valueOf(so.get('Id'))).put(String.valueOf(oldMap.get(String.valueOf(so.get('Id'))).get(parentRef)), String.valueOf(so.get(parentRef)));
                                 }
-                                recordIdToParentRefMap.get(String.valueOf(so.get('Id'))).put(String.valueOf(oldMap.get(String.valueOf(so.get('Id'))).get(parentRef)), String.valueOf(so.get(parentRef)));
+                            } catch(Exception e){
+                                System.debug(e.getMessage());
                             }
                         }
                     }
@@ -182,6 +194,17 @@ global without sharing class HistoryTrackingService {
             }
         }
         return recordName;
+    }
+
+    /**
+     * @description dynamically gets the value of a field
+     * @param sobj
+     * @param parentRef
+     * @return fieldValue
+     */
+    public static String getFieldFromSobject(Sobject sobj, String parentRef){
+        String fieldValue = sobj.get(parentRef) != null ? String.valueOf(sobj.get(parentRef)) : null;
+        return fieldValue;
     }
 
     /**

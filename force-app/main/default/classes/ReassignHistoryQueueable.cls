@@ -3,7 +3,7 @@
  * @author          Mark Meyer
  * @date            09/27/2024
  */
-public class ReassignHistoryQueueable implements Queueable {
+public without sharing class ReassignHistoryQueueable implements Queueable {
 
     /**
      * @description map of records to parent ids to replace
