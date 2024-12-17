@@ -17,24 +17,26 @@ public with sharing class ReusableLookupController {
                 SearchWrapper inputWrapper = (SearchWrapper)JSON.deserialize(input, SearchWrapper.class);
                 String fieldsToQuery = 'SELECT Id, ';
                 if(string.isNotBlank(inputWrapper.fieldApiName)){
-                    fieldsToQuery = fieldsToQuery + inputWrapper.fieldApiName;
+                    fieldsToQuery = fieldsToQuery + String.escapeSingleQuotes(inputWrapper.fieldApiName);
                 }
                 if(string.isNotBlank(inputWrapper.otherFieldApiName)){
-                    fieldsToQuery = fieldsToQuery + ', ' + inputWrapper.otherFieldApiName;
+                    fieldsToQuery = fieldsToQuery + ', ' + String.escapeSingleQuotes(inputWrapper.otherFieldApiName);
                 }
-                String query = fieldsToQuery + ' FROM '+ inputWrapper.objectApiName;
-                String filterCriteria = inputWrapper.fieldApiName + ' LIKE ' + '\'' + String.escapeSingleQuotes(inputWrapper.searchString.trim()) + '%\' LIMIT 10';
+                String query = fieldsToQuery + ' FROM '+ String.escapeSingleQuotes(inputWrapper.objectApiName);
+                String filterCriteria = String.escapeSingleQuotes(inputWrapper.fieldApiName) + ' LIKE ' + '\'' + String.escapeSingleQuotes(inputWrapper.searchString.trim()) + '%\' LIMIT 10';
                 if(String.isNotBlank(inputWrapper.selectedRecordId)) {
-                    query += ' WHERE Id = \''+ inputWrapper.selectedRecordId + '\'';
+                    query += ' WHERE Id = \''+ String.escapeSingleQuotes(inputWrapper.selectedRecordId) + '\'';
                 }else if(String.isNotBlank(inputWrapper.parentFieldApiName) && String.isNotBlank(inputWrapper.parentRecordId)){
-                    query += ' WHERE '+ inputWrapper.parentFieldApiName+ ' = \''+ inputWrapper.parentRecordId + '\'';
+                    query += ' WHERE '+ String.escapeSingleQuotes(inputWrapper.parentFieldApiName)+ ' = \''+ String.escapeSingleQuotes(inputWrapper.parentRecordId) + '\'';
                     query += ' AND ' + filterCriteria;
                 } 
                 else {
                     query += ' WHERE '+ filterCriteria;
                 }
+                //query += '  WITH USER_MODE';
                 List<ResultWrapper> returnWrapperList = new List<ResultWrapper>();
-                for(SObject s : Database.query(query)) {
+                Map<String, Object> binds = new Map<String, Object>{ };
+                for(SObject s : Database.queryWithBinds(query, binds, AccessLevel.USER_MODE)) {
                     ResultWrapper wrap = new ResultWrapper();
                     wrap.mainField = (String)s.get(inputWrapper.fieldApiName);
                     wrap.subField = (String)s.get(inputWrapper.otherFieldApiName);
@@ -45,7 +47,8 @@ public with sharing class ReusableLookupController {
             }
             return null;
         } catch (Exception err) {
-            throw new AuraHandledException(err.getMessage());
+            System.debug(err.getMessage());
+            return null;
         }
     }
 

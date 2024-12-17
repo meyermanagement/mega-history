@@ -34,7 +34,7 @@ public with sharing class SetupController {
     @AuraEnabled(cacheable=true)
     public static Boolean checkPermissionAssignment() {
         try {
-            List<PermissionSetAssignment> assignments = [SELECT Id FROM PermissionSetAssignment WHERE PermissionSet.Name = 'Mega_History_User' AND AssigneeId != :UserInfo.getUserId()];
+            List<PermissionSetAssignment> assignments = [SELECT Id FROM PermissionSetAssignment WHERE PermissionSet.Name = 'Mega_History_User' AND AssigneeId != :UserInfo.getUserId() WITH USER_MODE];
             return assignments.isEmpty();
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
@@ -48,7 +48,7 @@ public with sharing class SetupController {
     @AuraEnabled(cacheable=true)
     public static Boolean checkRecordTracking() {
         try {
-            List<Tracked_Object__mdt> records = [SELECT Id FROM Tracked_Object__mdt LIMIT 1];
+            List<Tracked_Object__mdt> records = [SELECT Id FROM Tracked_Object__mdt WITH USER_MODE LIMIT 1];
             return records.isEmpty();
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
