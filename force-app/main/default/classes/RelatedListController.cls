@@ -613,7 +613,6 @@ public with sharing class RelatedListController {
                         String concatParents = '';
                         for(String parentRef : tobj.Parent_Reference_Field__c.split(',')) {
                             System.debug(parentRef);
-                            
                             try{
                                 Schema.SObjectField sobjField = mfields.get(parentRef);
                                 String fieldValue = HistoryTrackingService.getFieldFromSobject(sobj, parentRef);
