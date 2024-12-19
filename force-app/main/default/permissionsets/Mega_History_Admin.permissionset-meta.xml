@@ -56,6 +56,10 @@
         <enabled>true</enabled>
         <name>Tracked_Object__mdt</name>
     </customMetadataTypeAccesses>
+    <customSettingAccesses>
+        <enabled>true</enabled>
+        <name>Initialization__c</name>
+    </customSettingAccesses>
     <description>Administrative Permissions for Mega History to add historical related lists on objects, deploy triggers on objects when necessary, and access the Mega History Setup Guide</description>
     <fieldPermissions>
         <editable>false</editable>

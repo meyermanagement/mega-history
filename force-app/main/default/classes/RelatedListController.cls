@@ -69,6 +69,10 @@ public with sharing class RelatedListController {
      * @description     Set of Activity History Objects
      */
     public static Set<String> activityHistoryObjects = new Set<String>{'Task', 'Event'};
+    /**
+     * @description map of fields to use for 
+     */
+    public static Map<String, String> objectTypeToNameMap = new Map<String, String>{'Contact'=>'LastName', 'Case'=>'CaseNumber', 'Contract'=>'ContractNumber', 'Task'=>'Subject', 'Event'=>'Subject'};
 
     /**
      * @description     Custom Exception for RelatedListController
@@ -124,7 +128,9 @@ public with sharing class RelatedListController {
             if(!initialization.initialized__c){
                 initialization.Name = 'Default Initialization';
                 initialization.initialized__c = true;
-                if(Initialization__c.SObjectType.getDescribe().isCreateable() && Initialization__c.SObjectType.getDescribe().isUpdateable() && Schema.SObjectType.Initialization__c.fields.Name.isUpdateable() && Schema.SObjectType.Initialization__c.fields.initialized__c.isUpdateable()) {
+                if(Initialization__c.SObjectType.getDescribe().isCreateable() && Initialization__c.SObjectType.getDescribe().isUpdateable() && 
+                    Schema.SObjectType.Initialization__c.fields.Name.isCreateable() && Schema.SObjectType.Initialization__c.fields.initialized__c.isCreateable() && 
+                    Schema.SObjectType.Initialization__c.fields.Name.isUpdateable() && Schema.SObjectType.Initialization__c.fields.initialized__c.isUpdateable()) {
                     upsert initialization;
                 }
                 
@@ -185,7 +191,7 @@ public with sharing class RelatedListController {
                                 HistoryWrapper wrapp = createWrapper(hist, 'Histories');
                                 wrapp.objectAPIName = childApiName;
                                 wrapp.objectLabel = childObjectDescribe.getLabel();
-                                String nameField = HistoryTrackingService.getRecordNameField(childApiName);
+                                String nameField = getRecordNameField(childApiName);
                                 wrapp.recordName = childApiName == 'Contact' ? String.valueOf(sobj.get(nameField))+', '+String.valueOf(sobj.get('FirstName')) : String.valueOf(sobj.get(nameField));
                                 wrapp.recordId = String.valueOf(sobj.get('Id'));
                                 wrapp.recordURL = '/one/one.app?#/sObject/'+wrapp.recordId+'/view';
@@ -411,10 +417,11 @@ public with sharing class RelatedListController {
      * @param objectName
      * @return query
      */
+    @TestVisible
     private static String getNameField(String objectName){
         String nameField = 'Name';
-        if(HistoryTrackingService.objectTypeToNameMap.get(objectName) != null) {
-            nameField = HistoryTrackingService.objectTypeToNameMap.get(objectName);
+        if(objectTypeToNameMap.get(objectName) != null) {
+            nameField = objectTypeToNameMap.get(objectName);
         }
         return nameField;
     }
@@ -453,7 +460,7 @@ public with sharing class RelatedListController {
             objectHistoryName = 'ActivityFieldHistories';
         }
         String query = 'SELECT Id,';
-        String recordNameField = HistoryTrackingService.getRecordNameField(objectName);
+        String recordNameField = getRecordNameField(objectName);
         if(objectName == 'Contact'){
             query += recordNameField+',FirstName,';
         } else if(recordNameField != 'Id') {
@@ -604,7 +611,7 @@ public with sharing class RelatedListController {
                     Schema.DescribeSObjectResult objectDescribe = objectType.getDescribe();
                     Map<String,Schema.SObjectField> mfields = objectDescribe.fields.getMap();
                     String objectName = objectDescribe.getName();
-                    String nameField = HistoryTrackingService.getRecordNameField(objectName);
+                    String nameField = getRecordNameField(objectName);
                     Tracked_Object__mdt tobj = Tracked_Object__mdt.getInstance(objectName.replaceAll('_',''));
                     Map<String, Object> binds = new Map<String, Object>{'recordId' => recordId };
                     Sobject sobj = Database.queryWithBinds(createQuery(recordId, objectDescribe, tobj, null, null, false), binds, AccessLevel.SYSTEM_MODE)[0];
@@ -658,7 +665,27 @@ public with sharing class RelatedListController {
             if(rh.Event__c != 'Updated' && String.isBlank(rh.Record_Name__c)) {
                 throw new RelatedListControllerException('Record Name is required');
             }
-            if(Record_History__c.SObjectType.getDescribe().isCreateable() && Record_History__c.SObjectType.getDescribe().isUpdateable() && Schema.SObjectType.Record_History__c.fields.Created_By_DL__c.isUpdateable() && Schema.SObjectType.Record_History__c.fields.Created_Date_DL__c.isUpdateable()) {
+            if(Record_History__c.SObjectType.getDescribe().isCreateable() && Record_History__c.SObjectType.getDescribe().isUpdateable() && 
+                Schema.SObjectType.Record_History__c.fields.Created_By_DL__c.isCreateable() && 
+                Schema.SObjectType.Record_History__c.fields.Created_Date_DL__c.isCreateable() && 
+                Schema.SObjectType.Record_History__c.fields.Old_Value__c.isCreateable() && 
+                Schema.SObjectType.Record_History__c.fields.Old_Value_Extended__c.isCreateable() && 
+                Schema.SObjectType.Record_History__c.fields.New_Value__c.isCreateable() && 
+                Schema.SObjectType.Record_History__c.fields.New_Value_Extended__c.isCreateable() && 
+                Schema.SObjectType.Record_History__c.fields.ParentId__c.isCreateable() && 
+                Schema.SObjectType.Record_History__c.fields.Event__c.isCreateable() && 
+                Schema.SObjectType.Record_History__c.fields.Record__c.isCreateable() && 
+                Schema.SObjectType.Record_History__c.fields.Record_Name__c.isCreateable() &&
+                Schema.SObjectType.Record_History__c.fields.Created_By_DL__c.isUpdateable() && 
+                Schema.SObjectType.Record_History__c.fields.Created_Date_DL__c.isUpdateable() && 
+                Schema.SObjectType.Record_History__c.fields.Old_Value__c.isUpdateable() && 
+                Schema.SObjectType.Record_History__c.fields.Old_Value_Extended__c.isUpdateable() && 
+                Schema.SObjectType.Record_History__c.fields.New_Value__c.isUpdateable() && 
+                Schema.SObjectType.Record_History__c.fields.New_Value_Extended__c.isUpdateable() && 
+                Schema.SObjectType.Record_History__c.fields.ParentId__c.isUpdateable() && 
+                Schema.SObjectType.Record_History__c.fields.Event__c.isUpdateable() && 
+                Schema.SObjectType.Record_History__c.fields.Record__c.isUpdateable() && 
+                Schema.SObjectType.Record_History__c.fields.Record_Name__c.isUpdateable()) {
                 upsert rh;
             }
         } catch (Exception e) {
@@ -690,4 +717,24 @@ public with sharing class RelatedListController {
         }
     }
     
+    /**
+     * @description dynamically gets the records Name field
+     * @param objectAPIName
+     * @return name field
+     */
+    public static String getRecordNameField(String objectAPIName){
+        String recordName;
+        if(objectTypeToNameMap.keySet().contains(objectAPIName)){
+            recordName = objectTypeToNameMap.get(objectAPIName);
+        } else {
+            Schema.DescribeSobjectResult res = Schema.describeSObjects(new List<String>{objectAPIName})[0];
+            Map<String,Schema.SObjectField> mfields = res.fields.getMap();
+            if(mfields.containsKey('Name')){
+                recordName = 'Name';
+            } else {
+                recordName = 'Id';
+            }
+        }
+        return recordName;
+    }
 }
