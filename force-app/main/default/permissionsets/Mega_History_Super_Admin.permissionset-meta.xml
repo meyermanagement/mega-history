@@ -56,6 +56,10 @@
         <enabled>true</enabled>
         <name>Tracked_Object__mdt</name>
     </customMetadataTypeAccesses>
+    <customSettingAccesses>
+        <enabled>true</enabled>
+        <name>Initialization__c</name>
+    </customSettingAccesses>
     <description>Same permissions as Admin with the added ability to update/delete records from the history</description>
     <fieldPermissions>
         <editable>true</editable>
