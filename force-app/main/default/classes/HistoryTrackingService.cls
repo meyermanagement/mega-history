@@ -9,10 +9,6 @@ global without sharing class HistoryTrackingService {
      * @description map of Trigger context enum to history record event type
      */
     static Map<String, String> operationTypeMap = new Map<String, String>{'AFTER_INSERT'=>'Created', 'AFTER_DELETE'=>'Deleted', 'AFTER_UNDELETE'=>'Undeleted'};
-    /**
-     * @description map of fields to use for 
-     */
-    public static Map<String, String> objectTypeToNameMap = new Map<String, String>{'Contact'=>'LastName', 'Case'=>'CaseNumber', 'Contract'=>'ContractNumber', 'Task'=>'Subject', 'Event'=>'Subject'};
 
     /**
      * @description handles mapping of the object to create the history record
@@ -51,7 +47,7 @@ global without sharing class HistoryTrackingService {
                     for(Sobject so : recordList){
                         if(Test.isRunningTest() || String.isNotBlank(tobj.Parent_Reference_Field__c)){
                             String recordId = String.valueOf(so.get('Id'));
-                            String recordName = objectDescribe.getName() == 'Contact' ? String.valueOf(so.get(getRecordNameField(objectDescribe.getName())))+', '+String.valueOf(so.get('FirstName')) : String.valueOf(so.get(getRecordNameField(objectDescribe.getName())));
+                            String recordName = objectDescribe.getName() == 'Contact' ? String.valueOf(so.get(RelatedListController.getRecordNameField(objectDescribe.getName())))+', '+String.valueOf(so.get('FirstName')) : String.valueOf(so.get(RelatedListController.getRecordNameField(objectDescribe.getName())));
                             Record_History__c rh = new Record_History__c();
                             rh.Event__c = operationEvent;
                             rh.Record__c = recordId;
@@ -121,7 +117,7 @@ global without sharing class HistoryTrackingService {
                             oldValue = String.valueOf(oldMap.get(recordId).get(field));
                         }
                         if(Test.isRunningTest() || newValue <> oldValue){
-                            String recordName = objectDescribe.getName() == 'Contact' ? String.valueOf(so.get(getRecordNameField(objectDescribe.getName())))+', '+String.valueOf(so.get('FirstName')) : String.valueOf(so.get(getRecordNameField(objectDescribe.getName())));
+                            String recordName = objectDescribe.getName() == 'Contact' ? String.valueOf(so.get(RelatedListController.getRecordNameField(objectDescribe.getName())))+', '+String.valueOf(so.get('FirstName')) : String.valueOf(so.get(RelatedListController.getRecordNameField(objectDescribe.getName())));
                             Record_History__c rh = new Record_History__c();
                             rh.Record__c = recordId;
                             rh.Record_Name__c = recordName == null ? recordId : recordName.left(255);
@@ -175,26 +171,7 @@ global without sharing class HistoryTrackingService {
         }
     }
 
-    /**
-     * @description dynamically gets the records Name field
-     * @param objectAPIName
-     * @return name field
-     */
-    public static String getRecordNameField(String objectAPIName){
-        String recordName;
-        if(objectTypeToNameMap.keySet().contains(objectAPIName)){
-            recordName = objectTypeToNameMap.get(objectAPIName);
-        } else {
-            Schema.DescribeSobjectResult res = Schema.describeSObjects(new List<String>{objectAPIName})[0];
-            Map<String,Schema.SObjectField> mfields = res.fields.getMap();
-            if(mfields.containsKey('Name')){
-                recordName = 'Name';
-            } else {
-                recordName = 'Id';
-            }
-        }
-        return recordName;
-    }
+    
 
     /**
      * @description dynamically gets the value of a field

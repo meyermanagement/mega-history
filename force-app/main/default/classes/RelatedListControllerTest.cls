@@ -15,7 +15,27 @@ public class RelatedListControllerTest {
             EmailEncodingKey='UTF-8', LastName='Testing', LanguageLocaleKey='en_US', 
             LocaleSidKey='en_US', ProfileId = p.Id, 
             TimeZoneSidKey='America/Los_Angeles', UserName='standarduser@testorg.com.'+UserInfo.getOrganizationId());
+        insert u;
+        Map<Id, PermissionSet> permSets = new Map<Id, PermissionSet>([SELECT Id FROM PermissionSet WHERE Name = 'MEGA_History_Super_Admin']);
 
+        Set<String> existingPermSetAssignments = new Set<String>();
+        for(PermissionSetAssignment psa : [SELECT Id, PermissionSetId FROM PermissionSetAssignment WHERE AssigneeId = :u.Id AND PermissionSetId IN :permsets.keySet()]){
+            existingPermSetAssignments.add(psa.PermissionSetId);
+        }
+
+        List<PermissionSetAssignment> permissionSetAssignments = new List<PermissionSetAssignment>();
+        for(PermissionSet ps : permSets.values()){
+            if(!existingPermSetAssignments.contains(ps.Id)){
+                permissionSetAssignments.add(new PermissionSetAssignment(
+                    AssigneeId = u.Id,
+                    PermissionSetId = ps.Id
+                ));
+            }
+        }
+
+        if(!permissionSetAssignments.isEmpty()) {
+            insert permissionSetAssignments;
+        }
         System.runAs(u) {
             Account acc = new Account(Name = 'test');
             insert acc;
@@ -70,6 +90,10 @@ public class RelatedListControllerTest {
             rh = RelatedListController.getHistoryRecord(acc.Id, rh.Id, false);
             System.assertEquals(null, null, 'Created Date not set as expected');
             RelatedListController.getFields(acc.Id);
+            RelatedListController.getNameField('Contact');
+            RelatedListController.getIconName('Account');
+            RelatedListController.getIconName('Product2');
+            RelatedListController.getIconName('Test');
         }
     }
 }
