@@ -417,8 +417,7 @@ public with sharing class RelatedListController {
      * @param objectName
      * @return query
      */
-    @TestVisible
-    private static String getNameField(String objectName){
+    public static String getNameField(String objectName){
         String nameField = 'Name';
         if(objectTypeToNameMap.get(objectName) != null) {
             nameField = objectTypeToNameMap.get(objectName);

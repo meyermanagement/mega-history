@@ -19,6 +19,7 @@ export default class ReusableLookup extends LightningElement {
     @api selectedRecordId = "";
     @api parentRecordId;
     @api parentFieldApiName;
+    @api autoClear = false;
 
     preventClosingOfSerachPanel = false;
 
@@ -30,7 +31,8 @@ export default class ReusableLookup extends LightningElement {
             searchString: this.searchString,
             selectedRecordId: this.selectedRecordId,
             parentRecordId: this.parentRecordId,
-            parentFieldApiName: this.parentFieldApiName
+            parentFieldApiName: this.parentFieldApiName,
+            autoClear: this.autoClear
         };
     }
 
@@ -103,10 +105,13 @@ export default class ReusableLookup extends LightningElement {
         let selectedRecord = {
             mainField: event.currentTarget.dataset.mainfield,
             subField: event.currentTarget.dataset.subfield,
+            parentIds: event.currentTarget.dataset.parentids,
             id: event.currentTarget.dataset.id
         };
-        this.selectedRecordId = selectedRecord.id;
-        this.selectedRecordName = selectedRecord.mainField;
+        if(!this.autoClear){
+            this.selectedRecordId = selectedRecord.id;
+            this.selectedRecordName = selectedRecord.mainField;
+        }
         this.recordsList = [];
         // Creates the event
         const selectedEvent = new CustomEvent('valueselected', {

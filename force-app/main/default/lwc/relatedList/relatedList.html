@@ -125,15 +125,15 @@
                     <template lwc:else>
                         <div style="width: auto;">
                             <lightning-datatable class="related-list"
-                                                onrowaction={handleRowAction}
-                                                columns={columns}
-                                                data={state.records}
-                                                key-field="historyId"
-                                                hide-checkbox-column="true"
-                                                resize-column-disabled="true"
-                                                sorted-by={sortBy}
-                                                sorted-direction={sortDirection}
-                                                >
+                                onrowaction={handleRowAction}
+                                columns={columns}
+                                data={state.records}
+                                key-field="historyId"
+                                hide-checkbox-column="true"
+                                resize-column-disabled="true"
+                                sorted-by={sortBy}
+                                sorted-direction={sortDirection}
+                                >
                             </lightning-datatable>   
                         </div>
                     </template>

@@ -19,8 +19,10 @@
             <lightning-layout-item size="12" class="slds-p-horizontal_large slds-p-vertical_small">
                 <div class="action-completed" style="width: auto;" align="center">
                     <template lwc:if={loading}>
-                        <div class="spinnerHolder">
-                            <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                        <div align="center">
+                            <div class="spinnerHolder">
+                                <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                            </div>
                         </div>
                     </template>
                     <template lwc:else>
@@ -38,14 +40,11 @@
                         </template>
                         <template lwc:else>
                             <div align="center" class="cardBody slds-p-vertical_large">
-                                <p>
+                                <p class="slds-p-bottom_medium">
                                     No Record Tracking configuration present.  
                                 </p>
-                                <p>  
-                                    You can still see standard field history and data-loaded history without this configuration by adding the MEGA History Related List component to your Lightning Record Page.
-                                </p>
                                 <p>
-                                    Check the Views tab for more detailed instructions.
+                                    Begin configuration of the objects you would like to track by clicking the "Track New Object" button below.
                                 </p>
                             </div>
                         </template>
@@ -239,8 +238,10 @@
                 </header>
                 <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-2">
                     <template lwc:if={modalLoading}>
-                        <div class="spinnerHolder">
-                            <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                        <div align="center">
+                            <div class="spinnerHolder">
+                                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                            </div>
                         </div>
                     </template>
                     <template lwc:else>

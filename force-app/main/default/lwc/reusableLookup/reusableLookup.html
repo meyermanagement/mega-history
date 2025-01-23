@@ -48,7 +48,7 @@
                         <template for:each={recordsList} for:item="rec">
                             <li role="presentation" key={rec.id} class="slds-listbox__item">
                                 <div onclick={handleSelect} data-id={rec.id} data-mainfield={rec.mainField}
-                                    data-subfield={rec.subField}
+                                    data-subfield={rec.subField} data-parentids={rec.parentIds}
                                     class="slds-media slds-listbox__option slds-listbox__option_entity slds-listbox__option_has-meta"
                                     role="option">
                                     <span class="slds-media__figure slds-listbox__option-icon">
