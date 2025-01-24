@@ -1,5 +1,6 @@
 import { LightningElement, wire, track } from 'lwc';
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
+import FILE_EXAMPLE from "@salesforce/contentAssetUrl/Import_file_example";
 import MEGA_HISTORY_LOGO from "@salesforce/contentAssetUrl/MEGA_Main_Logo";
 import { loadStyle } from 'lightning/platformResourceLoader';
 import iconColor from '@salesforce/resourceUrl/iconColor';
@@ -12,6 +13,7 @@ import generateHistoryRecords from '@salesforce/apex/ImportController.generateHi
 export default class Views extends LightningElement {
 
     logoUrl = MEGA_HISTORY_LOGO;
+    fileExample = FILE_EXAMPLE;
     loading;
     _wiredData;
     objects = [];
@@ -317,7 +319,7 @@ export default class Views extends LightningElement {
             
                 for (let j = 0; j < headers.length; j++) {
                     let value = currentline[j];
-                    if(j === 2 && parentIds !== '') {
+                    if(headers[j] === 'megatools__ParentId__c' && parentIds !== '') {
                         value = parentIds.substring(1, parentIds.length);
                     }
                     obj[headers[j]] = value;
