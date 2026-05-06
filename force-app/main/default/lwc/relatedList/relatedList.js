@@ -401,7 +401,10 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
             });
             gridColumns.push({
                 type: 'action', 
-                typeAttributes: { rowActions: this.helper.initRelatedColumnsWithActions } 
+                typeAttributes: {
+                    'label': 'Delete',
+                    'name': 'delete'
+                }
             });
         }
         this.columns = columns;

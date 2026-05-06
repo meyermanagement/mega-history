@@ -153,6 +153,22 @@ export default class Tracking extends LightningElement {
         return !hasPending;
     }
 
+    get disableDeployAll(){
+        var hasDisabled = false;
+        var hasRemove = false;
+        var hasObjectOrTrigger = false;
+        if(this.mdData){
+            for(var obj of this.mdData){
+                if(obj.mdDisabled == true) hasDisabled = true;
+                if(obj.mdOperation == 'Remove') hasRemove = true;
+                if(obj.mdType == 'Object' || obj.mdType == 'Trigger') hasObjectOrTrigger = true;
+            }
+        } else {
+            hasDisabled = true;
+        }
+        return hasDisabled || hasRemove || hasObjectOrTrigger || this.modalLoading;
+    }
+
     get hasParentRef(){
         return this.parentValues != undefined && this.parentValues.length > 0;
     }
@@ -379,13 +395,13 @@ export default class Tracking extends LightningElement {
         generateMetadata({trackingData : JSON.stringify(this.trackingData)})
         .then((data) => {
             var mdList = data;
-            var hasNewObject = false;
+            var hasObjectOrTrigger = false;
             for(var md of mdList){
-                if(md.mdType == 'Object' && md.mdOperation == 'Add') hasNewObject = true;
+                if((md.mdType == 'Object' || md.mdType == 'Trigger')) hasObjectOrTrigger = true;
             }
-            if(hasNewObject){
+            if(hasObjectOrTrigger){
                 for(var mdt of mdList){
-                    if(mdt.mdType == 'Object' && mdt.mdOperation == 'Add') mdt.mdDisabled = false;
+                    if((mdt.mdType == 'Object' || mdt.mdType == 'Trigger')) mdt.mdDisabled = false;
                     else mdt.mdDisabled = true;
                 }
             } else {
@@ -411,49 +427,46 @@ export default class Tracking extends LightningElement {
     }
 
     deployAllMetadata(){
-        // this.loading = true;
-        // generateFiles({ wrappers : JSON.stringify(this.mdData) })
-        // .then((data) => {
-        //     let zip = this.generateZIP(data);
-        //     this.deployFiles(zip);
-        //     refreshApex(this._wiredData);
-        //     this.handleClose();
-        //     this.dispatchEvent(
-        //         new ShowToastEvent({
-        //             title: "Success!",
-        //             message: `You have successfully deployed all configurations!`,
-        //             variant: "success",
-        //         }),
-        //     );
-        //     this.loading = false;
-        // })
-        // .catch(error => {
-		// 	console.error(error);
-        //     this.dispatchEvent(
-        //         new ShowToastEvent({
-        //             title: "An error has occurred. Please contact the system administrator for further assistance.",
-        //             message: error.body.message,
-        //             variant: "error",
-        //         }),
-        //     );
-        //     this.loading = false;
-		// }); 
-        
+        this.modalLoading = true;
+        let wrappers = this.mdData;
+        handleCustomMetadata({ wrappers : JSON.stringify(wrappers) })
+        .then((data) => {
+            if(data == 'Success'){
+                this.handleSuccessfulDeployment(wrappers);
+            } else {
+                this.asyncId = data;
+                this.interval = setInterval(() => {
+                    this.pollDeploymentStatus(wrappers);
+                }, 2000);
+            }
+        })
+        .catch(error => {
+            console.error(error);
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: "An error has occurred. Please contact the system administrator for further assistance.",
+                    message: error.body.message,
+                    variant: "error",
+                }),
+            );
+            this.modalLoading = false;
+        }); 
     }
 
     deployMetadata(row){
         this.modalLoading = true;
-        let wrappers = [];
-        wrappers.push(row);
+        let rowList = [];
+        rowList.push(row);
+        console.log('deployMetadata>>'+JSON.stringify(rowList));
         if(row.mdType != 'Trigger'){
-            handleCustomMetadata({ wrappers : JSON.stringify(wrappers) })
+            handleCustomMetadata({ wrappers : JSON.stringify(rowList) })
             .then((data) => {
                 if(data == 'Success'){
-                    this.handleSuccessfulDeployment(row);
+                    this.handleSuccessfulDeployment(rowList);
                 } else {
                     this.asyncId = data;
                     this.interval = setInterval(() => {
-                        this.pollDeploymentStatus(row);
+                        this.pollDeploymentStatus(rowList);
                     }, 2000);
                 }
             })
@@ -469,13 +482,13 @@ export default class Tracking extends LightningElement {
                 this.modalLoading = false;
             }); 
         } else {
-            generateTriggerFiles({ wrappers : JSON.stringify(wrappers) })
+            generateTriggerFiles({ wrappers : JSON.stringify(rowList) })
             .then((data) => {
                 var fileMap = data;
                 var testName = data['testName'];
                 delete fileMap['testName'];
                 let zip = this.generateZIP(fileMap);
-                this.deployFiles(zip, testName, row);
+                this.deployFiles(zip, testName, rowList);
             })
             .catch(error => {
                 console.error(error);
@@ -499,12 +512,12 @@ export default class Tracking extends LightningElement {
         return zip.generate();
     }
 
-    async deployFiles(zip, testName, row){
+    async deployFiles(zip, testName, rowList){
         await deployTriggerFiles({zipFile : zip, testName : testName})
         .then((data) => {
             this.asyncId = data;
             this.interval = setInterval(() => {
-                this.pollDeploymentStatus(row);
+                this.pollDeploymentStatus(rowList);
             }, 2000);
         })
         .catch(error => {
@@ -520,13 +533,13 @@ export default class Tracking extends LightningElement {
         }); 
     }
 
-    pollDeploymentStatus(row){
+    pollDeploymentStatus(wrappers){
         if(this.asyncId){
             checkDeploymentStatus({asyncId: this.asyncId})
             .then((data) => {
                 if(data){
                     clearInterval(this.interval);
-                    this.handleSuccessfulDeployment(row);
+                    this.handleSuccessfulDeployment([...wrappers]);
                 }
             })
             .catch(error => {
@@ -546,16 +559,30 @@ export default class Tracking extends LightningElement {
         }
     }
 
-    handleSuccessfulDeployment(row){
+    handleSuccessfulDeployment(wrappers){
         this.asyncId = undefined;
         var mdList = [];
+        var wrapperSize = wrappers.length;
+        let operation = '';
+        let displayedMessage = '';
         var hasNewObject = false;
-        for(var mdDate of this.mdData){
-            if(row.mdName != mdDate.mdName) {
-                mdList.push(mdDate);
-                if(mdDate.mdType == 'Object' && mdDate.mdOperation == 'Add') hasNewObject = true;
+        console.log('wrapperSize>>'+wrapperSize);
+        if(wrapperSize > 1){
+            for(var row of wrappers){
+                if(row.mdType == 'Trigger') mdList.push(row);
+            }
+        } else {
+            let row = wrappers[0];
+            operation = row.mdOperation.endsWith('e') ? row.mdOperation.toLowerCase()+'d' : row.mdOperation.toLowerCase()+'ed';
+            displayedMessage = `You have successfully ${operation} the ${row.mdName} ${row.mdType.toLowerCase()} configuration!`;
+            for(var mdDate of this.mdData){
+                if(row.mdName != mdDate.mdName) {
+                    mdList.push(mdDate);
+                    if(mdDate.mdType == 'Object' && mdDate.mdOperation == 'Add') hasNewObject = true;
+                }
             }
         }
+        console.log('displayedMessage1>>'+displayedMessage);
         if(hasNewObject){
             for(var md of mdList){
                 if(md.mdType == 'Object' && md.mdOperation == 'Add') md.mdDisabled = false;
@@ -569,11 +596,15 @@ export default class Tracking extends LightningElement {
         this.mdData = mdList;
         refreshApex(this._wiredData);
         if(this.mdData.length == 0) this.handleClose();
-        let operation = row.mdOperation.endsWith('e') ? row.mdOperation.toLowerCase()+'d' : row.mdOperation.toLowerCase()+'ed';
+        
+        if(wrapperSize > 1){
+            displayedMessage = `You have successfully deployed your field configuration!`;
+        }
+        console.log('displayedMessage2>>'+displayedMessage);
         this.dispatchEvent(
             new ShowToastEvent({
                 title: "Success!",
-                message: `You have successfully ${operation} the ${row.mdName} ${row.mdType.toLowerCase()} configuration!`,
+                message: displayedMessage,
                 variant: "success",
             }),
         );

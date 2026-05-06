@@ -19,8 +19,10 @@
             <lightning-layout-item size="12" class="slds-p-horizontal_large slds-p-vertical_small">
                 <div class="action-completed" style="width: auto;" align="center">
                     <template lwc:if={loading}>
-                        <div class="spinnerHolder">
-                            <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                        <div align="center">
+                            <div class="spinnerHolder">
+                                <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                            </div>
                         </div>
                     </template>
                     <template lwc:else>
@@ -38,14 +40,11 @@
                         </template>
                         <template lwc:else>
                             <div align="center" class="cardBody slds-p-vertical_large">
-                                <p>
+                                <p class="slds-p-bottom_medium">
                                     No Record Tracking configuration present.  
                                 </p>
-                                <p>  
-                                    You can still see standard field history and data-loaded history without this configuration by adding the MEGA History Related List component to your Lightning Record Page.
-                                </p>
                                 <p>
-                                    Check the Views tab for more detailed instructions.
+                                    Begin configuration of the objects you would like to track by clicking the "Track New Object" button below.
                                 </p>
                             </div>
                         </template>
@@ -76,10 +75,9 @@
             <div class="slds-modal__container">
              <!-- modal header start -->
                 <header class="slds-modal__header">
-                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={handleClose}>
+                    <button class="slds-button slds-button_icon slds-modal__close" title="Close" onclick={handleClose}>
                         <lightning-icon icon-name="utility:close"
                         alternative-text="close"
-                        variant="inverse"
                         size="small" ></lightning-icon>
                         <span class="slds-assistive-text">Close</span>
                     </button>
@@ -226,10 +224,9 @@
             <div class="slds-modal__container">
              <!-- modal header start -->
                 <header class="slds-modal__header">
-                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={handleClose}>
+                    <button class="slds-button slds-button_icon slds-modal__close" title="Close" onclick={handleClose}>
                         <lightning-icon icon-name="utility:close"
                         alternative-text="close"
-                        variant="inverse"
                         size="small" ></lightning-icon>
                         <span class="slds-assistive-text">Close</span>
                     </button>
@@ -239,8 +236,10 @@
                 </header>
                 <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-2">
                     <template lwc:if={modalLoading}>
-                        <div class="spinnerHolder">
-                            <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                        <div align="center">
+                            <div class="spinnerHolder">
+                                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                            </div>
                         </div>
                     </template>
                     <template lwc:else>
@@ -265,10 +264,9 @@
             <div class="slds-modal__container">
              <!-- modal header start -->
                 <header class="slds-modal__header">
-                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={handleClose}>
+                    <button class="slds-button slds-button_icon slds-modal__close" title="Close" onclick={handleClose}>
                         <lightning-icon icon-name="utility:close"
                         alternative-text="close"
-                        variant="inverse"
                         size="small" ></lightning-icon>
                         <span class="slds-assistive-text">Close</span>
                     </button>
@@ -298,11 +296,9 @@
                 </div>
                <!-- modal footer start-->
                <footer class="slds-modal__footer">
-                <!-- <lightning-button label="Cancel" title="Cancel" onclick={handleClose} class="slds-float_left"></lightning-button>
-                <lightning-button label="Deploy All" title="Deploy All" onclick={deployAllMetadata} variant="brand"></lightning-button> -->
-                <div align="center">
-                    <lightning-button label="Close" title="Close" onclick={handleClose}></lightning-button>
-                </div>
+                    <!-- <lightning-button label="Cancel" title="Cancel" onclick={handleClose} class="slds-float_left"></lightning-button> -->
+                    <lightning-button label="Close" title="Close" class="slds-float_left" onclick={handleClose}></lightning-button>
+                    <lightning-button label="Deploy All" title="Deploy All" onclick={deployAllMetadata} variant="brand" disabled={disableDeployAll}></lightning-button>
                </footer>
             </div>
         </section>

@@ -2,13 +2,13 @@
   "packageDirectories": [
     {
       "versionName": "ver 0.1",
-      "versionNumber": "0.8.0.NEXT",
+      "versionNumber": "0.16.0.NEXT",
       "ancestorVersion": "HIGHEST",
       "path": "force-app",
       "package": "MEGA History",
       "versionDescription": "",
-      "postInstallUrl": "https://jetsetandboogie.com/mega-history-installation/",
-      "releaseNotesUrl": "https://jetsetandboogie.com/mega-history-user-guide/"
+      "postInstallUrl": "https://megatoolscrm.com/mega-history-installation/",
+      "releaseNotesUrl": "https://megatoolscrm.com/mega-history-user-guide/"
     }
   ],
   "name": "mega-history",
@@ -41,6 +41,14 @@
     "MEGA History@0.5.0-1": "04tbn000000o0rFAAQ",
     "MEGA History@0.6.0-1": "04tbn000000o74jAAA",
     "MEGA History@0.7.0-1": "04tbn000000o8K9AAI",
-    "MEGA History@0.8.0-1": "04tbn000000o94vAAA"
+    "MEGA History@0.8.0-1": "04tbn000000o94vAAA",
+    "MEGA History@0.9.0-1": "04tbn000000oERBAA2",
+    "MEGA History@0.10.0-1": "04tbn000000oEcTAAU",
+    "MEGA History@0.11.0-1": "04tbn000000oGPlAAM",
+    "MEGA History@0.12.0-1": "04tQO000000vJQvYAM",
+    "MEGA History@0.13.0-1": "04tQO000000vhg9YAA",
+    "MEGA History@0.14.0-1": "04tQO000000viqjYAA",
+    "MEGA History@0.15.0-1": "04tQO000001mQhBYAU",
+    "MEGA History@0.16.0-1": "04tQO000001mSHZYA2"
   }
 }

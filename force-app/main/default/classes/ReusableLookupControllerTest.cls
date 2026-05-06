@@ -24,7 +24,7 @@ public class ReusableLookupControllerTest {
         wrapper.selectedRecordId = cnt.Id;
         wrapper.parentRecordId = acc.Id;
         wrapper.parentFieldApiName = 'AccountId';
-        List<ReusableLookupController.ResultWrapper> results = ReusableLookupController.fetchRecords(JSON.serialize(wrapper));
+        List<ResultsWrapper> results = ReusableLookupController.fetchRecords(JSON.serialize(wrapper));
 
         wrapper = new ReusableLookupController.SearchWrapper();
         wrapper.objectApiName = 'Contact';

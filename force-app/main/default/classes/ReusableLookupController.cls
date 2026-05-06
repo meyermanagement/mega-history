@@ -8,14 +8,25 @@ public with sharing class ReusableLookupController {
     /**
      * @description     get records
      * @param input
-     * @return List of ResultWrappers
+     * @return List of ResultsWrappers
      */
     @AuraEnabled(cacheable=true)
-    public static List<ResultWrapper> fetchRecords(String input) {
+    public static List<ResultsWrapper> fetchRecords(String input) {
         try {
             if(input != null){
                 SearchWrapper inputWrapper = (SearchWrapper)JSON.deserialize(input, SearchWrapper.class);
+                List<String> parentRefs = new List<String>();
+                if(inputWrapper.autoClear == 'true'){
+                    for(Tracked_Object__mdt to : [SELECT Id, Parent_Reference_Field__c FROM Tracked_Object__mdt WHERE MasterLabel = :inputWrapper.objectApiName WITH USER_MODE ORDER BY MasterLabel]){
+                        parentRefs = to.Parent_Reference_Field__c.split(',');
+                    }
+                }
                 String fieldsToQuery = 'SELECT Id, ';
+                if(!parentRefs.isEmpty()){
+                    for(String parentRef : parentRefs){
+                        fieldsToQuery = fieldsToQuery + String.escapeSingleQuotes(parentRef) +', ';
+                    }
+                }
                 if(string.isNotBlank(inputWrapper.fieldApiName)){
                     fieldsToQuery = fieldsToQuery + String.escapeSingleQuotes(inputWrapper.fieldApiName);
                 }
@@ -23,7 +34,7 @@ public with sharing class ReusableLookupController {
                     fieldsToQuery = fieldsToQuery + ', ' + String.escapeSingleQuotes(inputWrapper.otherFieldApiName);
                 }
                 String query = fieldsToQuery + ' FROM '+ String.escapeSingleQuotes(inputWrapper.objectApiName);
-                String filterCriteria = String.escapeSingleQuotes(inputWrapper.fieldApiName) + ' LIKE ' + '\'' + String.escapeSingleQuotes(inputWrapper.searchString.trim()) + '%\' LIMIT 10';
+                String filterCriteria = String.escapeSingleQuotes(inputWrapper.fieldApiName) + ' LIKE ' + '\'%' + String.escapeSingleQuotes(inputWrapper.searchString.trim()) + '%\' LIMIT 10';
                 if(String.isNotBlank(inputWrapper.selectedRecordId)) {
                     query += ' WHERE Id = \''+ String.escapeSingleQuotes(inputWrapper.selectedRecordId) + '\'';
                 }else if(String.isNotBlank(inputWrapper.parentFieldApiName) && String.isNotBlank(inputWrapper.parentRecordId)){
@@ -34,12 +45,24 @@ public with sharing class ReusableLookupController {
                     query += ' WHERE '+ filterCriteria;
                 }
                 //query += '  WITH USER_MODE';
-                List<ResultWrapper> returnWrapperList = new List<ResultWrapper>();
+                List<ResultsWrapper> returnWrapperList = new List<ResultsWrapper>();
                 Map<String, Object> binds = new Map<String, Object>{ };
                 for(SObject s : Database.queryWithBinds(query, binds, AccessLevel.USER_MODE)) {
-                    ResultWrapper wrap = new ResultWrapper();
+                    ResultsWrapper wrap = new ResultsWrapper();
                     wrap.mainField = (String)s.get(inputWrapper.fieldApiName);
                     wrap.subField = (String)s.get(inputWrapper.otherFieldApiName);
+                    if(!parentRefs.isEmpty()){
+                        String concatParents = '';
+                        List<String> parentIds = new List<String>();
+                        for(String parentRef : parentRefs){
+                            if(s.get(parentRef) != null) parentIds.add((String)s.get(parentRef));
+                        }
+                        for(String parentId : parentIds){
+                            concatParents = concatParents + parentId +',';
+                        }
+                        concatParents = concatParents.removeEnd(',');
+                        wrap.parentIds = concatParents;
+                    }
                     wrap.id = (String)s.get('id');
                     returnWrapperList.add(wrap);
                 }
@@ -50,24 +73,6 @@ public with sharing class ReusableLookupController {
             System.debug(err.getMessage());
             return null;
         }
-    }
-
-    /**
-     * @description Result Wrapper
-     */
-    public class ResultWrapper{
-        /**
-         * @description Result mainField
-         */
-        @AuraEnabled public String mainField{get;set;}
-        /**
-         * @description Result subField
-         */
-        @AuraEnabled public String subField{get;set;}
-        /**
-         * @description Result id
-         */
-        @AuraEnabled public String id{get;set;}
     }
 
     /**
@@ -102,5 +107,9 @@ public with sharing class ReusableLookupController {
          * @description parentFieldApiName
          */
         @AuraEnabled public String parentFieldApiName{get;set;}
+        /**
+         * @description autoClear
+         */
+        @AuraEnabled public String autoClear{get;set;}
     }
 }
