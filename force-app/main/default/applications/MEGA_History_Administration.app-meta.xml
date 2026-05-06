@@ -17,6 +17,7 @@
     <tabs>Setup</tabs>
     <tabs>Tracking</tabs>
     <tabs>Views</tabs>
+    <tabs>Import</tabs>
     <uiType>Lightning</uiType>
     <utilityBar>MEGA_History_Administration_UtilityBar</utilityBar>
 </CustomApplication>

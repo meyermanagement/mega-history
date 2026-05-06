@@ -1,0 +1,316 @@
+<template>
+    <lightning-card>
+        <lightning-layout multiple-rows="true">
+            <lightning-layout-item size="6">
+                <div class="cardTitle slds-p-left_x-large">
+                    <h1>
+                        Import
+                        <p>
+                            Generate dynamic templates to import record history.
+                        </p>
+                    </h1>
+                </div>
+            </lightning-layout-item>
+            <lightning-layout-item size="6">
+                <div class="slds-p-right_xx-large " align="right">
+                    <img src={logoUrl} class="cardLogo"/>
+                </div>
+            </lightning-layout-item>
+            <lightning-layout-item size="12" class="slds-p-horizontal_large slds-p-top_small">
+                <div class="action-completed" style="width: auto;">
+                    <template lwc:if={loading}>
+                        <div align="center">
+                            <div class="spinnerHolder">
+                                <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                            </div>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <template lwc:if={hasMetadata}>
+                            <div class="cardBody slds-p-horizontal_large slds-p-bottom_large slds-p-top_small">
+                                <lightning-layout multiple-rows>
+                                    <lightning-layout-item size="12">
+                                        <h2>Template Builder</h2>
+                                    </lightning-layout-item>
+                                    <lightning-layout-item size="6" class="slds-p-vertical_x-small">
+                                        <lightning-layout multiple-rows>
+                                            <lightning-layout-item size="12">
+                                                <lightning-select
+                                                    name="objects"
+                                                    label="Select an Object"
+                                                    value={objectSelected}
+                                                    options={objects}
+                                                    onchange={handleObjectSelected}
+                                                    ></lightning-select>
+                                            </lightning-layout-item>
+                                            <template lwc:if={hasSelectedObject}>
+                                                <lightning-layout-item size="12" class="slds-p-vertical_x-small">
+                                                    <lightning-radio-group name="recordSelectionOptions"
+                                                        label="Which records would you like to include in this template?"
+                                                        options={recordSelectionOptions}
+                                                        value={recordSelectionValue}
+                                                        onchange={handleRecordSelectionChange}
+                                                        type="radio"></lightning-radio-group>
+                                                </lightning-layout-item>
+                                                <template lwc:if={searchRecords}>
+                                                    <lightning-layout-item size="12" class="slds-p-vertical_x-small">
+                                                        <c-reusable-lookup label="Search to add records to import template" selected-icon-name={objectIcon} object-label={objectLabel}
+                                                            object-api-name={objectSelected} field-api-name={objectNameField}  other-field-api-name={objectSecondaryField} 
+                                                            onvalueselected={handleValueSelectedOnSearch} auto-clear="true">
+                                                        </c-reusable-lookup>
+                                                    </lightning-layout-item>
+                                                </template>
+                                            </template>
+                                        </lightning-layout>
+                                    </lightning-layout-item>
+                                    <lightning-layout-item size="6" class="slds-p-around_x-large">
+                                        <div class="slds-box slds-theme_shade my-box">
+                                            <lightning-layout multiple-rows>
+                                                <lightning-layout-item size="6" class="slds-p-top_xx-large">
+                                                    <lightning-layout multiple-rows>
+                                                        <lightning-layout-item size="12">
+                                                            <div align="center">
+                                                                <lightning-button variant="brand" icon-name="utility:download" label="Generate Template" title="Generate Template" onclick={generateTemplate} disabled={noRecordCount}></lightning-button>
+                                                            </div>
+                                                        </lightning-layout-item>
+                                                        <lightning-layout-item size="12" class="slds-p-bottom_x-large">
+                                                            <template lwc:if={loadingCount}>
+                                                                <div align="center">
+                                                                    <div class="spinnerHolder">
+                                                                        <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                                                                    </div>
+                                                                </div>
+                                                            </template>
+                                                            <template lwc:else>
+                                                                <div align="center">
+                                                                    <p><strong>Record Count:</strong> {objectSelectedCount}</p>
+                                                                </div>
+                                                            </template>
+                                                        </lightning-layout-item>
+                                                    </lightning-layout>
+                                                </lightning-layout-item>
+                                                <lightning-layout-item size="6" class="slds-p-top_large">
+                                                    <div align="center">
+                                                        <lightning-input type="file" accept=".csv" label="Import record history here" message-when-value-missing="Please upload a file" onchange={handleFileUpload}></lightning-input>
+                                                    </div>
+                                                </lightning-layout-item>
+                                            </lightning-layout>
+                                        </div>
+                                    </lightning-layout-item>
+                                    <template lwc:if={hasRecordsSelected}>
+                                        <lightning-layout-item size="12" class="slds-p-top_x-small slds-p-bottom_medium slds-p-right_large">
+                                            <div style="width: auto;">
+                                                <lightning-datatable
+                                                    onrowaction={handleRowAction}
+                                                    columns={columns}
+                                                    data={selectedRecords}
+                                                    key-field="id"
+                                                    hide-checkbox-column="true"
+                                                    >
+                                                </lightning-datatable>   
+                                            </div>
+                                        </lightning-layout-item>
+                                    </template>
+                                </lightning-layout>
+                            </div>
+                        </template>
+                        <template lwc:else>
+                            <div align="center" class="cardBody slds-p-vertical_large">
+                                <p class="slds-p-bottom_medium">
+                                    No Record Tracking configuration present.  
+                                </p>
+                                <p>
+                                    Please configure your desired tracking configuration prior to importing record history using the Tracking tab.
+                                </p>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+            </lightning-layout-item>
+        </lightning-layout>
+        <lightning-layout multiple-rows="true" class="slds-p-top_large">
+            <lightning-layout-item size="12">
+                <div class="cardTitle slds-p-left_x-large">
+                    <h1>
+                        Instructions
+                    </h1>
+                </div>
+            </lightning-layout-item>
+            <lightning-layout-item size="12" class="slds-p-horizontal_large slds-p-top_small">
+                <div class="action-completed" style="width: auto;">
+                    <div class="cardBody slds-p-horizontal_large slds-p-bottom_large slds-p-top_small">
+                        <lightning-layout multiple-rows>
+                            <lightning-layout-item size="12">
+                                <h2>Generate Template</h2>
+                            </lightning-layout-item>
+                            <lightning-layout-item size="12" class="slds-p-vertical_x-small">
+                                <div class="slds-box">
+                                    <ul class=" slds-is-nested">
+                                        <li>
+                                            <p>Using the Template Builder above, generate a template for each set of records that you would like to import record history.</p>
+                                        </li>
+                                        <li>
+                                            <p>Each row in the template represents the foundation for a single record history event.</p>
+                                        </li>
+                                        <li>
+                                            <p>Cells populated with data should be left "as-is".  They are pre-populated in order to make the necessary relationships for each row.</p>
+                                        </li>
+                                        <li>
+                                            <p>Cells NOT populated will need to be reviewed in order to create each record history event correctly. See "Prepare your history data" below.</p>
+                                        </li>
+                                        <li>
+                                            <p>A new row will need to be copied and re-populated for each record history event PER RECORD.  Example: An account needs to import 5 events, there will be 5 rows in the csv for that account with the same values in megatools__Record__c and megatools__ParentId__c columns.  However, the other cells in these rows will vary depending on each event.</p>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </lightning-layout-item>
+                            <lightning-layout-item size="12" class="slds-p-top_small">
+                                <h2>Prepare your history data</h2>
+                            </lightning-layout-item>
+                            <lightning-layout-item size="12" class="slds-p-vertical_x-small">
+                                <div class="slds-box">
+                                    <div class="slds-p-horizontal_small">
+                                        <h2>Required Fields for all Records</h2>
+                                        <ul class=" slds-is-nested">
+                                            <li>
+                                                <p><strong>megatools__Event__c:</strong> Represents the type of event that occurred for this record.</p>
+                                                <ul class=" slds-is-nested">
+                                                    <li>
+                                                        <p>Values restricted to: <strong>Created, Updated, Deleted, Undeleted</strong></p>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                <p><strong>megatools__Created_By_DL__c:</strong> Represents the Salesforce Id of the User who triggered the event.</p>
+                                                <ul class=" slds-is-nested">
+                                                    <li>
+                                                        <p>If left blank, will default to the user importing these records.</p>
+                                                    </li>
+                                                    <li>
+                                                        <p>Example value: 005Ru00000COc0PIAT</p>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                <p><strong>megatools__Created_Date_DL__c:</strong> Represents the date the event was triggered.</p>
+                                                <ul class=" slds-is-nested">
+                                                    <li>
+                                                        <p>If left blank, will default to the date of import.</p>
+                                                    </li>
+                                                    <li>
+                                                        <p>Valid format: yyyy-MM-ddTHH:mm:ssZ(UTC Time Zone)</p>
+                                                    </li>
+                                                    <li>
+                                                        <p>Example: 2019-06-12T22:05:00Z represents June 12, 2019 at 6:05 PM EST.</p>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                        <h2 class="slds-p-top_large">Fields for Created, Deleted, and Undeleted Records</h2>
+                                        <ul class=" slds-is-nested">
+                                            <li>
+                                                <p><strong>megatools__Additional_Field_1__c:</strong> Represents an additional identifier(besides for name) of the record that was created, deleted, or undeleted.</p>
+                                                <ul class=" slds-is-nested">
+                                                    <li>
+                                                        <p>Example: Date of Birth, Account Number, etc...</strong></p>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                <p><strong>megatools__Additional_Field_2__c:</strong> Represents an additional identifier(besides for name) of the record that was created, deleted, or undeleted.</p>
+                                                <ul class=" slds-is-nested">
+                                                    <li>
+                                                        <p>Example: Date of Birth, Account Number, etc...</strong></p>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                        <h2 class="slds-p-top_large">Fields for Updated Records</h2>
+                                        <ul class=" slds-is-nested">
+                                            <li>
+                                                <p><strong>megatools__Field__c:</strong> Represents the "API Name" of the field that was updated.</p>
+                                                <ul class=" slds-is-nested">
+                                                    <li>
+                                                        <p>Example: API Name for "Account Source" field is AccountSource</strong></p>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                <p><strong>megatools__New_Value__c:</strong> Represents the "New" value of the field that was updated.</p>
+                                                <ul class=" slds-is-nested">
+                                                    <li>
+                                                        <p>255 character limit</p>
+                                                    </li>
+                                                    <li>
+                                                        <p>For values of greater than 255 characters, populate with the truncated value and use the megatools__New_Value_Extended__c field for the complete value.</p>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                <p><strong>megatools__New_Value_Extended__c:</strong> Represents the "New" value of the field that was updated.</p>
+                                                <ul class=" slds-is-nested">
+                                                    <li>
+                                                        <p>131,072 character limit</p>
+                                                    </li>
+                                                    <li>
+                                                        <p>Used in addition to megatools__New_Value__c for values of greater than 255 characters.</p>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                <p><strong>megatools__Old_Value__c:</strong> Represents the "Old" value of the field that was updated.</p>
+                                                <ul class=" slds-is-nested">
+                                                    <li>
+                                                        <p>255 character limit</p>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                            <li>
+                                                <p><strong>megatools__Old_Value_Extended__c:</strong> Represents the "Old" value of the field that was updated.</p>
+                                                <ul class=" slds-is-nested">
+                                                    <li>
+                                                        <p>131,072 character limit</p>
+                                                    </li>
+                                                    <li>
+                                                        <p>Used in addition to megatools__Old_Value__c for values of greater than 255 characters.</p>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                        <h2 class="slds-p-top_large">Example Result File</h2>
+                                        <div class="slds-p-top_small">
+                                            <div class="">
+                                                <img src={fileExample}/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </lightning-layout-item>
+                            <lightning-layout-item size="12" class="slds-p-top_small">
+                                <h2>Upload File</h2>
+                            </lightning-layout-item>
+                            <lightning-layout-item size="12" class="slds-p-vertical_x-small">
+                                <div class="slds-box">
+                                    <ul class=" slds-is-nested">
+                                        <li>
+                                            <p>Save the file type as .csv, do NOT save it as an Excel file.</p>
+                                        </li>
+                                        <li>
+                                            <p>Once your file is ready, use the "Upload File" button above to import your record history.</p>
+                                        </li>
+                                        <li>
+                                            <p>File size is limited to 3MB using the "Upload File" button.</p>
+                                        </li>
+                                        <li>
+                                            <p>For larger files, you can use tools like <a href="https://developer.salesforce.com/tools/data-loader" rel="noopener" target="_blank">Salesforce Data Loader</a> to import your data using the same file.</p>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </lightning-layout-item>
+                        </lightning-layout>
+                    </div>
+                </div>
+            </lightning-layout-item>
+        </lightning-layout>
+    </lightning-card>
+</template>

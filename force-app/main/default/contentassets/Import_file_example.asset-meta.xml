@@ -2,16 +2,21 @@
 <ContentAsset xmlns="http://soap.sforce.com/2006/04/metadata">
     <isVisibleByExternalUsers>false</isVisibleByExternalUsers>
     <language>en_US</language>
-    <masterLabel>MEGA_Main_Logo</masterLabel>
+    <masterLabel>Import_file_example</masterLabel>
     <relationships>
         <organization>
             <access>VIEWER</access>
         </organization>
+        <workspace>
+            <access>INFERRED</access>
+            <isManagingWorkspace>true</isManagingWorkspace>
+            <name>sfdc_asset_company_assets</name>
+        </workspace>
     </relationships>
     <versions>
         <version>
-            <number>2</number>
-            <pathOnClient>MEGA Tools Main Logo.png</pathOnClient>
+            <number>1</number>
+            <pathOnClient>Import file screenshot.png</pathOnClient>
         </version>
     </versions>
 </ContentAsset>

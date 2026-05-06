@@ -102,6 +102,7 @@ global without sharing class HistoryTrackingService {
                         fieldMap.put(field.Field_API_Name__c, mfields.get(field.Field_API_Name__c).getDescribe());
                     }
                 }
+                Set<String> relatedRecordIds = new Set<String>();
                 for(Sobject so : newList){
                     for(String field : fieldMap.keySet()){
                         Schema.DescribeFieldResult fieldResult = fieldMap.get(field);
@@ -112,6 +113,11 @@ global without sharing class HistoryTrackingService {
                         if(fieldResult.getType().toString() == 'DATE'){
                             newValue = String.valueOf(Date.valueOf(so.get(field)));
                             oldValue = String.valueOf(Date.valueOf(oldMap.get(recordId).get(field)));
+                        } else if(fieldResult.getType().toString() == 'ID'){
+                            newValue = String.valueOf(so.get(field));
+                            oldValue = String.valueOf(oldMap.get(recordId).get(field));
+                            // if(String.isNotBlank(newValue)) relatedRecordIds.add(newValue);
+                            // if(String.isNotBlank(oldValue)) relatedRecordIds.add(oldValue);
                         } else {
                             newValue = String.valueOf(so.get(field));
                             oldValue = String.valueOf(oldMap.get(recordId).get(field));
