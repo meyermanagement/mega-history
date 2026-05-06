@@ -175,7 +175,7 @@ public with sharing class RelatedListController {
      * @return List of History Wrappers
      */
     private static List<HistoryWrapper> getStandardHistory(String recordId, Schema.DescribeSObjectResult objectDescribe, Integer numberOfRecords, Map<String, Tracked_Object__mdt> tobjMap){
-        List<HistoryWrapper> wrappers = new List<HistoryWrapper>();        
+        List<HistoryWrapper> wrappers = new List<HistoryWrapper>();  
         List<Schema.ChildRelationship> children = objectDescribe.getChildRelationships();
         for(Schema.ChildRelationship child : children){
             Schema.DescribeSObjectResult childObjectDescribe = child.getChildSObject().getDescribe();
@@ -249,10 +249,34 @@ public with sharing class RelatedListController {
      * @return List of History Wrappers
      */
     private static List<HistoryWrapper> mergeLists(List<HistoryWrapper> customrecords, List<HistoryWrapper> standardrecords){
+        List<HistoryWrapper> resultwrappers = new List<HistoryWrapper>();
         List<HistoryWrapper> wrappers = new List<HistoryWrapper>();
         wrappers.addAll(customrecords);
         wrappers.addAll(standardrecords);
-        return wrappers;
+        //convert id fields to text
+        Map<DateTime, Map<String, List<HistoryWrapper>>> dtToFieldMap = new Map<DateTime, Map<String, List<HistoryWrapper>>>();
+        for(HistoryWrapper wrapp : wrappers){
+            if(dtToFieldMap.get(wrapp.createdDate) == null) dtToFieldMap.put(wrapp.createdDate, new Map<String, List<HistoryWrapper>>());
+            if(dtToFieldMap.get(wrapp.createdDate).get(wrapp.field) == null) dtToFieldMap.get(wrapp.createdDate).put(wrapp.field, new List<HistoryWrapper>());
+            dtToFieldMap.get(wrapp.createdDate).get(wrapp.field).add(wrapp);
+        }
+        for(DateTime dt : dtToFieldMap.keySet()){
+            for(String field : dtToFieldMap.get(dt).keySet()){
+                for(HistoryWrapper wrapp : dtToFieldMap.get(dt).get(field)){
+                    if((String.isNotBlank(wrapp.newValue) && wrapp.newValue instanceof Id) || ((String.isNotBlank(wrapp.oldValue) && wrapp.oldValue instanceof Id))){
+                        Boolean hasName = false;
+                        for(HistoryWrapper alternatewrapp : dtToFieldMap.get(dt).get(field)){
+                            if((String.isNotBlank(alternatewrapp.newValue) && !(alternatewrapp.newValue instanceof Id)) || (String.isNotBlank(alternatewrapp.oldValue) && !(alternatewrapp.oldValue instanceof Id))) hasName = true;
+                        }
+                        if(!hasName) resultwrappers.add(wrapp);
+                    } else {
+                        resultwrappers.add(wrapp);
+                    }
+                }
+            }
+
+        }
+        return resultwrappers;
     }  
 
     /**

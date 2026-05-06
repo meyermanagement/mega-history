@@ -446,6 +446,7 @@ public with sharing class TrackingController {
     public static String handleCustomMetadata(String wrappers){
         try {
             List<MetadataWrapper> wrapperList = (List<MetadataWrapper>)JSON.deserialize(wrappers, List<MetadataWrapper>.class);
+            System.debug(wrapperList);
             List<MetadataWrapper> metadataToDelete = new List<MetadataWrapper>();
             List<MetadataWrapper> metadataFieldsToDeploy = new List<MetadataWrapper>();
             List<MetadataWrapper> metadataObjectsToDeploy = new List<MetadataWrapper>();
