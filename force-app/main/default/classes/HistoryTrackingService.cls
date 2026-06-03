@@ -102,8 +102,11 @@ global without sharing class HistoryTrackingService {
                         fieldMap.put(field.Field_API_Name__c, mfields.get(field.Field_API_Name__c).getDescribe());
                     }
                 }
-                Set<String> relatedRecordIds = new Set<String>();
+                Map<String, List<Record_History__c>> historyMap = new Map<String, List<Record_History__c>>();
+                Set<String> referenceFields = new Set<String>();
+                Map<String, Map<String, String>> relatedRecordIdMap = new Map<String, Map<String, String>>();
                 for(Sobject so : newList){
+                    String recordName = objectDescribe.getName() == 'Contact' ? String.valueOf(so.get(RelatedListController.getRecordNameField(objectDescribe.getName()))) +', '+String.valueOf(so.get('FirstName')) : String.valueOf(so.get(RelatedListController.getRecordNameField(objectDescribe.getName())));
                     for(String field : fieldMap.keySet()){
                         Schema.DescribeFieldResult fieldResult = fieldMap.get(field);
                         //logic dependent on field type
@@ -113,17 +116,20 @@ global without sharing class HistoryTrackingService {
                         if(fieldResult.getType().toString() == 'DATE'){
                             newValue = String.valueOf(Date.valueOf(so.get(field)));
                             oldValue = String.valueOf(Date.valueOf(oldMap.get(recordId).get(field)));
-                        } else if(fieldResult.getType().toString() == 'ID'){
+                        } else if(fieldResult.getType().toString() == 'ID' || fieldResult.getType().toString() == 'REFERENCE'){
                             newValue = String.valueOf(so.get(field));
                             oldValue = String.valueOf(oldMap.get(recordId).get(field));
-                            // if(String.isNotBlank(newValue)) relatedRecordIds.add(newValue);
-                            // if(String.isNotBlank(oldValue)) relatedRecordIds.add(oldValue);
+                            if(String.isNotBlank(newValue)) {
+                                referenceFields.add(fieldResult.getName());
+                            }
+                            if(String.isNotBlank(oldValue)) {
+                                referenceFields.add(fieldResult.getName());
+                            }
                         } else {
                             newValue = String.valueOf(so.get(field));
                             oldValue = String.valueOf(oldMap.get(recordId).get(field));
                         }
                         if(Test.isRunningTest() || newValue <> oldValue){
-                            String recordName = objectDescribe.getName() == 'Contact' ? String.valueOf(so.get(RelatedListController.getRecordNameField(objectDescribe.getName())))+', '+String.valueOf(so.get('FirstName')) : String.valueOf(so.get(RelatedListController.getRecordNameField(objectDescribe.getName())));
                             Record_History__c rh = new Record_History__c();
                             rh.Record__c = recordId;
                             rh.Record_Name__c = recordName == null ? recordId : recordName.left(255);
@@ -148,7 +154,18 @@ global without sharing class HistoryTrackingService {
                                 concatParents = concatParents.removeEnd(',');
                                 rh.ParentId__c = concatParents;
                             }
-                            histories.add(rh);
+                            if(referenceFields.contains(rh.Field__c)){
+                                if(String.isNotBlank(rh.New_Value__c)) {
+                                    if(!relatedRecordIdMap.containsKey(rh.Field__c)) relatedRecordIdMap.put(rh.Field__c,  new Map<String, String>());
+                                    if(relatedRecordIdMap.get(rh.Field__c).get('newValue') == null) relatedRecordIdMap.get(rh.Field__c).put('newValue', rh.New_Value__c);
+                                }
+                                if(String.isNotBlank(rh.Old_Value__c)) {
+                                    if(!relatedRecordIdMap.containsKey(rh.Field__c)) relatedRecordIdMap.put(rh.Field__c,  new Map<String, String>());
+                                    if(relatedRecordIdMap.get(rh.Field__c).get('oldValue') == null) relatedRecordIdMap.get(rh.Field__c).put('oldValue', rh.Old_Value__c);
+                                }
+                            }
+                            if(historyMap.get(rh.Field__c) == null) historyMap.put(rh.Field__c, new List<Record_History__c>());
+                            historyMap.get(rh.Field__c).add(rh);
                         }
                     }
                     if(tobj != null && String.isNotBlank(tobj.Parent_Reference_Field__c)) {
@@ -166,6 +183,48 @@ global without sharing class HistoryTrackingService {
                             }
                         }
                     }
+                }
+                if(!relatedRecordIdMap.isEmpty()){
+                    Map<String, String> recIdToObjectNameMap = new Map<String, String>();
+                    Map<String, Map<String, String>> objectTypeToIdMap = new Map<String, Map<String, String>>();
+                    for(String fieldName : relatedRecordIdMap.keySet()){
+                        for(String recId : relatedRecordIdMap.get(fieldName).values()){
+                            String objectName = Id.valueOf(recId).getSObjectType().getDescribe().getName();
+                            if(!objectTypeToIdMap.containsKey(objectName)) objectTypeToIdMap.put(objectName, new Map<String, String>());
+                            objectTypeToIdMap.get(objectName).put(recId, null);
+                            recIdToObjectNameMap.put(recId, objectName);
+                        }
+                    }
+                    for(String objName : objectTypeToIdMap.keySet()){
+                        Set<String> recordIds = objectTypeToIdMap.get(objName).keySet();
+                        String nameField = objName == 'Contact' ? RelatedListController.getRecordNameField(objName) + ', FirstName' : RelatedListController.getRecordNameField(objName);
+                        String query = 'SELECT Id, ' + nameField + ' FROM ' + objName + ' WHERE Id IN :recordIds';
+                        Map<String, Object> binds = new Map<String, Object>{'recordIds' => recordIds };
+                        try{
+                            for(SObject sobj : Database.queryWithBinds(query, binds, AccessLevel.USER_MODE)) {
+                                String recordNameExt = objName == 'Contact' ? (String)sobj.get(RelatedListController.getRecordNameField(objName)) + ', ' + (String)sobj.get('FirstName') : (String)sobj.get(nameField);
+                                objectTypeToIdMap.get(objName).put((String)sobj.get('Id'), recordNameExt);
+                            }
+                            
+                        } catch(Exception e){
+                            System.debug(e.getMessage());
+                        }
+                    }
+                    for(String field : relatedRecordIdMap.keySet()){
+                        if(historyMap.containsKey(field)){
+                            Record_History__c cloneRh = historyMap.get(field)[0].clone();
+                            if(String.isNotBlank(cloneRh.New_Value__c)){
+                                cloneRh.New_Value__c = objectTypeToIdMap.get(recIdToObjectNameMap.get(cloneRh.New_Value__c)).get(relatedRecordIdMap.get(field).get('newValue'));
+                            }
+                            if(String.isNotBlank(cloneRh.Old_Value__c)){
+                                cloneRh.Old_Value__c = objectTypeToIdMap.get(recIdToObjectNameMap.get(cloneRh.Old_Value__c)).get(relatedRecordIdMap.get(field).get('oldValue'));
+                            }
+                            if(cloneRh.New_Value__c != null && cloneRh.Old_Value__c != null) historyMap.get(field).add(cloneRh);
+                        }
+                    }
+                }
+                for(String field : historyMap.keySet()){
+                    histories.addAll(historyMap.get(field));
                 }
             }
             if(!histories.isEmpty()) {

@@ -151,6 +151,10 @@ export default class RelatedListHelper {
         const actions = [];
         if (row.isCustom) {
             actions.push({
+                'label': 'View Details',
+                'name': 'view'
+            });
+            actions.push({
                 'label': 'Edit',
                 'name': 'edit'
             });
