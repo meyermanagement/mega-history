@@ -219,7 +219,7 @@ global without sharing class HistoryTrackingService {
                             if(String.isNotBlank(cloneRh.Old_Value__c)){
                                 cloneRh.Old_Value__c = objectTypeToIdMap.get(recIdToObjectNameMap.get(cloneRh.Old_Value__c)).get(relatedRecordIdMap.get(field).get('oldValue'));
                             }
-                            if(cloneRh.New_Value__c != null && cloneRh.Old_Value__c != null) historyMap.get(field).add(cloneRh);
+                            if(cloneRh.New_Value__c != null || cloneRh.Old_Value__c != null) historyMap.get(field).add(cloneRh);
                         }
                     }
                 }

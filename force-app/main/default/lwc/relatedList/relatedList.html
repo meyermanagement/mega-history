@@ -50,7 +50,7 @@
                         <lightning-input type="checkbox" label="Hide Standard History" checked={customOnly} onchange={handleCustomOnly}></lightning-input>
                     </lightning-layout-item>
                     <lightning-layout-item size="12">
-                        <lightning-input type="checkbox" label="Show Related History" checked={showRelated} disabled={hasNoChildren} onchange={handleShowRelated}></lightning-input>
+                        <lightning-input type="checkbox" label="Show Related History" checked={showRelated} onchange={handleShowRelated}></lightning-input>
                     </lightning-layout-item>
                     <template lwc:if={showRelated}>
                         <lightning-layout-item size="12" class="slds-p-left_large">

@@ -17,6 +17,8 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
     @api numberOfRecords = 5;
     @api mode;
     @api showOptions = false;
+    @api defaultShowRelated = false;
+    @api defaultGroupRelated = false;
     @track fullViewOptions = false;
     @track fullView;
     @track state = {};
@@ -45,6 +47,7 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
     helper = new RelatedListHelper();
 
     renderedCallback() {
+        console.log('renderedCallback');
         loadStyle(this, relatedListResource + '/relatedList.css');
         this.fullView = this.currentPageRef.state.megatools__fullView == 'true' ? true : false;
         this.fullViewOptions = this.currentPageRef.state.megatools__showOptions;
@@ -53,7 +56,13 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
         this.state.fullView = this.fullView;
         this.state.numberOfRecords = this.numberOfRecords;
         if(!this.rendered && this.recordId != undefined){
-            
+            this.showRelated = this.defaultShowRelated;
+            if(this.showRelated){
+                this.optionsLabel = 'Hide';
+                this.optionsVariant = 'neutral';
+                this.displayOptions = true;
+            }
+            this.groupRelated = this.defaultGroupRelated;
             this.rendered = true;
             this.init();
         }
@@ -237,7 +246,6 @@ export default class RelatedList extends NavigationMixin(LightningElement) {
         this.state.title = data.title;
         this.state.childtitle = data.childtitle;
         this.state.parentRelationshipApiName = data.parentRelationshipApiName;
-        
         this.createColumns();
         this.loading = false;
     }

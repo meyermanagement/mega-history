@@ -12,6 +12,8 @@
             <property label="Display Mode" name="mode" type="String" default="List" description="Please select a display mode for your related list.  Valid values are 'List' or 'Tile'.  'List' is the default value."/>
             <property label="Number of Records to Display" name="numberOfRecords" type="Integer" default="5" description="Please select how many records you want to display initially.  All records are available when you click 'View All'. '5' is the default value."/>
             <property name="showOptions" type="Boolean" default="true" label="Show Options" description="Show the History Options button."/>
+            <property name="defaultShowRelated" type="Boolean" default="false" label="Default Show Related" description="Default the Show Related checkbox to on."/>
+            <property name="defaultGroupRelated" type="Boolean" default="false" label="Default Group Related" description="Default the Group Related checkbox to on."/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>
